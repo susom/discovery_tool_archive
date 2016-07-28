@@ -68,13 +68,11 @@ var app = {
             // datastore.liveDB(app.cache.localdb);
         }
 
-
-        var catdb = new PouchDB('http://localhost:5984/kittens'); 
-
-
-
-
-        // datastore.allDocs(app.cache.localdb);
+        var catdb = new PouchDB('kittens'); 
+        catdb.info().then(function (info) {
+          utils.dump(info);
+        })
+        // datastore.allDocs(catdb);
         // datastore.writeDB(app.cache.user,app.cache.localdb);
         
 //ALL SET UP NOW Reveal Signin Form 
