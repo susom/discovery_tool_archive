@@ -53,7 +53,7 @@ var app = {
 
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
-    ,onDeviceReady: function(device) {
+    ,onDeviceReady: function() {
         //0 CHECK NETWORK STATE
         var networkState    = utils.checkConnection();
 
@@ -68,10 +68,16 @@ var app = {
             // datastore.liveDB(app.cache.localdb);
         }
 
-        var catdb = new PouchDB('kittens'); 
-        catdb.info().then(function (info) {
+        utils.dump(device); 
+        
+        app.cache.localdb.allDocs().then(function (info) {
           utils.dump(info);
-        })
+        });
+
+        // var catdb = new PouchDB('kittens'); 
+        // catdb.info().then(function (info) {
+        //   utils.dump(info);
+        // });
         // datastore.allDocs(catdb);
         // datastore.writeDB(app.cache.user,app.cache.localdb);
         
