@@ -54,25 +54,33 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     ,onDeviceReady: function() {
-        //0 CHECK NETWORK STATE
+        //0 CHECK NETWORK STATE, AND GET UUID
         var networkState    = utils.checkConnection();
+        var deviceID        = device.uuid;
 
         //1) Check if local DB is up/ok
         app.cache.localdb   = datastore.startupDB(config["database"]["test_local"]); 
-        app.cache.remotedb  = datastore.startupDB(config["database"]["test_remote"]);
-
+        
         //2) KICK OFF LIVE SYNC
         if(networkState.online){
+            app.cache.remotedb  = datastore.startupDB(config["database"]["test_remote"]);
+            // new Date().toJSON() 
             // kick off sync
-            // datastore.twoWaySyncDB(app.cache.localdb,app.cache.remotedb);
+            // datastore.remoteSyncDB(app.cache.localdb,app.cache.remotedb);
             // datastore.liveDB(app.cache.localdb);
         }
 
-        utils.dump(device); 
+
+        console.log(deviceID);
         
-        app.cache.localdb.allDocs().then(function (info) {
-          utils.dump(info);
+        app.cache.localdb.get("2016-07-28T20:16:12.328Z").then(function (doc) {
+          // handle doc
+          return doc;
+        }).catch(function (err) {
+          console.log(err);
+          return false;
         });
+        
 
         // var catdb = new PouchDB('kittens'); 
         // catdb.info().then(function (info) {

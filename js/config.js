@@ -1,13 +1,13 @@
 var config = {
     database : {
          "users_local"  : "disc_tool"
-        ,"users_remote" : 'http://127.0.0.1:5984/disc_tool'
+        ,"users_remote" : 'http://10.0.1.79:5984/disc_tool'
 
         ,"proj_local"   : "disc_projects"
-        ,"proj_remote"  : "http://127.0.0.1:5984/disc_projects"
+        ,"proj_remote"  : "http://10.0.1.79:5984/disc_projects"
 
         ,"test_local"   : "irvin_test_1"
-        ,"test_remote"  : "http://127.0.0.1:5984/irvin_test_1"
+        ,"test_remote"  : "http://10.0.1.79:5984/irvin_test_1"
     }
 
     ,default_user : {
