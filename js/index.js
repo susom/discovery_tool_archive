@@ -70,7 +70,7 @@ var app = {
             // datastore.liveDB(app.cache.localdb);
         }
 
-
+        console.log("ok testing the debugging");
         console.log(deviceID);
         
         app.cache.localdb.get("2016-07-28T20:16:12.328Z").then(function (doc) {
