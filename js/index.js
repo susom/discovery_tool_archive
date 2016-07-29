@@ -71,10 +71,10 @@ var app = {
         }
 
         console.log("ok testing the debugging");
-        console.log(deviceID);
         
         app.cache.localdb.get("2016-07-28T20:16:12.328Z").then(function (doc) {
           // handle doc
+          utils.dump(doc);
           return doc;
         }).catch(function (err) {
           console.log(err);
@@ -89,11 +89,6 @@ var app = {
         // datastore.allDocs(catdb);
         // datastore.writeDB(app.cache.user,app.cache.localdb);
         
-//ALL SET UP NOW Reveal Signin Form 
-app.transitionToPanel($("#step_zero"));
-return;
-
-
 
         //THIS NEEDS TO BE GOTTEN FROM REMOTE SERVER OR UPON APP DOWNLOAD
         app.cache.projects  = app.getDB("hrp_projects");
@@ -102,7 +97,7 @@ return;
             app.cache.projects  = config["default_projects"];
 
             //NOW WRITE THIS TO THE LOCAL DEVICE DB
-            app.writeDB(app.cache.projects);
+            // app.writeDB(app.cache.projects);
         }
         
         //THERE SHOULD BE AT LEAST 1 PROJECT
@@ -155,6 +150,8 @@ return;
         //ALL SET UP NOW Reveal Signin Form 
         app.transitionToPanel($("#step_zero"));
 
+
+return;
         //ADD EVENTS TO STEP BUTTONS
         $(".button").click(function(){
             //GET CURRENT PANEL
