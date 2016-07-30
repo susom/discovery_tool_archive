@@ -1,13 +1,16 @@
 var config = {
     database : {
-         "users_local"  : "disc_tool"
-        ,"users_remote" : 'http://10.0.1.79:5984/disc_tool'
+        //  "users_local"  : "disc_tool"
+        // ,"users_remote" : 'http://192.168.0.105:5984/disc_tool'
 
-        ,"proj_local"   : "disc_projects"
-        ,"proj_remote"  : "http://10.0.1.79:5984/disc_projects"
+        // ,"proj_local"   : "disc_projects"
+        // ,"proj_remote"  : "http://192.168.0.105:5984/disc_projects"
 
-        ,"test_local"   : "irvin_test_1"
-        ,"test_remote"  : "http://10.0.1.79:5984/irvin_test_1"
+         "users_local"     : "test_suite_db"
+        ,"users_remote"    : "http://192.168.0.105:5984/test_suite_db"
+
+        ,"proj_local"      : "test_suite_db2"
+        ,"proj_remote"     : "http://192.168.0.105:5984/test_suite_db2"
     }
 
     ,default_user : {
@@ -24,12 +27,12 @@ var config = {
     
     ,default_projects  : {
          "_id"          : "hrp_projects"
-        ,"_projects"    : [
+        ,"projects"     : [
              {
-                 "_project_id"  : "XYZ"
-                ,"_project_name": "The XYZ Project"
-                ,"_user_ids"    : ["001","002","003","004","005"]
-                ,"_lang"        : [
+                 "project_id"  : "XYZ"
+                ,"project_name": "The XYZ Project"
+                ,"user_ids"    : ["001","002","003","004","005"]
+                ,"lang"        : [
                      { "lang" : "en"
                       ,"language" : "English" 
                       ,"translations" : [

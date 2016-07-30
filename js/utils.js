@@ -21,11 +21,13 @@ var utils = {
     }
 
     ,dump : function (obj) {
-        var out = '';
+        var out = [];
         for (var i in obj) {
-            out += i + " : " + obj[i] + "\n";
+            out.push(i);
+            // out.push(i + " : " + obj[i]);
         }
-        console.log(out);
+        console.log("["+ out.join(",") + "]");
+        // console.log(out.join("\n"));
         return;
     }
 };

@@ -23,11 +23,13 @@ var app = {
     // Application Constructor
     ,initialize: function() {
         this.bindEvents();
-
         app.cache.user              = config["default_user"];
         app.cache.positionTrackerId = null;
-        app.cache.localdb           = null;
-        app.cache.remotedb          = null;
+
+        app.cache.localusersdb      = null;
+        app.cache.localprojdb       = null;
+        app.cache.remoteusersdb     = null;
+        app.cache.remoteprojdb      = null;
     }
     
     // Bind any events that are required on startup. Common events are:
@@ -58,109 +60,48 @@ var app = {
         var networkState    = utils.checkConnection();
         var deviceID        = device.uuid;
 
-        //1) Check if local DB is up/ok
-        app.cache.localdb   = datastore.startupDB(config["database"]["test_local"]); 
-        
-        //2) KICK OFF LIVE SYNC
-        if(networkState.online){
-            app.cache.remotedb  = datastore.startupDB(config["database"]["test_remote"]);
-            // new Date().toJSON() 
-            // kick off sync
-            // datastore.remoteSyncDB(app.cache.localdb,app.cache.remotedb);
-            // datastore.liveDB(app.cache.localdb);
-        }
+        //1) (RE)OPEN LOCAL DB
+        app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
+        app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
+        app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
+        app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
 
-        console.log("ok testing the debugging");
-        
-        app.cache.localdb.get("2016-07-28T20:16:12.328Z").then(function (doc) {
-          // handle doc
-          utils.dump(doc);
-          return doc;
-        }).catch(function (err) {
-          console.log(err);
-          return false;
-        });
-        
+        //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
+        // datastore.twoWaySyncDB(app.cache.localdb,app.cache.remoteusersdb);
+        datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);
+        datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);
 
-        // var catdb = new PouchDB('kittens'); 
-        // catdb.info().then(function (info) {
-        //   utils.dump(info);
-        // });
-        // datastore.allDocs(catdb);
-        // datastore.writeDB(app.cache.user,app.cache.localdb);
-        
+        //3) THIS NEEDS TO BE GOTTEN FROM LOCAL PROJECTS OR SERVER
+        app.cache.localprojdb.get("hrp_projects").then(function (doc) {
+            app.cache.projects = doc;
 
-        //THIS NEEDS TO BE GOTTEN FROM REMOTE SERVER OR UPON APP DOWNLOAD
-        app.cache.projects  = app.getDB("hrp_projects");
-        if(!app.cache.projects){
-            //THIS SHOULD BE ON DEVICE, BUT IF NOT AJAX TO GET
-            app.cache.projects  = config["default_projects"];
+            //THERE SHOULD BE AT LEAST 1 PROJECT
+            if(0 in app.cache.projects["projects"]){
+                app.loadProjects(app.cache.projects["projects"]);
 
-            //NOW WRITE THIS TO THE LOCAL DEVICE DB
-            // app.writeDB(app.cache.projects);
-        }
-        
-        //THERE SHOULD BE AT LEAST 1 PROJECT
-        var first_p = app.cache.projects["_projects"][0]["_project_id"];
-        app.cache.u_select = {};
-        app.cache.l_select = {};
-        if(first_p){
-            //NOW POPULATE THE POSSIBLE PROJECT OPTIONS + AVAILABLE USERIDs + LANGUAGE CHOICES
-            for(var i in app.cache.projects["_projects"]){
-                var p = app.cache.projects["_projects"][i];
-                var p_option = $("<option>").val(p["_project_id"]).text(p["_project_id"]);
-                $("select[name='project_id']").append(p_option);
-
-                var u_temp  = [];
-                for(var u in p["_user_ids"]){
-                    var u_option = $("<option>").val(p["_user_ids"][u]).text(p["_user_ids"][u]);
-                    u_temp.push(u_option);
-                }
-                app.cache.u_select[p["_project_id"]]  = u_temp;
-
-                var l_temp  = [];
-                for(var l in p["_lang"]){
-                    var l_option = $("<option>").val(p["_lang"][l]["lang"]).text(p["_lang"][l]["language"]);
-                    l_temp.push(l_option);
-                }
-                app.cache.l_select[p["_project_id"]]  = l_temp;
+                //ALL SET UP NOW Reveal Signin Form 
+                app.transitionToPanel($("#step_zero"));
+            }else{
+                //DELIBERATLEY THROW ERROR
+                throw err;
             }
-            app.updateSetup(first_p);
-            app.updateLanguage(first_p);
+        }).catch(function (err) {
+            console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
+            datastore.showError(err);
 
-            $("select[name='project_id']").change(function(){
-                //ON PROJECT CHANGE, UPDATE USERID CHOICES + LANGUAGE CHOICES AND INITIAL ENGLISH TRANSLATION
-                var proj_id = $(this).val();
-                app.updateSetup(proj_id);
-                app.updateLanguage(proj_id);
-            });
-            $("select[name='language']").change(function(){
-                //REAL TIME LANGUAGE TRANSLATION UPDATES
-                var proj_id = $("select[name='project_id']").val();
-                var lang_id = $(this).val();
-                app.updateLanguage(proj_id,lang_id);
-            });
-        }else{
-            //IN CASE THERE are NO PROJECTS
-            var cantconnect = $("<h3>").addClass("loadfail").text("Sorry, unable to connect to server.  Please close the app and try again later.");
+            //IF NO PROJECTS THEN PUT UP THIS LOADING ERROR
+            var cantconnect = $("<h3>").addClass("loadfail").text("Sorry, unable to connect to server.  Please close the app and try later.");
             $(".title hgroup").append(cantconnect);
-            return;
-        }
+        });
 
-        //ALL SET UP NOW Reveal Signin Form 
-        app.transitionToPanel($("#step_zero"));
-
-
-return;
         //ADD EVENTS TO STEP BUTTONS
         $(".button").click(function(){
             //GET CURRENT PANEL
             var panel   = $(this).closest(".panel");
-            var next    = $(this).cache("next");
+            var next    = $(this).data("next");
 
             //ONE TIME DEAL
             $("#main").addClass("loaded");
-
             //SPECIAL RULES ENTERING INTO DIFFERNT "PAGES"
             if(next == "consent_one"){
                 app.cache.user.project_id    = $("select[name='project_id']").val();
@@ -172,7 +113,7 @@ return;
                 }
 
                 //SAVE USER TO DB
-                app.writeDB(app.cache.user);
+                // app.writeDB(app.cache.user);
             }
 
             if(next == "step_one" && $(this).hasClass("endwalk")){
@@ -292,6 +233,55 @@ return;
         });
     }
 
+    ,loadProjects : function(projects){
+        app.cache.u_select  = {};
+        app.cache.l_select  = {};
+        var first_pid       = false;
+
+        //NOW POPULATE THE POSSIBLE PROJECT OPTIONS + AVAILABLE USERIDs + LANGUAGE CHOICES
+        for(var i in projects){
+            var p = projects[i];
+            if(!first_pid){
+                first_pid = p["project_id"];
+            } 
+
+            var p_option = $("<option>").val(p["project_id"]).text(p["project_id"]);
+            $("select[name='project_id']").append(p_option);
+
+            var u_temp  = [];
+            for(var u in p["user_ids"]){
+                var u_option = $("<option>").val(p["user_ids"][u]).text(p["user_ids"][u]);
+                u_temp.push(u_option);
+            }
+            app.cache.u_select[p["project_id"]]  = u_temp;
+
+            var l_temp  = [];
+            for(var l in p["lang"]){
+                var l_option = $("<option>").val(p["lang"][l]["lang"]).text(p["lang"][l]["language"]);
+                l_temp.push(l_option);
+            }
+            app.cache.l_select[p["project_id"]]  = l_temp;
+        }
+
+        //SET UP THE OPTIONS FOR THE FIRST PROJECT
+        app.updateSetup(first_pid);
+        app.updateLanguage(first_pid);
+
+        //SET UP PROJECT SPECIFIC OPTIONS
+        $("select[name='project_id']").change(function(){
+            //ON PROJECT CHANGE, UPDATE USERID CHOICES + LANGUAGE CHOICES AND INITIAL ENGLISH TRANSLATION
+            var proj_id = $(this).val();
+            app.updateSetup(proj_id);
+            app.updateLanguage(proj_id);
+        });
+        $("select[name='language']").change(function(){
+            //REAL TIME LANGUAGE TRANSLATION UPDATES
+            var proj_id = $("select[name='project_id']").val();
+            var lang_id = $(this).val();
+            app.updateLanguage(proj_id,lang_id);
+        });
+    }
+
     ,updateSetup : function(projid){
         var u_opts  = app.cache.u_select[projid];
         var l_opts  = app.cache.l_select[projid];
@@ -307,10 +297,10 @@ return;
 
     ,updateLanguage : function(projid,lang){
         lang = !lang ? "en" :lang;
-        for(var p in app.cache.projects["_projects"]){
-            var project = app.cache.projects["_projects"][p];
-            if(project["_project_id"] == projid){
-                var trans = project["_lang"];
+        for(var p in app.cache.projects["projects"]){
+            var project = app.cache.projects["projects"][p];
+            if(project["project_id"] == projid){
+                var trans = project["lang"];
                 for(var l in trans){
                     var language = trans[l];
                     if(language["lang"]== lang){

@@ -2,87 +2,127 @@ var datastore = {
     db : null
 
     ,startupDB: function(dbname){
-        var db = new PouchDB(dbname, {adapter: 'websql', iosDatabaseLocation: 'default'});
-        if (!db.adapter) { // websql not supported by this browser
-          db = new PouchDB(dbname);
-        }
+        var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default'});
         return db;
     }
 
-    ,getDB : function(_id,db){
-        db.get(_id).then(function (doc) {
-          // handle doc
-          return doc;
+    ,destroyDB : function(dbname){
+        new PouchDB(dbname).destroy().then(function (){
+          console.log("DATABASE DESTROYED: " + dbname);
         }).catch(function (err) {
-          console.log(err);
-          return false;
+          console.log("ERROR destroyDB():");
+          datastore.showError(err);
         });
-        return;
+    }
+
+    ,getDB : function(db,_id,assign_to_this){
+        db.get(_id).then(function (doc) {
+            console.log(doc);
+            assign_to_this = doc;
+        }).catch(function (err) {
+            console.log("ERROR getDB():");
+            datastore.showError(err);
+        });
     }
 
     ,getAll : function(db){
-        db.allDocs({include_docs: true})
-        .then(function (response) {
-          console.log(response);
+        db.allDocs({
+            // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
+            include_docs: true
+            // ,startkey : 'id01'
+            // ,endkey : 'id10'
+            // ,limit : 10
+            // //inefficient
+            // ,skip  : 5
+            // ,descending : true
+            // ,key : 'id01'
+            // ,keys : ['id01','id02']
+        }).then(function (res) {
+            console.log(res["total_rows"]);
+            console.log(res["offset"]);
+            utils.dump(res["rows"]);
+        }).catch(function(err){
+            console.log("ERROR getAll():");
+            datastore.showError(err);
         });
     }
 
-    ,writeDB : function(_o,db){
-        console.log("writing to the dB");
-        db.put(_o, function callback(err, result) {
-            if (!err) {
-              console.log('Successfully saved a json object!');
-            }
+    ,writeDB : function(db,_o){
+        db.put(_o).then(function (wut) {
+            console.log('Successfully saved a json object?');
+        }).catch(function (err) {
+            console.log("ERROR writeDB():");
+            datastore.showError(err);
         });
-        return;
     }
 
     ,liveDB : function(db){
-        // console.log("liveDB is more for INCOMING SERVER CHANGES TO DB?");
-
+        //DONT NEED THIS CAUSE THE OTHER LIVE SYNCS HAVE "change" EVENT TRIGGER TOO
         db.changes({
-           since    : 'now'
-          ,live     : true
+             since    : 'now'
+            ,live     : true
         }).on('change', function(){
-            console.log("Incoming Changes From Remote , or Even Local Writes?");
-            //WHAT TO DO IF DATA COMES IN?
-            //THAT WONT HAPPEN MUCH, SINCE THIS APP IS 
-            //MORE ABOUT STORING USER DATA TO UPLOAD LATER
+            console.log("Incoming Changes From Remote , or Even Local Writes? I THINK EVEN LOCAL");
+        }).catch(function (err) {
+            console.log("ERROR liveDB():");
+            datastore.showError(err);
         });
-        return;
     }
 
-    ,twoWaySyncDB : function(localdb,remotedb){
-        // console.log("real time live two way replication, dont do this on 'users'");
-
-        localdb.sync(remotedb, {
-          live: true
+    ,twoWaySyncDB : function(localdb_obj,remotedb_str){
+        localdb_obj.sync(remotedb_str, {
+            live: true
         }).on('change', function (change) {
-            console.log("redundant to liveDB");
-          // yo, something changed!
-        }).on('error', function (err) {
-          // yo, we got an error! (maybe the user went offline?)
+            console.log("SOMETHING CHANGED , SYNC!");
+            console.log(change);
+        }).on('uptodate',function(update){
+            console.log("SYNC TO/FROM DONE");
+        }).catch(function (err) {
+            console.log("ERROR twoWaySyncDB():");
+            datastore.showError(err);
         });
-        return;
     }
 
-    ,localSyncDB : function(localdb,remotedb){
-        console.log("only sync from local to remote");
-        var opts = {live: true};
-        localdb.replicate.to(remotedb, opts, syncError);
-        return;
+    ,localSyncDB : function(localdb_obj,remotedb_str){
+        localdb_obj.replicate.to(remotedb_str,{
+            live: true
+        }).on('complete', function (wut) {
+            console.log("REPLICATED TO REMOTE!");
+        }).on('change',function(change){
+            console.log("REPLICATE TO , CHANGE, SYNC!")
+        }).on('uptodate',function(update){
+            console.log("REPLICATION TO DONE");
+        }).catch(function (err) {
+            console.log("ERROR localSyncDB():");
+            datastore.showError(err);
+        });
     }
 
-    ,remoteSyncDB : function(localdb,remotedb){
-        console.log("only sync from remote to local");
-        var opts = {live: true};
-        localdb.replicate.from(remotedb, opts, syncError);
-        return;
+    ,remoteSyncDB : function(localdb_obj,remotedb_str){
+        localdb_obj.replicate.from(remotedb_str,{
+            live: true
+        }).on('complete', function (wut) {
+            console.log("REPLICATED FROM REMOTE!");
+        }).on('change',function(change){
+            console.log("REPLICATE FROM , CHANGE, SYNC!")
+        }).on('uptodate',function(update){
+            console.log("REPLICATION FROM DONE");
+        }).catch(function (err) {
+            console.log("ERROR remoteSyncDB():");
+            datastore.showError(err);
+        });
     }
 
     ,addAttachment : function(_o, media){
         // URL.createObjectURL();  converts base64 image into imgsrc
+    }
 
+    ,showError : function(e){
+        // utils.dump(e);
+        console.log("status: "  + e["status"]);
+        console.log("name: "    + e["name"]);
+        console.log("message: " + e["message"]);
+        console.log("reason: "  + e["reason"]);
         return;
     }
 };
