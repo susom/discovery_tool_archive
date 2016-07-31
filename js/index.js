@@ -30,6 +30,11 @@ var app = {
         app.cache.localprojdb       = null;
         app.cache.remoteusersdb     = null;
         app.cache.remoteprojdb      = null;
+
+        app.cache.uuid              = null;
+        app.cache.p_id              = null;
+        app.cache.next_id           = null;
+        app.cache.pu_id             = null;
     }
     
     // Bind any events that are required on startup. Common events are:
@@ -58,7 +63,7 @@ var app = {
     ,onDeviceReady: function() {
         //0 CHECK NETWORK STATE, AND GET UUID
         var networkState    = utils.checkConnection();
-        var deviceID        = device.uuid;
+        app.cache.uuid      = device.uuid;
 
         //1) (RE)OPEN LOCAL DB
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
@@ -94,7 +99,7 @@ var app = {
             $(".title hgroup").append(cantconnect);
         });
 
-        //ADD EVENTS TO STEP BUTTONS
+        //4) ADD EVENTS TO VARIOUS BUTTONS/LINKS
         $(".button").click(function(){
             //GET CURRENT PANEL
             var panel   = $(this).closest(".panel");
@@ -109,7 +114,7 @@ var app = {
                 app.cache.user.lang          = $("select[name='language']").val();
 
                 if(!$("header hgroup h3").length){
-                    $("header hgroup").append($("<h3>").text("Project : " + app.cache.user.project_id.toUpperCase() + ", User : " + app.cache.user.user_id));
+                    $("header hgroup").append($("<h3>").text("Project : " + app.cache.p_id.toUpperCase() + ", Participant : " + app.cache.pu_id));
                 }
 
                 //SAVE USER TO DB
@@ -140,7 +145,7 @@ var app = {
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
                 var panel   = $(this).closest(".panel");
-                var next    = $(this).cache("next");
+                var next    = $(this).data("next");
                 app.takePhoto();
 
                 app.closeCurrentPanel(panel);
@@ -149,7 +154,7 @@ var app = {
                 app.recordAudio();
 
                 var panel   = $(this).closest(".panel");
-                var next    = $(this).cache("next");
+                var next    = $(this).data("next");
 
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#"+next));
@@ -242,53 +247,68 @@ var app = {
         for(var i in projects){
             var p = projects[i];
             if(!first_pid){
-                first_pid = p["project_id"];
+                first_pid   = p["project_id"];
             } 
 
-            var p_option = $("<option>").val(p["project_id"]).text(p["project_id"]);
-            $("select[name='project_id']").append(p_option);
+            //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
+            var partial_id  = datastore.pouchCollate([app.cache.uuid, p["project_id"]]);
 
-            var u_temp  = [];
-            for(var u in p["user_ids"]){
-                var u_option = $("<option>").val(p["user_ids"][u]).text(p["user_ids"][u]);
-                u_temp.push(u_option);
-            }
-            app.cache.u_select[p["project_id"]]  = u_temp;
+            app.cache.localusersdb.allDocs({
+                // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
+                 startkey   : partial_id
+                ,endkey     : partial_id + "\ufff0"
+            }).then(function (res) {
+                // console.log("will always return total docs: " + res["total_rows"]);
+                //SET THE NEXT AVAILABLE USER OBJECT _id
+                app.cache.u_select[p["project_id"]] = (res["rows"].length + 1);
 
-            var l_temp  = [];
-            for(var l in p["lang"]){
-                var l_option = $("<option>").val(p["lang"][l]["lang"]).text(p["lang"][l]["language"]);
-                l_temp.push(l_option);
-            }
-            app.cache.l_select[p["project_id"]]  = l_temp;
-        }
+                var p_option = $("<option>").val(p["project_id"]).text(p["project_id"]);
+                $("select[name='project_id']").append(p_option);
 
-        //SET UP THE OPTIONS FOR THE FIRST PROJECT
-        app.updateSetup(first_pid);
-        app.updateLanguage(first_pid);
+                var l_temp  = [];
+                for(var l in p["lang"]){
+                    var l_option = $("<option>").val(p["lang"][l]["lang"]).text(p["lang"][l]["language"]);
+                    l_temp.push(l_option);
+                }
+                app.cache.l_select[p["project_id"]]  = l_temp;
+            }).then(function(){
+                //SET UP THE OPTIONS FOR THE FIRST PROJECT
+                app.updateSetup(first_pid);
+                app.updateLanguage(first_pid);
 
-        //SET UP PROJECT SPECIFIC OPTIONS
-        $("select[name='project_id']").change(function(){
-            //ON PROJECT CHANGE, UPDATE USERID CHOICES + LANGUAGE CHOICES AND INITIAL ENGLISH TRANSLATION
-            var proj_id = $(this).val();
-            app.updateSetup(proj_id);
-            app.updateLanguage(proj_id);
-        });
-        $("select[name='language']").change(function(){
-            //REAL TIME LANGUAGE TRANSLATION UPDATES
-            var proj_id = $("select[name='project_id']").val();
-            var lang_id = $(this).val();
-            app.updateLanguage(proj_id,lang_id);
-        });
+                //SET UP PROJECT SPECIFIC OPTIONS
+                $("select[name='project_id']").change(function(){
+                    //ON PROJECT CHANGE, UPDATE USERID CHOICES + LANGUAGE CHOICES AND INITIAL ENGLISH TRANSLATION
+                    var proj_id = $(this).val();
+                    app.updateSetup(proj_id);
+                    app.updateLanguage(proj_id);
+                });
+                $("select[name='language']").change(function(){
+                    //REAL TIME LANGUAGE TRANSLATION UPDATES
+                    var proj_id = $("select[name='project_id']").val();
+                    var lang_id = $(this).val();
+                    app.updateLanguage(proj_id,lang_id);
+                });
+            }).catch(function(err){
+                console.log("ERROR localusers tables:");
+                datastore.showError(err);
+            });
+        }    
     }
 
     ,updateSetup : function(projid){
         var u_opts  = app.cache.u_select[projid];
         var l_opts  = app.cache.l_select[projid];
-        $("select[name='user_id']").empty();
-        for(var u in u_opts){
-            $("select[name='user_id']").append(u_opts[u]);
-        }
+        
+        var setnext_id      = datastore.pouchCollate([app.cache.uuid, projid, u_opts]);
+        app.cache.p_id      = projid;
+        app.cache.pu_id     = u_opts;
+
+        //SET NEXT AVAILABLE USER OBJ _id FOR PROJECT
+        app.cache.next_id   = setnext_id;
+        $("b.user_id").text(u_opts);
+
+        //UPDATE LANGUAGE OPTIONS BY PROJECT
         $("select[name='language']").empty();
         for(var l in l_opts){
             $("select[name='language']").append(l_opts[l]);

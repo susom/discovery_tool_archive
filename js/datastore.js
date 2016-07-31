@@ -125,5 +125,13 @@ var datastore = {
         console.log("reason: "  + e["reason"]);
         return;
     }
+
+    ,pouchCollate : function(component_array){
+        return pouchdbCollate.toIndexableString(component_array).replace(/\u0000/g, '\u0001');
+    }
+
+    ,pouchDeCollate : function(_id){
+        return pouchdbCollate.parseIndexableString(_id);
+    }
 };
 

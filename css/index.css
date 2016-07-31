@@ -248,7 +248,9 @@ nav .back{
     font-weight:500;
     font-size:120%;
 }
-
+#step_zero label b {
+    border:1px soid red;
+}
 #step_zero select {
     background-color: #fff;
     border-width: 1px;
