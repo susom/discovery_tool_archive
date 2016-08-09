@@ -25,6 +25,8 @@ var app = {
         this.bindEvents();
         app.cache.user              = config["default_user"];
         app.cache.positionTrackerId = null;
+        app.cache.currentWalkMap    = [];
+        app.cache.curmap            = null;
 
         app.cache.localusersdb      = null;
         app.cache.localprojdb       = null;
@@ -128,6 +130,10 @@ var app = {
                 app.startWatch(8000);
             }
 
+            if(next == "step_three"){
+                app.plotGoogleMap();
+            }
+
             if(next == "finish"){
                 $("nav").hide();
             }
@@ -191,7 +197,7 @@ var app = {
         });
 
         $(".vote").click(function(){
-            var curPhoto = app.cache.user.photos.length-1;
+            var curPhoto = $(this).data("photo_i");
             $(".vote.up").removeClass("on").removeClass("off");
             $(".vote.down").removeClass("on").removeClass("off");
             if($(this).hasClass("up")){
@@ -218,6 +224,17 @@ var app = {
             my_media.play();
             my_media.release();
             return false;
+        });
+
+        $("#mediacaptured").on("click",".photobomb",function(){
+            var thispic_i = $(this).data("photo_i");
+            app.previewPhoto(app.cache.user.photos[thispic_i]);
+
+            var panel   = $(this).closest(".panel");
+            var next    = "pic_review";
+
+            app.closeCurrentPanel(panel);
+            app.transitionToPanel($("#"+next));
         });
     }
 
@@ -349,7 +366,6 @@ var app = {
     ,trackPosition: function(){
         navigator.geolocation.getCurrentPosition(
             function(position) {
-                console.log("fire getCurrentPosition");
                 var lastPos = app.cache.user.geotags[app.cache.user.geotags.length - 1];
                 var curdist = app.cache.user.hasOwnProperty("currentDistance") ? app.cache.user.currentDistance : 0;
                 var prvLat  = lastPos > 0 ? lastPos.latitude  : position.coords.latitude;
@@ -370,60 +386,14 @@ var app = {
                 };
                 app.cache.user.geotags.push(curpos);
 
+                //SAVE THE POINTS IN GOOGLE FORMAT
+                app.cache.currentWalkMap.push(
+                  new google.maps.LatLng( curLat, curLong )
+                );
+
                 $('#distance').text(curdist);
                 $('#currentLat').text(curLat.toFixed(6));
                 $('#currentLon').text(curLong.toFixed(6));
-
-                // Create the map
-                var myOptions = {
-                    zoom : 16,
-                    center : app.cache.user.geotags[0],
-                    mapTypeId : google.maps.MapTypeId.ROADMAP
-                }
-
-                if(app.cache.curmap != null){
-                    var map = app.cache.curmap;
-                }else{
-                    var map             = new google.maps.Map(document.getElementById("map"), myOptions);
-                    app.cache.curmap    = map;
-                }
-
-                // Uncomment this block if you want to set a path
-                // for(var i = 0; i < 5; i++) {
-                //     app.cache.user.geotags.push(
-                //       new google.maps.LatLng(
-                //         position.coords.latitude + (Math.random() / 10 * ((i % 2) ? 1 : -1)),
-                //         position.coords.longitude + (Math.random() / 10 * ((i % 2) ? 1 : -1))
-                //       )
-                //     );
-                // }
-                
-                // Create the array that will be used to fit the view to the points range and
-                // place the markers to the polyline's points
-                // var latLngBounds    = new google.maps.LatLngBounds();
-                // var numtags         = app.cache.user.geotags.length;
-                // for(var i = 0; i < ; i++) {
-                //     latLngBounds.extend(app.cache.user.geotags[i]);
-                //     // Place the marker
-                //     new google.maps.Marker({
-                //       map: map,
-                //       position: app.cache.user.geotags[i],
-                //       title: "Point " + (i + 1)
-                //     });
-                // }
-                // // Creates the polyline object
-                // var polyline = new google.maps.Polyline({
-                //     map: map,
-                //     path: app.cache.user.geotags,
-                //     strokeColor: '#0000FF',
-                //     strokeOpacity: 0.7,
-                //     strokeWeight: 1
-                // });
-                // // Fit the bounds of the generated points
-                // map.fitBounds(latLngBounds);
-                
-                // //SAVE USER TO DB
-                // app.writeDB(app.cache.user);
             }
             ,function(err){
                 console.log("error?");
@@ -434,7 +404,48 @@ var app = {
             });
     }
 
-    ,tagLocation: function(){
+    ,plotGoogleMap: function(){
+        // Create the map
+        var myOptions = {
+            zoom        : 16,
+            center      : app.cache.user.currentWalkMap[0],
+            mapTypeId   : google.maps.MapTypeId.ROADMAP
+        }
+
+        if(app.cache.curmap != null){
+            var map             = app.cache.curmap;
+        }else{
+            var map             = new google.maps.Map(document.getElementById("google_map"), myOptions);
+            app.cache.curmap    = map;
+        }
+
+        // Create the array that will be used to fit the view to the points range and
+        // place the markers to the polyline's points
+        var latLngBounds        = new google.maps.LatLngBounds();
+        var numtags             = app.cache.currentWalkMap.length;
+        for(var i = 0; i < numtags; i++) {
+            latLngBounds.extend(app.cache.currentWalkMap[i]);
+            // Place the marker
+            new google.maps.Marker({
+              map       : map,
+              position  : app.cache.user.geotags[i],
+              title     : "Point " + (i + 1)
+            });
+        }
+
+        // Creates the polyline object
+        var polyline = new google.maps.Polyline({
+            map             : map,
+            path            : app.cache.user.geotags,
+            strokeColor     : '#0000FF',
+            strokeOpacity   : 0.7,
+            strokeWeight    : 1
+        });
+        // Fit the bounds of the generated points
+        map.fitBounds(latLngBounds);
+    }
+
+    ,tagLocation: function(add_to){
         //GEOLOCATION
         var curpos = {};
         navigator.geolocation.getCurrentPosition(function(position) {
@@ -444,6 +455,7 @@ var app = {
             curpos.heading      = position.coords.heading;
             curpos.speed        = position.coords.speed;
             curpos.timestamp    = position.timestamp;
+            add_to["geotag"]    = curpos;
         });
         return curpos;
     }
@@ -452,44 +464,34 @@ var app = {
         // take pic
         // save pic filename + geotag location
         navigator.camera.getPicture( 
-            function(fileurl){
-                fileurl = "data:image/jpeg;base64," + fileurl;
-
-                var geotag = app.tagLocation();
+            function(imageData){
+                var fileurl = "data:image/jpeg;base64," + imageData;
                 app.cache.user.photos.push({
                          "path"     : fileurl
-                        ,"geotag"   : geotag 
+                        ,"geotag"   : null 
                         ,"synced"   : false
                         ,"audio"    : null
                         ,"goodbad"  : null
                     });
                 
                 //make sure the audio gets the proper photo to save to
-                var thispic_i = app.cache.user.photos.length - 1;
-                $(".daction.audio").data("photo_i",thispic_i);
+                var thispic_i   = app.cache.user.photos.length - 1;
+                var geotag      = app.tagLocation(app.cache.user.photos[thispic_i]);
 
-                //SAVE USER TO DB
-                app.writeDB(app.cache.user);
+                app.previewPhoto(app.cache.user.photos[thispic_i]);
 
-                $("#recent_pic").attr("src",fileurl);
-                
-                //NOW ADD THIS TO THE VIEW #mediacaptured
-                var newitem = $("<li>").addClass("mediaitem");
-                var newlink = $("<a>").attr("href","#").html($("<span>").text("Add geo/time + sync status?"));
-                var newthum = $("<img>").attr("src",fileurl);
-                newlink.prepend(newthum);
-                newitem.append(newlink);
-                $(".nomedia").hide();
-                $("#mediacaptured").append(newitem);
+                setTimeout(function(){
+                    app.addMediaItem(app.cache.user.photos[thispic_i]);
+                },500);
             }
-            ,function(errmsg){
-                console.log(errmsg);
+            ,function(err){
+                console.log(err);
             }
             ,{ 
-                 quality: 50
-                ,destinationType: Camera.DestinationType.CACHE_URL
-                ,saveToPhotoAlbum: false
-                ,allowEdit: true
+                 quality            : 50
+                ,destinationType    : Camera.DestinationType.DATA_URL
+                ,saveToPhotoAlbum   : false
+                ,allowEdit          : true
             }
         );
         return;
@@ -512,12 +514,65 @@ var app = {
             }
             ,function(error){
                 console.log("audio error");
-                console.log(error);
+                utils.dump(error);
             }
             ,{
                 duration:10
             }
         );
         return;
+    }
+
+    ,previewPhoto: function(_photo){
+        var photo_i = app.cache.user.photos.indexOf(_photo);
+        var fileurl = _photo["path"];
+        var goodbad = _photo["goodbad"];
+
+        $(".daction.audio").data("photo_i",photo_i);
+        $("a.vote").data("photo_i",photo_i);
+        $("#recent_pic").attr("src",fileurl);
+    }
+
+    ,deletePhoto: function(_photo){
+        var photo_i = app.cache.user.photos.indexOf(_photo);
+        app.cache.user.photos.splice(photo_i,1);
+        return;
+    }
+
+    ,addMediaItem:function(_photo){
+        var photo_i = app.cache.user.photos.indexOf(_photo);
+        var fileurl = _photo["path"];
+        var geotag  = _photo["geotag"];
+        var goodbad = _photo["goodbad"];
+
+        if(goodbad == null){
+
+        }else if(goodbad > 0){
+
+        }else{
+
+        }
+
+        var time    = utils.readableTime(geotag.timestamp);
+
+        //NOW ADD THIS TO THE VIEW #mediacaptured
+        var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
+        var newlink     = $("<a>").addClass("photobomb").attr("href","#").data("photo_i",photo_i).html($("<span>").text("taken at " + time));
+        var newthum     = $("<img>").attr("src",fileurl);
+        
+        var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#128465;");
+        var thumbs      = $("<div>").addClass("votes");
+        var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i);
+        var thumbsdown  = $("<a>").attr("href","#").addClass("vote").addClass("down").data("photo_i",photo_i);
+        thumbs.append(thumbsup);
+        thumbs.append(thumbsdown);
+
+        newlink.prepend(newthum);
+        newitem.append(newlink);
+        newitem.append(thumbs);
+        newitem.append(trash);
+
+        $(".nomedia").hide();
+        $("#mediacaptured").append(newitem);
     }
 };

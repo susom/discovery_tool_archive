@@ -20,6 +20,17 @@ var utils = {
       return d;
     }
 
+    ,readableTime: function(ts){
+      var d = new Date(ts);
+      // Date.toDateString()
+      // Date.toLocaleDateString()
+      // Date.toLocaleTimeString()
+      // Date.toString()
+      // Date.toTimeString()
+      // Date.toUTCString()
+      return d.toLocaleTimeString();
+    }
+
     ,dump : function (obj) {
         var out = [];
         for (var i in obj) {
