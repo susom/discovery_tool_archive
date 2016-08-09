@@ -31,10 +31,10 @@ var app = {
         app.cache.remoteusersdb     = null;
         app.cache.remoteprojdb      = null;
 
-        app.cache.uuid              = null;
-        app.cache.p_id              = null;
-        app.cache.next_id           = null;
-        app.cache.pu_id             = null;
+        app.cache.uuid              = null; //DEVICE UNIQUE ID
+        app.cache.proj_id           = null; 
+        app.cache.next_id           = null; //NEXT USER ID - POUCH COLLATED
+        app.cache.participant_id    = null;
     }
     
     // Bind any events that are required on startup. Common events are:
@@ -107,27 +107,25 @@ var app = {
 
             //ONE TIME DEAL
             $("#main").addClass("loaded");
+
             //SPECIAL RULES ENTERING INTO DIFFERNT "PAGES"
             if(next == "consent_one"){
                 app.cache.user.project_id    = $("select[name='project_id']").val();
-                app.cache.user.user_id       = $("select[name='user_id']").val();
                 app.cache.user.lang          = $("select[name='language']").val();
+                app.cache.user.user_id       = app.cache.participant_id;
+                app.cache.user._id           = app.cache.next_id; //COLLATED
 
                 if(!$("header hgroup h3").length){
-                    $("header hgroup").append($("<h3>").text("Project : " + app.cache.p_id.toUpperCase() + ", Participant : " + app.cache.pu_id));
+                    $("header hgroup").append($("<h3>").text("Project : " + app.cache.proj_id.toUpperCase() + ", Participant : " + app.cache.participant_id));
                 }
-
-                //SAVE USER TO DB
-                // app.writeDB(app.cache.user);
             }
 
             if(next == "step_one" && $(this).hasClass("endwalk")){
-                app.stopWatch(app.cache.user.positionTrackerId);
+                app.stopWatch();
             }
 
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
-                //THIS KICKS OFF THE POSITION TRACKER
-                app.cache.user.positionTrackerId = app.startWatch(8000);
+                app.startWatch(8000);
             }
 
             if(next == "finish"){
@@ -300,9 +298,9 @@ var app = {
         var u_opts  = app.cache.u_select[projid];
         var l_opts  = app.cache.l_select[projid];
         
-        var setnext_id      = datastore.pouchCollate([app.cache.uuid, projid, u_opts]);
-        app.cache.p_id      = projid;
-        app.cache.pu_id     = u_opts;
+        var setnext_id              = datastore.pouchCollate([app.cache.uuid, projid, u_opts]);
+        app.cache.proj_id           = projid;
+        app.cache.participant_id    = u_opts;
 
         //SET NEXT AVAILABLE USER OBJ _id FOR PROJECT
         app.cache.next_id   = setnext_id;
@@ -339,14 +337,13 @@ var app = {
     }
 
     ,startWatch: function(freq) {
-        // keep this var in data store so it can be cleared on logout (or whenever).
-        var activeWatch = setInterval(app.trackPosition, freq);
-        return activeWatch;
+        //SAVE GEO TAGS FOR MAP
+        app.cache.positionTrackerId = setInterval(app.trackPosition, freq);
     }
 
-    ,stopWatch: function(activeWatch){
-        clearInterval(activeWatch);
-        app.cache.user.positionTrackerId = null;
+    ,stopWatch: function(){
+        clearInterval(app.cache.positionTrackerId);
+        app.cache.positionTrackerId = null;
     }
     
     ,trackPosition: function(){
@@ -359,16 +356,18 @@ var app = {
                 var prvLong = lastPos > 0 ? lastPos.longitude : position.coords.longitude;
                 var curLat  = position.coords.latitude;
                 var curLong = position.coords.longitude;
-                curdist     = curdist + calculateDistance(prvLat, prvLong, curLat, curLong);
+                curdist     = curdist + utils.calculateDistance(prvLat, prvLong, curLat, curLong);
                 app.cache.user.currentDistance = curdist;
 
-                var curpos          = {};
-                curpos.lng          = curLong;
-                curpos.lat          = curLat;
-                curpos.altitude     = position.coords.altitude;
-                curpos.heading      = position.coords.heading;
-                curpos.speed        = position.coords.speed;
-                curpos.timestamp    = position.timestamp;
+                console.log("current distance : "+app.cache.user.currentDistance);
+                var curpos = {
+                     "lat"          : curLat
+                    ,"lng"          : curLong
+                    ,"altitude"     : position.coords.altitude
+                    ,"heading"      : position.coords.heading
+                    ,"speed"        : position.coords.speed
+                    ,"timestamp"    : position.timestamp
+                };
                 app.cache.user.geotags.push(curpos);
 
                 $('#distance').text(curdist);
@@ -385,28 +384,25 @@ var app = {
                 if(app.cache.curmap != null){
                     var map = app.cache.curmap;
                 }else{
-                    var map         = new google.maps.Map(document.getElementById("map"), myOptions);
-                    app.cache.curmap = map;
+                    var map             = new google.maps.Map(document.getElementById("map"), myOptions);
+                    app.cache.curmap    = map;
                 }
 
                 // Uncomment this block if you want to set a path
-                // Create the polyline's points
-                for(var i = 0; i < 5; i++) {
-                    // Create a random point using the user current position and a random generated number.
-                    // The number will be once positive and once negative using based on the parity of i
-                    // and to reduce the range the number is divided by 10
-                    app.cache.user.geotags.push(
-                      new google.maps.LatLng(
-                        position.coords.latitude + (Math.random() / 10 * ((i % 2) ? 1 : -1)),
-                        position.coords.longitude + (Math.random() / 10 * ((i % 2) ? 1 : -1))
-                      )
-                    );
-                }
+                // for(var i = 0; i < 5; i++) {
+                //     app.cache.user.geotags.push(
+                //       new google.maps.LatLng(
+                //         position.coords.latitude + (Math.random() / 10 * ((i % 2) ? 1 : -1)),
+                //         position.coords.longitude + (Math.random() / 10 * ((i % 2) ? 1 : -1))
+                //       )
+                //     );
+                // }
                 
-                // // Create the array that will be used to fit the view to the points range and
-                // // place the markers to the polyline's points
-                // var latLngBounds = new google.maps.LatLngBounds();
-                // for(var i = 0; i < app.cache.user.geotags.length; i++) {
+                // Create the array that will be used to fit the view to the points range and
+                // place the markers to the polyline's points
+                // var latLngBounds    = new google.maps.LatLngBounds();
+                // var numtags         = app.cache.user.geotags.length;
+                // for(var i = 0; i < ; i++) {
                 //     latLngBounds.extend(app.cache.user.geotags[i]);
                 //     // Place the marker
                 //     new google.maps.Marker({
@@ -426,8 +422,8 @@ var app = {
                 // // Fit the bounds of the generated points
                 // map.fitBounds(latLngBounds);
                 
-                //SAVE USER TO DB
-                app.writeDB(app.cache.user);
+                // //SAVE USER TO DB
+                // app.writeDB(app.cache.user);
             }
             ,function(err){
                 console.log("error?");
@@ -470,7 +466,7 @@ var app = {
                 
                 //make sure the audio gets the proper photo to save to
                 var thispic_i = app.cache.user.photos.length - 1;
-                $(".daction.audio").cache("photo_i",thispic_i);
+                $(".daction.audio").data("photo_i",thispic_i);
 
                 //SAVE USER TO DB
                 app.writeDB(app.cache.user);
@@ -506,7 +502,7 @@ var app = {
             function(mediaFiles){
                 console.log("sup audio");
                 //make sure the audio gets the proper photo to save to
-                var thispic_i = $(".daction.audio").cache("photo_i");
+                var thispic_i = $(".daction.audio").data("photo_i");
                 var geotag = app.tagLocation();
                 var i, path, len;
                 for (i = 0, len = mediaFiles.length; i < len; i += 1) {
