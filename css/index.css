@@ -511,11 +511,28 @@ nav .back{
     background-color:tomato;
     height:70px;
 }
-
+#pic_review .actions {
+    position:relative;
+}
 #pic_review .actions .instructions h4 {
     font-size:140%;
     margin:10px 0;
 }
+#pic_review .trashit {
+    position:absolute; 
+    z-index:11;
+    right:10px;
+    top:10px;
+    width:30px;
+    height:30px;
+    background:#efefef;
+    line-height:180%;
+    text-align:center;
+    border-radius:3px;
+    box-shadow:0 0 1px 1px lightgrey;
+    text-decoration:none;
+}
+
 .votes{
     width:calc(100%);
     text-align:center;

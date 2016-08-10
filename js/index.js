@@ -191,9 +191,21 @@ var app = {
             return false;
         });
 
+        $(".panel").on("click",".listen", function(){
+            var url = $(this).attr("href");
+            var my_media = new Media(url,
+                 function () { console.log("playAudio():Audio Success"); }
+                ,function (err) { console.log(err.message); }
+            );
+
+            my_media.play();
+            my_media.release();
+            return false;
+        });
+
         $(".panel").on("click",".votes .vote", function(){
+            //VOTE GOOD OR BAD
             var curPhoto    = $(this).data("photo_i");
-           
             $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
             
             if($(this).hasClass("up")){
@@ -211,24 +223,22 @@ var app = {
         });
 
         $(".panel").on("click",".trashit", function(){
-            var thispic_i  = $(this).data("photo_i");
+            //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
+            var thispic_i   = $(this).data("photo_i");
+            var panel       = $(this).closest(".panel");
+
+            if(panel.attr("id") == "pic_review"){
+                var next    = "step_two";
+                app.closeCurrentPanel(panel);
+                app.transitionToPanel($("#"+next),1);
+            }
+
             app.deletePhoto(app.cache.user.photos[thispic_i]);
             return false;
         });
 
-        $(".listen").click(function(){
-            var url = $(this).attr("href");
-            var my_media = new Media(url,
-                 function () { console.log("playAudio():Audio Success"); }
-                ,function (err) { console.log(err.message); }
-            );
-
-            my_media.play();
-            my_media.release();
-            return false;
-        });
-
-        $("#mediacaptured").on("click",".photobomb",function(){
+        $(".panel").on("click",".previewthumb",function(){
+            //OPEN UP PREVIEW PAGE FOR PHOTO
             var thispic_i = $(this).data("photo_i");
             app.previewPhoto(app.cache.user.photos[thispic_i]);
 
@@ -248,7 +258,9 @@ var app = {
     }
 
     ,transitionToPanel: function(panel,nosave){
-        app.cache.user.history.push(panel.attr("id"));
+        if(!nosave){
+            app.cache.user.history.push(panel.attr("id"));
+        }
         panel.show().delay(250).queue(function(next){
             $(this).addClass("loaded");
             next();
@@ -462,43 +474,6 @@ var app = {
         return curpos;
     }
 
-    ,takePhoto: function(){
-        // take pic
-        // save pic filename + geotag location
-        navigator.camera.getPicture( 
-            function(imageData){
-                var fileurl = "data:image/jpeg;base64," + imageData;
-                app.cache.user.photos.push({
-                         "path"     : fileurl
-                        ,"geotag"   : null 
-                        ,"synced"   : false
-                        ,"audio"    : null
-                        ,"goodbad"  : null
-                    });
-                
-                //make sure the audio gets the proper photo to save to
-                var thispic_i   = app.cache.user.photos.length - 1;
-                var geotag      = app.tagLocation(app.cache.user.photos[thispic_i]);
-
-                app.previewPhoto(app.cache.user.photos[thispic_i]);
-
-                setTimeout(function(){
-                    app.addMediaItem(app.cache.user.photos[thispic_i]);
-                },500);
-            }
-            ,function(err){
-                console.log(err);
-            }
-            ,{ 
-                 quality            : 50
-                ,destinationType    : Camera.DestinationType.DATA_URL
-                ,saveToPhotoAlbum   : false
-                ,allowEdit          : true
-            }
-        );
-        return;
-    }
-
     ,recordAudio: function(){
         //take audio
         //save audio filename + geotag location
@@ -525,6 +500,45 @@ var app = {
         return;
     }
 
+    ,takePhoto: function(){
+        // take pic
+        // save pic filename + geotag location
+        navigator.camera.getPicture( 
+            function(imageData){
+                var fileurl = "data:image/jpeg;base64," + imageData;
+                app.cache.user.photos.push({
+                         "path"     : fileurl
+                        ,"geotag"   : null 
+                        ,"synced"   : false
+                        ,"audio"    : null
+                        ,"goodbad"  : null
+                    });
+                
+                //make sure the audio gets the proper photo to save to
+                var thispic_i   = app.cache.user.photos.length - 1;
+                var geotag      = app.tagLocation(app.cache.user.photos[thispic_i]);
+
+                //SET UP PHOTO PREVIEW PAGE
+                app.previewPhoto(app.cache.user.photos[thispic_i]);
+
+                //ADD LIST ITEM TO REVIEW PAGE
+                setTimeout(function(){
+                    app.addMediaItem(app.cache.user.photos[thispic_i]);
+                },500);
+            }
+            ,function(err){
+                console.log(err);
+            }
+            ,{ 
+                 quality            : 50
+                ,destinationType    : Camera.DestinationType.DATA_URL
+                ,saveToPhotoAlbum   : false
+                ,allowEdit          : true
+            }
+        );
+        return;
+    }
+
     ,previewPhoto: function(_photo){
         var photo_i = app.cache.user.photos.indexOf(_photo);
         var fileurl = _photo["path"];
@@ -542,20 +556,9 @@ var app = {
         }
 
         $(".daction.audio").data("photo_i",photo_i);
+        $("#pic_review a.trashit").data("photo_i",photo_i).attr("rel",photo_i);
         $("#pic_review a.vote").data("photo_i",photo_i).attr("rel",photo_i);
         $("#recent_pic").attr("src",fileurl);
-    }
-
-    ,deletePhoto: function(_photo){
-        var photo_i = app.cache.user.photos.indexOf(_photo);
-        app.cache.user.photos[photo_i] = null;
-        $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("slow",function(){
-            var _this = $(this);
-            setTimeout(function(){
-                _this.remove();
-            },1000);
-        });
-        return;
     }
 
     ,addMediaItem:function(_photo){
@@ -566,13 +569,14 @@ var app = {
 
         //NOW ADD THIS TO THE VIEW #mediacaptured
         var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
-        var newlink     = $("<a>").addClass("photobomb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>").text("@ " + time));
+        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>").text("@ " + time));
         var newthum     = $("<img>").attr("src",fileurl);
         
         var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#128465;");
         var thumbs      = $("<div>").addClass("votes");
         var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i).attr("rel",photo_i);
         var thumbsdown  = $("<a>").attr("href","#").addClass("vote").addClass("down").data("photo_i",photo_i).attr("rel",photo_i);
+        
         thumbs.append(thumbsup);
         thumbs.append(thumbsdown);
         newlink.prepend(newthum);
@@ -582,5 +586,17 @@ var app = {
 
         $(".nomedia").hide();
         $("#mediacaptured").append(newitem);
+    }
+
+    ,deletePhoto: function(_photo){
+        var photo_i = app.cache.user.photos.indexOf(_photo);
+        app.cache.user.photos[photo_i] = null;
+        $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium",function(){
+            var _this = $(this);
+            setTimeout(function(){
+                _this.remove();
+            },1000);
+        });
+        return;
     }
 };
