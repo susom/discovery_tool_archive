@@ -181,11 +181,6 @@ var app = {
                 $("#main").removeClass("loaded");
             }
 
-            if(tempnext == "step_two"){
-                $(".vote.up").removeClass("on").removeClass("off");
-                $(".vote.down").removeClass("on").removeClass("off");
-            }
-
             if(app.cache.user.positionTrackerId != null){
                 // STOPS THE POSITION TRACKER
                 app.stopWatch(app.cache.user.positionTrackerId);
@@ -196,21 +191,28 @@ var app = {
             return false;
         });
 
-        $(".vote").click(function(){
-            var curPhoto = $(this).data("photo_i");
-            $(".vote.up").removeClass("on").removeClass("off");
-            $(".vote.down").removeClass("on").removeClass("off");
+        $(".panel").on("click",".votes .vote", function(){
+            var curPhoto    = $(this).data("photo_i");
+           
+            $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
+            
             if($(this).hasClass("up")){
                 // upvote
                 app.cache.user.photos[curPhoto].goodbad = 1;
-                $(".vote.up").addClass("on");
-                $(".vote.down").addClass("off");
+                $("a.up[rel='" + curPhoto + "']").addClass("on");
+                $("a.down[rel='" + curPhoto + "']").addClass("off");
             }else{
                 // downvote
                 app.cache.user.photos[curPhoto].goodbad = -1;
-                $(".vote.down").addClass("on");
-                $(".vote.up").addClass("off");
+                $("a.down[rel='" + curPhoto + "']").addClass("on");
+                $("a.up[rel='" + curPhoto + "']").addClass("off");
             }
+            return false;
+        });
+
+        $(".panel").on("click",".trashit", function(){
+            var thispic_i  = $(this).data("photo_i");
+            app.deletePhoto(app.cache.user.photos[thispic_i]);
             return false;
         });
 
@@ -528,45 +530,51 @@ var app = {
         var fileurl = _photo["path"];
         var goodbad = _photo["goodbad"];
 
+        $("#pic_review a.vote").removeClass("on").removeClass("off");
+        if(goodbad == null){
+            //nothin
+        }else if(goodbad > 0){
+            $("#pic_review a.vote.up").addClass("on");
+            $("#pic_review a.vote.down").addClass("off");
+        }else{
+            $("#pic_review a.vote.up").addClass("off");
+            $("#pic_review a.vote.down").addClass("on");
+        }
+
         $(".daction.audio").data("photo_i",photo_i);
-        $("a.vote").data("photo_i",photo_i);
+        $("#pic_review a.vote").data("photo_i",photo_i).attr("rel",photo_i);
         $("#recent_pic").attr("src",fileurl);
     }
 
     ,deletePhoto: function(_photo){
         var photo_i = app.cache.user.photos.indexOf(_photo);
-        app.cache.user.photos.splice(photo_i,1);
+        app.cache.user.photos[photo_i] = null;
+        $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("slow",function(){
+            var _this = $(this);
+            setTimeout(function(){
+                _this.remove();
+            },1000);
+        });
         return;
     }
 
     ,addMediaItem:function(_photo){
-        var photo_i = app.cache.user.photos.indexOf(_photo);
-        var fileurl = _photo["path"];
-        var geotag  = _photo["geotag"];
-        var goodbad = _photo["goodbad"];
-
-        if(goodbad == null){
-
-        }else if(goodbad > 0){
-
-        }else{
-
-        }
-
-        var time    = utils.readableTime(geotag.timestamp);
+        var photo_i     = app.cache.user.photos.indexOf(_photo);
+        var fileurl     = _photo["path"];
+        var geotag      = _photo["geotag"];
+        var time        = utils.readableTime(geotag.timestamp);
 
         //NOW ADD THIS TO THE VIEW #mediacaptured
         var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
-        var newlink     = $("<a>").addClass("photobomb").attr("href","#").data("photo_i",photo_i).html($("<span>").text("taken at " + time));
+        var newlink     = $("<a>").addClass("photobomb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>").text("@ " + time));
         var newthum     = $("<img>").attr("src",fileurl);
         
         var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#128465;");
         var thumbs      = $("<div>").addClass("votes");
-        var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i);
-        var thumbsdown  = $("<a>").attr("href","#").addClass("vote").addClass("down").data("photo_i",photo_i);
+        var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i).attr("rel",photo_i);
+        var thumbsdown  = $("<a>").attr("href","#").addClass("vote").addClass("down").data("photo_i",photo_i).attr("rel",photo_i);
         thumbs.append(thumbsup);
         thumbs.append(thumbsdown);
-
         newlink.prepend(newthum);
         newitem.append(newlink);
         newitem.append(thumbs);

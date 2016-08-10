@@ -153,7 +153,7 @@ nav {
     display:none; 
     position:fixed; 
     bottom:0; 
-    z-index:4;
+    z-index:99;
     width:100%; padding:5px 0;
     border-top:1px solid #475464;
 }
@@ -563,6 +563,9 @@ nav .back{
     text-decoration:none;
     color:#333;
 }
+.mediaitem span {
+    font-size:88%;
+}
 .mediaitem img {
     display:inline-block;
     max-height:60px;
@@ -579,6 +582,7 @@ nav .back{
     top:5px;
     right:40px;
     text-align:left;
+    z-index:10;
 }
 .mediaitem .votes a{
     text-indent:-5000px;
@@ -589,6 +593,7 @@ nav .back{
     background-size:200%;
     margin:0 5px 0 0;
     border-radius:3px;
+    text-indent:0;
 }
 .mediaitem .votes .down{
     background-position:-32px 0;
@@ -596,7 +601,7 @@ nav .back{
 
 .mediaitem .trashit{
     position:absolute; 
-    z-index:9;
+    z-index:11;
     right:5px;
     top:5px;
     width:30px;
