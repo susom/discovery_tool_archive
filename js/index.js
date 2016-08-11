@@ -369,6 +369,7 @@ var app = {
 
     ,startWatch: function(freq) {
         //SAVE GEO TAGS FOR MAP
+        app.trackPosition(); //manually do the first one
         app.cache.positionTrackerId = setInterval(app.trackPosition, freq);
     }
 
@@ -389,7 +390,6 @@ var app = {
                 curdist     = curdist + utils.calculateDistance(prvLat, prvLong, curLat, curLong);
                 app.cache.user.currentDistance = curdist;
 
-                console.log("current distance : "+app.cache.user.currentDistance);
                 var curpos = {
                      "lat"          : curLat
                     ,"lng"          : curLong
@@ -404,10 +404,6 @@ var app = {
                 app.cache.currentWalkMap.push(
                   new google.maps.LatLng( curLat, curLong )
                 );
-
-                $('#distance').text(curdist);
-                $('#currentLat').text(curLat.toFixed(6));
-                $('#currentLon').text(curLong.toFixed(6));
             }
             ,function(err){
                 console.log("error?");
@@ -418,14 +414,28 @@ var app = {
             });
     }
 
+    ,tagLocation: function(add_to){
+        //GEOLOCATION
+        var curpos = {};
+        navigator.geolocation.getCurrentPosition(function(position) {
+            curpos.longitude    = position.coords.longitude;
+            curpos.latitude     = position.coords.latitude;
+            curpos.altitude     = position.coords.altitude;
+            curpos.heading      = position.coords.heading;
+            curpos.speed        = position.coords.speed;
+            curpos.timestamp    = position.timestamp;
+            add_to["geotag"]    = curpos;
+        });
+        return curpos;
+    }
+
     ,plotGoogleMap: function(){
         // Create the map
         var myOptions = {
             zoom        : 16,
-            center      : app.cache.user.currentWalkMap[0],
+            center      : app.cache.currentWalkMap[0],
             mapTypeId   : google.maps.MapTypeId.ROADMAP
         }
-
         if(app.cache.curmap != null){
             var map             = app.cache.curmap;
         }else{
@@ -433,6 +443,7 @@ var app = {
             app.cache.curmap    = map;
         }
 
+        utils.dump(app.cache.currentWalkMap[0]);
         // Create the array that will be used to fit the view to the points range and
         // place the markers to the polyline's points
         var latLngBounds        = new google.maps.LatLngBounds();
@@ -457,21 +468,6 @@ var app = {
         });
         // Fit the bounds of the generated points
         map.fitBounds(latLngBounds);
-    }
-
-    ,tagLocation: function(add_to){
-        //GEOLOCATION
-        var curpos = {};
-        navigator.geolocation.getCurrentPosition(function(position) {
-            curpos.longitude    = position.coords.longitude;
-            curpos.latitude     = position.coords.latitude;
-            curpos.altitude     = position.coords.altitude;
-            curpos.heading      = position.coords.heading;
-            curpos.speed        = position.coords.speed;
-            curpos.timestamp    = position.timestamp;
-            add_to["geotag"]    = curpos;
-        });
-        return curpos;
     }
 
     ,recordAudio: function(){
