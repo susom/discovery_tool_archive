@@ -1,16 +1,16 @@
 var config = {
     database : {
         //  "users_local"  : "disc_tool"
-        // ,"users_remote" : 'http://10.34.241.76:5984/disc_tool'
+        // ,"users_remote" : 'http://10.34.249.80:5984/disc_tool'
 
         // ,"proj_local"   : "disc_projects"
-        // ,"proj_remote"  : "http://10.34.241.76:5984/disc_projects"
+        // ,"proj_remote"  : "http://10.34.249.80:5984/disc_projects"
 
          "users_local"     : "test_suite_db"
-        ,"users_remote"    : "http://10.34.241.76:5984/test_suite_db"
+        ,"users_remote"    : "http://10.34.249.80:5984/test_suite_db"
 
         ,"proj_local"      : "test_suite_db2"
-        ,"proj_remote"     : "http://10.34.241.76:5984/test_suite_db2"
+        ,"proj_remote"     : "http://10.34.249.80:5984/test_suite_db2"
     }
 
     ,default_user : {
