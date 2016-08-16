@@ -108,7 +108,7 @@ var datastore = {
         }).on('uptodate',function(update){
             console.log("REPLICATION FROM DONE");
         }).catch(function (err) {
-            console.log("ERROR remoteSyncDB():");
+            console.log("ERROR remoteSyncDB( WHAT? ):");
             datastore.showError(err);
         });
     }

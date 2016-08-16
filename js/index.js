@@ -32,6 +32,8 @@ var app = {
         app.cache.localprojdb       = null;
         app.cache.remoteusersdb     = null;
         app.cache.remoteprojdb      = null;
+        app.cache.projects          = null;
+        app.cache.active_project    = null;
 
         app.cache.uuid              = null; //DEVICE UNIQUE ID
         app.cache.proj_id           = null; 
@@ -84,13 +86,24 @@ var app = {
 
             //THERE SHOULD BE AT LEAST 1 PROJECT
             if(0 in app.cache.projects["projects"]){
-                app.loadProjects(app.cache.projects["projects"]);
-
-                //ALL SET UP NOW Reveal Signin Form 
-                app.transitionToPanel($("#step_zero"));
+                app.deviceSetup(app.cache.projects["projects"]);
             }else{
                 //DELIBERATLEY THROW ERROR
+                console.log("deliberately thrown error");
                 throw err;
+            }
+
+            //CHECK TO SEE IF THERE IS AN "active_project" YET
+            if("active_project" in doc){
+                //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
+                app.cache.active_project = doc["active_project"];
+                app.loadProject(app.cache.projects["projects"][app.cache.active_project]);
+
+                //SHOW THE USER SIGN IN
+                app.transitionToPanel($("#step_zero"));
+            }else{
+                //SHOW ADMIN DEVICE SET UP 
+                app.transitionToPanel($("#step_setup"),1); 
             }
         }).catch(function (err) {
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
@@ -107,8 +120,19 @@ var app = {
             var panel   = $(this).closest(".panel");
             var next    = $(this).data("next");
 
-            //ONE TIME DEAL
-            $("#main").addClass("loaded");
+            if(next == "step_zero"){
+                var project_i               = $("#admin_proj_list").val();
+                app.cache.active_project    = project_i;
+
+                //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                app.cache.projects["active_project"] = project_i;
+                datastore.writeDB(app.cache.localprojdb, app.cache.projects);
+                
+                app.loadProject(app.cache.projects["projects"][project_i]);
+            }else{
+                //ONE TIME DEAL if NOT STEP ZERO
+                $("#main").addClass("loaded");
+            }
 
             //SPECIAL RULES ENTERING INTO DIFFERNT "PAGES"
             if(next == "consent_one"){
@@ -122,19 +146,17 @@ var app = {
                 }
             }
 
-            if(next == "step_one" && $(this).hasClass("endwalk")){
-                app.stopWatch();
-            }
-
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
                 app.startWatch(8000);
             }
 
             if(next == "step_three"){
+                console.log("possibliy end walk, show goog map");
                 app.plotGoogleMap();
             }
 
             if(next == "finish"){
+                app.stopWatch();
                 $("nav").hide();
             }
 
@@ -148,23 +170,16 @@ var app = {
         $(".daction").click(function(){
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
-                var panel   = $(this).closest(".panel");
-                var next    = $(this).data("next");
                 app.takePhoto();
-
-                app.closeCurrentPanel(panel);
-                app.transitionToPanel($("#"+next));
             }else{
                 app.recordAudio();
-
-                var panel   = $(this).closest(".panel");
-                var next    = $(this).data("next");
-
-                app.closeCurrentPanel(panel);
-                app.transitionToPanel($("#"+next));
-                $(".vote.up").removeClass("on").removeClass("off");
-                $(".vote.down").removeClass("on").removeClass("off");
             }
+
+            var panel   = $(this).closest(".panel");
+            var next    = $(this).data("next");
+            
+            app.closeCurrentPanel(panel);
+            app.transitionToPanel($("#"+next));
             return false;
         });
 
@@ -181,11 +196,6 @@ var app = {
                 $("#main").removeClass("loaded");
             }
 
-            if(app.cache.user.positionTrackerId != null){
-                // STOPS THE POSITION TRACKER
-                app.stopWatch(app.cache.user.positionTrackerId);
-            }
-
             app.closeCurrentPanel($(".panel.loaded"));
             app.transitionToPanel($("#"+tempnext));
             return false;
@@ -194,7 +204,7 @@ var app = {
         $(".panel").on("click",".listen", function(){
             var url = $(this).attr("href");
             var my_media = new Media(url,
-                 function () { console.log("playAudio():Audio Success"); }
+                 function () {  console.log("playAudio():Audio Success"); }
                 ,function (err) { console.log(err.message); }
             );
 
@@ -209,12 +219,10 @@ var app = {
             $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
             
             if($(this).hasClass("up")){
-                // upvote
                 app.cache.user.photos[curPhoto].goodbad = 1;
                 $("a.up[rel='" + curPhoto + "']").addClass("on");
                 $("a.down[rel='" + curPhoto + "']").addClass("off");
             }else{
-                // downvote
                 app.cache.user.photos[curPhoto].goodbad = -1;
                 $("a.down[rel='" + curPhoto + "']").addClass("on");
                 $("a.up[rel='" + curPhoto + "']").addClass("off");
@@ -239,14 +247,20 @@ var app = {
 
         $(".panel").on("click",".previewthumb",function(){
             //OPEN UP PREVIEW PAGE FOR PHOTO
-            var thispic_i = $(this).data("photo_i");
+            var thispic_i   = $(this).data("photo_i");
             app.previewPhoto(app.cache.user.photos[thispic_i]);
 
-            var panel   = $(this).closest(".panel");
-            var next    = "pic_review";
+            var panel       = $(this).closest(".panel");
+            var next        = "pic_review";
 
             app.closeCurrentPanel(panel);
             app.transitionToPanel($("#"+next));
+        });
+
+        $("#resetdevice").click(function(){
+            app.closeCurrentPanel($("#step_zero"));
+            app.transitionToPanel($("#step_setup"));
+            return false;
         });
     }
 
@@ -267,81 +281,52 @@ var app = {
         });
     }
 
-    ,loadProjects : function(projects){
-        app.cache.u_select  = {};
-        app.cache.l_select  = {};
-        var first_pid       = false;
+    ,loadProject : function(project){
+        var p = project;
 
-        //NOW POPULATE THE POSSIBLE PROJECT OPTIONS + AVAILABLE USERIDs + LANGUAGE CHOICES
-        for(var i in projects){
-            var p = projects[i];
-            if(!first_pid){
-                first_pid   = p["project_id"];
-            } 
+        //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
+        var partial_id  = datastore.pouchCollate([app.cache.uuid, p["project_id"]]);
 
-            //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
-            var partial_id  = datastore.pouchCollate([app.cache.uuid, p["project_id"]]);
+        app.cache.localusersdb.allDocs({
+            // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
+             startkey   : partial_id
+            ,endkey     : partial_id + "\ufff0"
+        }).then(function (res) {
+            // console.log("will always return total docs: " + res["total_rows"]);
+            //SET THE NEXT AVAILABLE USER OBJECT _id
+            app.cache.proj_id           = p["project_id"];
+            app.cache.participant_id    = (res["rows"].length + 1);
+            app.cache.next_id           = datastore.pouchCollate([app.cache.uuid, app.cache.proj_id, app.cache.participant_id]);
 
-            app.cache.localusersdb.allDocs({
-                // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
-                 startkey   : partial_id
-                ,endkey     : partial_id + "\ufff0"
-            }).then(function (res) {
-                // console.log("will always return total docs: " + res["total_rows"]);
-                //SET THE NEXT AVAILABLE USER OBJECT _id
-                app.cache.u_select[p["project_id"]] = (res["rows"].length + 1);
+            //Display This Info
+            $("#step_zero b.proj_name").text(p["project_name"]);
+            $("#step_zero b.user_id").text(app.cache.participant_id);
 
-                var p_option = $("<option>").val(p["project_id"]).text(p["project_id"]);
-                $("select[name='project_id']").append(p_option);
-
-                var l_temp  = [];
-                for(var l in p["lang"]){
-                    var l_option = $("<option>").val(p["lang"][l]["lang"]).text(p["lang"][l]["language"]);
-                    l_temp.push(l_option);
-                }
-                app.cache.l_select[p["project_id"]]  = l_temp;
-            }).then(function(){
-                //SET UP THE OPTIONS FOR THE FIRST PROJECT
-                app.updateSetup(first_pid);
-                app.updateLanguage(first_pid);
-
-                //SET UP PROJECT SPECIFIC OPTIONS
-                $("select[name='project_id']").change(function(){
-                    //ON PROJECT CHANGE, UPDATE USERID CHOICES + LANGUAGE CHOICES AND INITIAL ENGLISH TRANSLATION
-                    var proj_id = $(this).val();
-                    app.updateSetup(proj_id);
-                    app.updateLanguage(proj_id);
-                });
-                $("select[name='language']").change(function(){
-                    //REAL TIME LANGUAGE TRANSLATION UPDATES
-                    var proj_id = $("select[name='project_id']").val();
-                    var lang_id = $(this).val();
-                    app.updateLanguage(proj_id,lang_id);
-                });
-            }).catch(function(err){
-                console.log("ERROR localusers tables:");
-                datastore.showError(err);
+            for(var l in p["lang"]){
+                var l_option = $("<option>").val(p["lang"][l]["lang"]).text(p["lang"][l]["language"]);
+                 $("select[name='language']").append(l_option);
+            }
+            app.updateLanguage(app.cache.proj_id,"en");
+        }).then(function(){
+            $("select[name='language']").change(function(){
+                //REAL TIME LANGUAGE TRANSLATION UPDATES
+                var proj_id = app.cache.proj_id;
+                var lang_id = $(this).val();
+                app.updateLanguage(proj_id,lang_id);
             });
-        }    
+        }).catch(function(err){
+            console.log("ERROR localusers tables:");
+            datastore.showError(err);
+        });
     }
 
-    ,updateSetup : function(projid){
-        var u_opts  = app.cache.u_select[projid];
-        var l_opts  = app.cache.l_select[projid];
-        
-        var setnext_id              = datastore.pouchCollate([app.cache.uuid, projid, u_opts]);
-        app.cache.proj_id           = projid;
-        app.cache.participant_id    = u_opts;
-
-        //SET NEXT AVAILABLE USER OBJ _id FOR PROJECT
-        app.cache.next_id   = setnext_id;
-        $("b.user_id").text(u_opts);
-
-        //UPDATE LANGUAGE OPTIONS BY PROJECT
-        $("select[name='language']").empty();
-        for(var l in l_opts){
-            $("select[name='language']").append(l_opts[l]);
-        }
+    ,deviceSetup : function(projects){
+        //ADMIN SPLASH PAGE LIST ALL PROJETS FOR DEVICE SET UP
+        for(var i in projects){
+            var p = projects[i];
+            var projopt = $("<option>").val(i).text(p["project_name"]);
+            $("#admin_proj_list").append(projopt);
+        }    
     }
 
     ,updateLanguage : function(projid,lang){
@@ -402,8 +387,10 @@ var app = {
 
                 //SAVE THE POINTS IN GOOGLE FORMAT
                 app.cache.currentWalkMap.push(
-                  new google.maps.LatLng( curLat, curLong )
+                    new google.maps.LatLng(curLat, curLong)
                 );
+
+                console.log("new geodatapoint : " + app.cache.currentWalkMap.length);
             }
             ,function(err){
                 console.log("error?");
@@ -443,31 +430,31 @@ var app = {
             app.cache.curmap    = map;
         }
 
-        utils.dump(app.cache.currentWalkMap[0]);
-        // Create the array that will be used to fit the view to the points range and
-        // place the markers to the polyline's points
-        var latLngBounds        = new google.maps.LatLngBounds();
-        var numtags             = app.cache.currentWalkMap.length;
-        for(var i = 0; i < numtags; i++) {
-            latLngBounds.extend(app.cache.currentWalkMap[i]);
-            // Place the marker
-            new google.maps.Marker({
-              map       : map,
-              position  : app.cache.user.geotags[i],
-              title     : "Point " + (i + 1)
-            });
+        var latLngBounds    = new google.maps.LatLngBounds();
+        var geopoints       = app.cache.currentWalkMap.length; 
+        for(var i = 0; i < geopoints; i++) {
+          latLngBounds.extend(app.cache.currentWalkMap[i]);
+          // Place the marker
+          new google.maps.Marker({
+            map: map,
+            position: app.cache.currentWalkMap[i],
+            title: "Point " + (i + 1)
+          });
         }
 
         // Creates the polyline object
-        var polyline = new google.maps.Polyline({
-            map             : map,
-            path            : app.cache.user.geotags,
-            strokeColor     : '#0000FF',
-            strokeOpacity   : 0.7,
-            strokeWeight    : 1
+        var polyline        = new google.maps.Polyline({
+          map: map,
+          path: app.cache.currentWalkMap,
+          strokeColor: '#0000FF',
+          strokeOpacity: 0.7,
+          strokeWeight: 1
         });
+
         // Fit the bounds of the generated points
         map.fitBounds(latLngBounds);
+
+        $("#distance").text(app.cache.user.currentDistance);
     }
 
     ,recordAudio: function(){
@@ -587,11 +574,9 @@ var app = {
     ,deletePhoto: function(_photo){
         var photo_i = app.cache.user.photos.indexOf(_photo);
         app.cache.user.photos[photo_i] = null;
-        $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium",function(){
-            var _this = $(this);
-            setTimeout(function(){
-                _this.remove();
-            },1000);
+        $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
+            $(this).remove();
+            next();
         });
         return;
     }

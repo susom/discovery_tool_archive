@@ -55,11 +55,23 @@
         <a href="#" class="back" data-translation-key="back">Back</a>
     </nav>
     
+    <div id="step_setup" class="panel">
+        <div class="consent">
+            <h3>Initial Device Setup</h3>
+            <h4>*Admins Only*</h4>
+            <select id="admin_proj_list">
+            </select>
+
+            <a href="#" data-next="step_zero" class="button">Setup project on this device</a>
+        </div>
+    </div>
+
     <div id="step_zero" class="panel">
         <form id='projid'>
             <label>
-                <span>Project Id:</span>
-                <select name="project_id"></select>
+                <input type="hidden" name="project_id" value="1"/>
+                <span>Project:</span>
+                <b class="proj_name"></b>
             </label>
             <label>
                 <input type="hidden" name="user_id" value="1"/>
@@ -71,6 +83,9 @@
                 <select name="language"></select>
             </label>
             <a href="#" data-translation-key="letsgo" data-next="consent_one" class="button">Let's Go</a>
+        
+
+            <a href="#" id="resetdevice">Reset Device?</a>
         </form>
     </div>
     
@@ -141,21 +156,28 @@
 
     <div id="pic_review" class="panel">
         <div class="actions">
+            <h3>Photo Preview</h3>
             <a href="#" class="trashit">&#128465;</a>
-            <img id="recent_pic" src="#"/>
-
-            <div class="instructions">
+            <img id="recent_pic"/>
+        </div>
+        <ol>
+            <li>
+                <h4 data-translation-key="why_audio">Let us know why you took this photo?</h4>
+                <div class="device_actions">
+                    <a href='#' class="daction audio" data-next="pic_review"></a>
+                </div>
+            </li>
+            <li>
                 <h4 data-translation-key="good_or_bad">Is this good or bad for the community?</h4>
                 <div class="votes">
                     <a href="#" class="vote up">vote up</a>
                     <a href="#" class="vote down">vote down</a>
                 </div>
-            </div>
-        </div>
-
-        <div class="device_actions">
-            <a href='#' class="daction audio" data-next="step_two" data-translation-key="why_audio">Why did you take this photo?</a>
-        </div>
+            </li>
+            <li class="consent">
+                <a href='#' class="button" data-next="step_two" data-translation-key="review_done">Done with photo!</a>
+            </li>
+        </ol>
     </div>
 
     <div id="survey" class="panel">     
