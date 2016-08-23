@@ -39,6 +39,10 @@ var app = {
         app.cache.proj_id           = null; 
         app.cache.next_id           = null; //NEXT USER ID - POUCH COLLATED
         app.cache.participant_id    = null;
+        app.cache.platform          = null;
+
+        app.cache.audioObj          = null;
+        app.cache.audioStatus       = null;
     }
     
     // Bind any events that are required on startup. Common events are:
@@ -65,9 +69,14 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     ,onDeviceReady: function() {
+        $("#main").addClass("loaded");
+        app.transitionToPanel($("#audio_record"));
+        app.recordAudio();
+ 
         //0 CHECK NETWORK STATE, AND GET UUID
         var networkState    = utils.checkConnection();
         app.cache.uuid      = device.uuid;
+        app.cache.platform  = device.platform;
 
         //1) (RE)OPEN LOCAL DB
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
@@ -93,18 +102,18 @@ var app = {
                 throw err;
             }
 
-            //CHECK TO SEE IF THERE IS AN "active_project" YET
-            if("active_project" in doc){
-                //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
-                app.cache.active_project = doc["active_project"];
-                app.loadProject(app.cache.projects["projects"][app.cache.active_project]);
+            // //CHECK TO SEE IF THERE IS AN "active_project" YET
+            // if("active_project" in doc){
+            //     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
+            //     app.cache.active_project = doc["active_project"];
+            //     app.loadProject(app.cache.projects["projects"][app.cache.active_project]);
 
-                //SHOW THE USER SIGN IN
-                app.transitionToPanel($("#step_zero"));
-            }else{
-                //SHOW ADMIN DEVICE SET UP 
-                app.transitionToPanel($("#step_setup"),1); 
-            }
+            //     //SHOW THE USER SIGN IN
+            //     app.transitionToPanel($("#step_zero"));
+            // }else{
+            //     //SHOW ADMIN DEVICE SET UP 
+            //     app.transitionToPanel($("#step_setup"),1); 
+            // }
         }).catch(function (err) {
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
             datastore.showError(err);
@@ -155,7 +164,7 @@ var app = {
                 app.plotGoogleMap();
             }
 
-            if(next == "finish"){
+            if(next == "survey"){
                 app.stopWatch();
                 $("nav").hide();
             }
@@ -167,7 +176,10 @@ var app = {
         });
 
         //ADD EVENTS TO device Actions
-        $(".daction").click(function(){
+        $(".panel").on("click",".daction",function(){
+            var panel   = $(this).closest(".panel");
+            var next    = $(this).data("next");
+
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
                 app.takePhoto();
@@ -175,9 +187,6 @@ var app = {
                 app.recordAudio();
             }
 
-            var panel   = $(this).closest(".panel");
-            var next    = $(this).data("next");
-            
             app.closeCurrentPanel(panel);
             app.transitionToPanel($("#"+next));
             return false;
@@ -257,10 +266,54 @@ var app = {
             app.transitionToPanel($("#"+next));
         });
 
+        $("#audio_controls a").click(function(){
+            var ctl_id = $(this).attr("id");
+            switch(ctl_id){
+                case "ctl_play":
+                    app.startPlaying();
+                break;
+
+                case "ctl_record":
+                    app.recordAudio();
+                break;
+
+                case "ctl_pause":
+                    app.stopRecording();
+                break
+
+                case "ctl_stop":
+                    app.stopRecording();
+                    var panel = $(this).closest(".panel");
+                    var next  = "pic_review";
+
+                    app.closeCurrentPanel(panel);
+                    app.transitionToPanel($("#"+next));
+                break
+
+                default:
+
+                break;
+            }
+
+            return false;
+        });
+
         $("#resetdevice").click(function(){
+            //DITCH USER TOO
+            app.cache.user = config["default_user"];
+            
             app.closeCurrentPanel($("#step_zero"));
             app.transitionToPanel($("#step_setup"));
             return false;
+        });
+
+        $("#end_session").click(function(){
+            $("#main").removeClass("loaded");
+            //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
+            app.loadProject(app.cache.projects["projects"][app.cache.active_project]);
+
+            app.closeCurrentPanel($("#finish"));
+            app.transitionToPanel($("#step_zero"));
         });
     }
 
@@ -389,7 +442,7 @@ var app = {
                 app.cache.currentWalkMap.push(
                     new google.maps.LatLng(curLat, curLong)
                 );
-
+                console.log(curLat + " : " + curLong);
                 console.log("new geodatapoint : " + app.cache.currentWalkMap.length);
             }
             ,function(err){
@@ -421,7 +474,7 @@ var app = {
         var myOptions = {
             zoom        : 16,
             center      : app.cache.currentWalkMap[0],
-            mapTypeId   : google.maps.MapTypeId.ROADMAP
+            mapTypeId   : google.maps.MapTypeId.HYBRID
         }
         if(app.cache.curmap != null){
             var map             = app.cache.curmap;
@@ -438,6 +491,14 @@ var app = {
           new google.maps.Marker({
             map: map,
             position: app.cache.currentWalkMap[i],
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 3,
+                fillColor: "#008800",
+                strokeColor: "#0000FF",
+                fillOpacity: 1
+
+            },
             title: "Point " + (i + 1)
           });
         }
@@ -457,29 +518,128 @@ var app = {
         $("#distance").text(app.cache.user.currentDistance);
     }
 
+    ,startPlaying : function(){
+        app.cache.audioStatus = "playing";
+        app.cache.audioObj.play();
+
+        $("#soundwaves").removeClass("pause");
+
+        $("#ctl_stop").removeClass("off");
+        $("#ctl_pause").removeClass("off");
+
+        $("#ctl_record").addClass("off");
+        $("#ctl_play").addClass("off");
+
+    }
+
+    ,startRecording : function(){
+        app.cache.audioStatus = "recording";
+        app.cache.audioObj.startRecord();
+ 
+        app.cache.audioTimer = setInterval(function(){
+            var curtime = $("#audio_time").text();
+            var splits  = curtime.split(":");
+            var mins    = parseInt(splits[0]);
+            var secs    = parseInt(splits[1]);
+            
+            var time    = mins*60 + secs;
+            time++;
+
+            var date = new Date(null);
+            date.setSeconds(time);
+            $("#audio_time").text(date.toISOString().substr(14,5));
+        },1000);
+
+        $("#soundwaves").removeClass("pause");
+
+        $("#ctl_stop").removeClass("off");
+        $("#ctl_pause").removeClass("off");
+
+        $("#ctl_record").addClass("off");
+        $("#ctl_play").addClass("off");
+    }
+
+    ,stopRecording : function(){
+        if (app.cache.audioObj == null){
+            return;
+        }
+        clearInterval(app.cache.audioTimer);
+
+        if (app.cache.audioStatus == 'recording') {
+            app.cache.audioObj.stopRecord();
+            console.log("Recording stopped");
+        } else if (app.cache.audioStatus == 'playing') {
+            app.cache.audioObj.stop();            
+            console.log("Play stopped");
+        } else {
+            console.log("Nothing stopped");
+        }
+
+        $("#soundwaves").addClass("pause");
+
+        $("#ctl_stop").addClass("off");
+        $("#ctl_pause").addClass("off");
+        
+        $("#ctl_record").removeClass("off");
+        $("#ctl_play").removeClass("off");
+        app.cache.audioStatus = 'stopped';
+    }
+
     ,recordAudio: function(){
-        //take audio
-        //save audio filename + geotag location
-        navigator.device.capture.captureAudio(
-            function(mediaFiles){
-                console.log("sup audio");
-                //make sure the audio gets the proper photo to save to
-                var thispic_i = $(".daction.audio").data("photo_i");
-                var geotag = app.tagLocation();
-                var i, path, len;
-                for (i = 0, len = mediaFiles.length; i < len; i += 1) {
-                    path = mediaFiles[i].fullPath;
-                    app.cache.user.photos[thispic_i].audio = path;
-                }
-            }
-            ,function(error){
-                console.log("audio error");
-                utils.dump(error);
-            }
-            ,{
-                duration:10
-            }
-        );
+        //ios requires .wav format, .mp3 for android
+        //without full path saves to documents/tmp or LocalFileSystem.TEMPORARY
+        //Files can be recorded and played back using the documents URI: var myMedia = new Media("documents://beer.mp3")
+        //IOS requires the file to be created if it doesnt exist.
+        
+        if(app.cache.audioObj != null) {
+            console.log("audioOBJ exists start recording");
+            app.startRecording();
+            return;
+        }
+
+        if(app.cache.platform == "iOS") {
+            var recordFileName = "temp_recording.wav";
+
+            //first create file if not exist
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
+                fileSystem.root.getFile(recordFileName, {
+                    create: true,
+                    exclusive: false
+                }, function(fileEntry){
+                    // [isFile,isDirectory,name,fullPath,filesystem,nativeURL
+                    // ,constructor,createWriter,file,getMetadata,setMetadata
+                    // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
+                    // ,toURI,remove,getParent]
+                    // fileEntry.fullPath
+                    app.cache.audioObj = new Media(recordFileName, function(){
+                        console.log("MediaObject created successfully");
+                        app.startRecording();
+                    }, function(err){
+                        console.log(err.message);
+                        console.log(err.code);
+                    }, null); //of new Media
+                }, function(err){
+                    console.log(err.code +  " : " + err.message);
+                    console.log("fileSystem.root error()");
+                }); //of getFile
+            }, function(){
+                console.log("window.requestFileSystem  error()");
+            }); //of requestFileSystem
+        }else{
+            var recordFileName = "temp_recording.mp3";
+
+            app.cache.audioObj = new Media(recordFileName, function(){
+                console.log("Media created successfully");
+            }, function(err){
+                console.log(err.message);
+                console.log(err.code);
+                console.log("android error");
+            }, null); 
+            
+            app.startRecording();
+        }
+
+        console.log("is it recording?");
         return;
     }
 
@@ -560,10 +720,13 @@ var app = {
         var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i).attr("rel",photo_i);
         var thumbsdown  = $("<a>").attr("href","#").addClass("vote").addClass("down").data("photo_i",photo_i).attr("rel",photo_i);
         
+        var audiorec    = $("<a>").attr("href","#").addClass("audiorec").data("photo_i",photo_i).attr("rel",photo_i).attr("data-next","audio_record");
+
         thumbs.append(thumbsup);
         thumbs.append(thumbsdown);
         newlink.prepend(newthum);
         newitem.append(newlink);
+        newitem.append(audiorec);
         newitem.append(thumbs);
         newitem.append(trash);
 

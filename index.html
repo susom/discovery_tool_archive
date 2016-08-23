@@ -140,15 +140,14 @@
     
     <div id="step_three" class="panel">
         <div id="walkmap">
-            <h3>Current Walk</h3>
+            <h3>End Current Walk?</h3>
             <div id="google_map"></div>
-            <div>Distance Traveled : <span id="distance"></span>
-                <br>
-                <span id="currentLat"></span> - <span id="currentLon"></span>
+            <div>
+                Distance Traveled : <span id="distance"></span>
             </div>
         </div>
         <div class="actions">
-            <a href='#' data-next="finish" class="button confirm endwalk" data-translation-key="yes_done">Yes, I am done with my walk</a>
+            <a href='#' data-next="survey" class="button confirm endwalk" data-translation-key="yes_done">Yes, I am done with my walk</a>
             <a href='#' data-next="step_two" class="button confirm continuewalk" data-translation-key="no_continue">No, I would like to continue my walk</a>
         </div>
 
@@ -164,7 +163,7 @@
             <li>
                 <h4 data-translation-key="why_audio">Let us know why you took this photo?</h4>
                 <div class="device_actions">
-                    <a href='#' class="daction audio" data-next="pic_review"></a>
+                    <a href='#' data-next="audio_record" class="daction audiorec audio"></a>
                 </div>
             </li>
             <li>
@@ -180,7 +179,46 @@
         </ol>
     </div>
 
+    <div id="audio_record" class="panel">
+        <h3>You are recording...</h3>
+        <div id="soundwaves"></div>
+        <div id="audio_time">00:00</div>
+        <div id="audio_controls">
+            <ul>
+                <li><a id="ctl_play"   href="#">play</a></li>   
+                <li><a id="ctl_record" href="#">record</a></li>    
+                <li><a id="ctl_pause"  href="#">pause</a></li>  
+                <li><a id="ctl_stop"   href="#">save/done</a></li>                
+            </ul>
+        </div>
+    </div>
+
     <div id="survey" class="panel">     
+        <form id="walk_survey" class="instructions consent">
+            <h1>Almost there...</h1>  
+            <h4>Please answer a few questions.</h4>
+               
+            <div class="inputs">
+                <span>You are:</span> 
+                <label><input type="radio" name="gender" value="m"/> Male</label> <label><input type="radio" name="gender" value="f"/> Female</label>
+            </div>
+
+            <div class="inputs">
+                <span>What is your age range?</span> 
+                <label>
+                    <select>
+                        <option value="24">18 - 24</option>
+                        <option value="34">25 - 34</option>
+                        <option value="50">35 - 50</option>
+                        <option value="65">50 - 65</option>
+                        <option value="66">65 +</option>
+                    </select>
+                </label>
+            </div>
+
+
+            <a href="#" class="button" data-next="finish">Submit Answers</a>
+        </form>
     </div>
     
     <div id="finish" class="panel">
@@ -197,6 +235,9 @@
                         Palo Alto, CA 94304-1334<br>
                         Phone: (859) 229-7459
                     </address>
+                </li>
+                <li class="consent">
+                    <a href="#" id="end_session" class="button" data-next="step_zero">Finish and Return Device</a>
                 </li>
             </ol>
         </div>

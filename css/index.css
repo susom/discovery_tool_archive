@@ -594,6 +594,10 @@ nav .back{
     position:relative;
     width:100%;
 }
+#mediacaptured li:not(:first-child){
+    height:75px;
+    border-bottom:1px solid #efefef;
+}
 .mediaitem a {
     display:block;
     text-decoration:none;
@@ -601,6 +605,7 @@ nav .back{
 }
 .mediaitem span {
     font-size:88%;
+    float:right;
 }
 .mediaitem img {
     display:inline-block;
@@ -614,9 +619,9 @@ nav .back{
 }
 .mediaitem .votes{
     position:absolute;
-    width:85px;
-    top:5px;
-    right:40px;
+    width:105px;
+    top:25px;
+    right:90px;
     text-align:left;
     z-index:10;
 }
@@ -627,7 +632,7 @@ nav .back{
     height:30px;
     background:#fff url(../img/icon_thumbs.png) 0 0 no-repeat;
     background-size:200%;
-    margin:0 5px 0 0;
+    margin:0 15px 0 0;
     border-radius:3px;
     text-indent:0;
 }
@@ -638,13 +643,26 @@ nav .back{
 .mediaitem .trashit{
     position:absolute; 
     z-index:11;
-    right:5px;
-    top:5px;
+    right:0px;
+    top:25px;
     width:30px;
     height:30px;
     background:#efefef;
     line-height:180%;
     text-align:center;
+    border-radius:3px;
+    box-shadow:0 0 1px 1px lightgrey;
+}
+.mediaitem .audiorec{
+    position:absolute; 
+    z-index:11;
+    right:60px;
+    top:25px;
+    width:30px;
+    height:30px;
+    background: tomato url(../img/icon_mic.png) 50% 50% no-repeat;
+    background-size: 40%;
+    line-height: 180%;
     border-radius:3px;
     box-shadow:0 0 1px 1px lightgrey;
 }
@@ -660,9 +678,59 @@ nav .back{
 }
 
 
+#audio_record {
+    border:1px soild red;
+    text-align:center;
+}
+#soundwaves {
+    background:#000 url(../img/anim_soundwaves_bw.gif) 0 50% no-repeat;
+    background-size:contain;
+    /*background:#000 url(../img/anim_soundwaves_green.gif) 0 50% no-repeat;
+    background-size:cover;*/
+    width:100%;
+    height:200px;
+    margin-bottom:15px;
+}
+#soundwaves.pause{
+    background-image:url(../img/still_soundwaves_bw.png);
+    /*background-image:url(../img/still_soundwaves_green.png);*/
+}
+#audio_record ul {
+    list-style:none; 
+    margin:0; padding:0; 
+}
+#audio_record li{
+    display:inline-block; 
+}
+#audio_record li a{
+    display:inline-block; 
+    width:67px; height:67px;
+    margin:0 5px;
+    vertical-align:top; 
+    text-indent:-5000px;
+    background:url(../img/icons_audio.png) no-repeat;
+    position:relative;
+}
+#audio_record li a.off:before{
+    position:absolute;
+    content:"";
+    top:0; left:0;
+    width:67px; height:67px;
+    background:#999;
+    border-radius:10px;
+    opacity:.9;
+    z-index:2;
+}
 
-
-
+#ctl_play     {  }
+#ctl_record   { background-position:-300px 0 !important;   }
+#ctl_pause    { background-position:-75px 0 !important;   }
+#ctl_stop     { background-position:-150px 0 !important;   }
+#ctl_save     { background-position:-75px 0 !important;   }
+#audio_time {
+    font-size:180%;
+    margin-bottom:15px; 
+}
 
 #finish h3 {
     text-align:center;
@@ -680,6 +748,30 @@ nav .back{
 }
 
 
+
+#walk_survey .button{
+    margin-top:50px;
+}
+#walk_survey h1{
+    margin: 0;
+    color: #333;
+}
+#walk_survey h4{
+    margin: 0 0 20px;
+}
+#walk_survey .inputs{ 
+    display:block; 
+    margin-bottom:25px;
+}
+#walk_survey .inputs span{
+    display:block; 
+    font-weight:600;
+    margin-bottom:5px;  
+}
+#walk_survey .inputs label{  
+    display:block;
+    margin-bottom: 3px; 
+}
 
 /* Landscape layout (with min-width) */
 @media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {
