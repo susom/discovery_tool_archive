@@ -208,28 +208,29 @@ nav .back{
 }
 
 
-
 #step_setup{
     position:absolute;
-    top:264px;
-    background: #475464;
-    height:50%;
+    height:auto;
 }
+#cancelreset,
 #resetdevice {
     display:block;
-    text-align:Center;
+    width:200px;
+    text-align:center;
     color:#fff;
     position:absolute;
+    left:50%;
     bottom:5px;
-    width:100%;
+    margin-left:-100px;
     text-decoration:none;
 }
+#cancelreset {
+    color:#369;
+}
+#step_setup h4 {text-align:center;}
 #step_setup .consent{
-    text-align:center;
-    margin:15px;
-    padding:15px;
+    padding:0 15px 100px;
     background:#fff;
-    border-radius:10px;
 }
 #step_setup .consent select{
     font-size:120%;
@@ -238,6 +239,30 @@ nav .back{
 #step_setup .consent .button {
     width:auto; 
 }
+#admin_passed {
+    display:none; 
+}
+#step_setup input {
+    font-size:120%;
+}
+#step_setup .adminbtn {
+    background:tomato;
+}
+#step_setup label{
+    margin-bottom:10px;
+    display:block; 
+    overflow:hidden;
+}
+#step_setup label span {
+    line-height:170%;
+}
+#step_setup input {
+    border:1px solid #999;
+    float:right; 
+    border-radius:3px;
+}
+
+
 
 #step_zero {
     position:absolute;
@@ -557,6 +582,25 @@ nav .back{
     box-shadow:1px 1px 3px 1px #475464;
 }
 
+#pic_review .has_audio .daction{
+    width: 40px;
+    height: 40px;
+    background-size: 50%;
+    vertical-align: middle;
+}
+#pic_review .has_audio .audioplay{
+    background:url(../img/icons_audio.png) no-repeat;
+    background-size:cover;
+}
+#pic_review .has_audio .audioplay.playing {
+   background-position: -45px 0;
+}
+#pic_review .has_audio  span{
+    display: inline-block;
+    height: 40px;
+    margin:0 15px;
+}
+
 .votes{
     width:calc(100%);
     text-align:center;
@@ -733,11 +777,11 @@ nav .back{
 }
 
 #finish h3 {
-    text-align:center;
     line-height:initial;
 }
 #finish .instructions li {
     width:auto;
+    text-align:center;
 }
 #finish address{
     margin-top:50px;

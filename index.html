@@ -57,12 +57,14 @@
     
     <div id="step_setup" class="panel">
         <div class="consent">
-            <h3>Initial Device Setup</h3>
-            <h4>*Admins Only*</h4>
-            <select id="admin_proj_list">
-            </select>
-
-            <a href="#" data-next="step_zero" class="button">Setup project on this device</a>
+            <h2>Thank you for your interest in the Stanford Healthy Neighborhood Discovery Tool™!</h2>
+            <h2>The Discovery Tool is available for use only in approved projects. For more information please visit <a href="http://ourvoice.sanford.edu">http://ourvoice.sanford.edu</a></h2>
+            <h4>*For authorized projects*</h4>
+            <div id="admin_null">
+                <label><span>Project Id:</span> <input type="text" id="admin_projid"/></label>
+                <label><span>Password:</span> <input type="password" id="admin_pw"/></label>
+                <a href="#" data-next="step_zero" class="button adminbtn">Setup Project on this Device</a>
+            </div>
         </div>
     </div>
 
@@ -97,7 +99,7 @@
     </div>
     
     <div id="consent_two" class="panel">
-        <h2 data-translation-key="safety_tips">Safety Tips</h2>
+        <h2 data-translation-key="safety_tips">CONSENT TO PARTICIPATE IN OUR VOICE</h2>
         <div class="consent">
             <h3 data-translation-key="saftey_header">While you are using the Discovery Tool:</h3>
             <ul>
@@ -224,18 +226,8 @@
     <div id="finish" class="panel">
         <div class="instructions">
             <ol>
-                <li><h3 data-translation-key="thank_you_participant">Thank you for sharing your neighborhood with us! If you have any questions contact: </h3></li>
-                <li>
-                    <address data-translation-key="pm_contact">
-                        Sandi Winter<br>
-                        Project Manager<br>
-                        Stanford Prevention Research Center<br>
-                        Stanford University School of Medicine<br>
-                        1070 Arastradero Road<br>
-                        Palo Alto, CA 94304-1334<br>
-                        Phone: (859) 229-7459
-                    </address>
-                </li>
+                <li><h3 data-translation-key="thank_you_participant">Thank you for sharing your neighborhood with us!</h3></li>
+                <li>Please return this device to project staff.</li>
                 <li class="consent">
                     <a href="#" id="end_session" class="button" data-next="step_zero">Finish and Return Device</a>
                 </li>

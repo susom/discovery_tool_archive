@@ -17,23 +17,23 @@
  * under the License.
  */
 var app = {
-    //app cache
+    // app cache - in memory data store
     cache : {}
 
     // Application Constructor
     ,initialize: function() {
         this.bindEvents();
-        app.cache.user              = config["default_user"];
-        app.cache.positionTrackerId = null;
-        app.cache.currentWalkMap    = [];
-        app.cache.curmap            = null;
+        app.cache.user              = config["default_user"]; //NEED TO USE COLLATE
+        app.cache.positionTrackerId = null; //ref to setInterval
+        app.cache.currentWalkMap    = [];   //array of geotags for current walk
+        app.cache.curmap            = null; //ref to google map
 
-        app.cache.localusersdb      = null;
-        app.cache.localprojdb       = null;
-        app.cache.remoteusersdb     = null;
-        app.cache.remoteprojdb      = null;
-        app.cache.projects          = null;
-        app.cache.active_project    = null;
+        app.cache.localusersdb      = null; //ref to local users DB
+        app.cache.localprojdb       = null; //ref to local copy of projects DB
+        app.cache.remoteusersdb     = null; //ref to remote users DB
+        app.cache.remoteprojdb      = null; //ref to remote projects DB
+        app.cache.projects          = null; //ref to projects list from local proj DB
+        app.cache.active_project    = null; //active project ID
 
         app.cache.uuid              = null; //DEVICE UNIQUE ID
         app.cache.proj_id           = null; 
@@ -45,42 +45,37 @@ var app = {
         app.cache.audioStatus       = null;
     }
     
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
+    // The scope of 'this' is the event. 
+    // In order to call the 'receivedEvent' we call this.receivedEvent
+    // Bind any events that are required on startup. "deviceready" is a must "pause" and "resume" seem useful
     ,bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
-        // document.addEventListener('offline'              , this.CallBackFunctionName, false);
-        // document.addEventListener('online'               , this.CallBackFunctionName, false);
-        // document.addEventListener('load'                 , this.CallBackFunctionName, false);
-        // document.addEventListener('pause'                , this.CallBackFunctionName, false);
-        // document.addEventListener('resume'               , this.CallBackFunctionName, false);
-        // document.addEventListener('backbutton'           , this.CallBackFunctionName, false);
-        // document.addEventListener('menubutton'           , this.CallBackFunctionName, false);
-        // document.addEventListener('searchbutton'         , this.CallBackFunctionName, false);
-        // document.addEventListener('startcallbutton'      , this.CallBackFunctionName, false);
-        // document.addEventListener('endcallbutton'        , this.CallBackFunctionName, false);
-        // document.addEventListener('volumedownbutton'     , this.CallBackFunctionName, false);
-        // document.addEventListener('volumeupbutton'       , this.CallBackFunctionName, false);
-        // document.addEventListener('batterystatus'        , this.CallBackFunctionName, false);
-        // document.addEventListener('batterycritical'      , this.CallBackFunctionName, false);
-        // document.addEventListener('batterylow'           , this.CallBackFunctionName, false);
+        // document.addEventListener('pause'  , this.CallBackFunctionName, false);
+        // document.addEventListener('resume' , this.CallBackFunctionName, false);
     }
 
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
     ,onDeviceReady: function() {
-        $("#main").addClass("loaded");
-        app.transitionToPanel($("#audio_record"));
-        app.recordAudio();
- 
+        // $("#main").addClass("loaded");
+        // app.transitionToPanel($("#pic_review"));
+        // return;
+
         //0 CHECK NETWORK STATE, AND GET UUID
         var networkState    = utils.checkConnection();
         app.cache.uuid      = device.uuid;
         app.cache.platform  = device.platform;
-
+        
         //1) (RE)OPEN LOCAL DB
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
         app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
+
+        // DELETING THE LOCAL PROJ DB
+        // app.cache.localprojdb.destroy().then(function (response) {
+        //   console.log("byebye local proj db");
+        // }).catch(function (err) {
+        //   console.log(err);
+        // });
+        // return;
+
         app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
         app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
 
@@ -90,30 +85,30 @@ var app = {
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);
 
         //3) THIS NEEDS TO BE GOTTEN FROM LOCAL PROJECTS OR SERVER
-        app.cache.localprojdb.get("hrp_projects").then(function (doc) {
+        app.cache.localprojdb.get("all_projects").then(function (doc) {
             app.cache.projects = doc;
 
             //THERE SHOULD BE AT LEAST 1 PROJECT
-            if(0 in app.cache.projects["projects"]){
-                app.deviceSetup(app.cache.projects["projects"]);
+            if(0 in app.cache.projects["project_list"]){
+                app.deviceSetup(app.cache.projects["project_list"]);
             }else{
                 //DELIBERATLEY THROW ERROR
                 console.log("deliberately thrown error");
                 throw err;
             }
 
-            // //CHECK TO SEE IF THERE IS AN "active_project" YET
-            // if("active_project" in doc){
-            //     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
-            //     app.cache.active_project = doc["active_project"];
-            //     app.loadProject(app.cache.projects["projects"][app.cache.active_project]);
+            //CHECK TO SEE IF THERE IS AN "active_project" YET
+            if("active_project" in doc){
+                //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
+                app.cache.active_project = doc["active_project"];
+                app.loadProject(app.cache.projects["project_list"][app.cache.active_project]);
 
-            //     //SHOW THE USER SIGN IN
-            //     app.transitionToPanel($("#step_zero"));
-            // }else{
-            //     //SHOW ADMIN DEVICE SET UP 
-            //     app.transitionToPanel($("#step_setup"),1); 
-            // }
+                //SHOW THE USER SIGN IN
+                app.transitionToPanel($("#step_zero"));
+            }else{
+                //SHOW ADMIN DEVICE SET UP 
+                app.adminSetup();
+            }
         }).catch(function (err) {
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
             datastore.showError(err);
@@ -130,14 +125,30 @@ var app = {
             var next    = $(this).data("next");
 
             if(next == "step_zero"){
-                var project_i               = $("#admin_proj_list").val();
-                app.cache.active_project    = project_i;
+                $("#main").removeClass("loaded"); 
+                var pid         = $("#admin_projid").val().toUpperCase();
+                var pid_correct = null;
+                for(var i in app.cache.projects["project_list"]){
+                    var p = app.cache.projects["project_list"][i];
+                    if(pid == p.project_id){
+                        var pid_correct = i;
+                    }
+                }
+                if($("#admin_pw").val() == "discovery1" && pid_correct != null){
+                    $("#admin_pw").val(null);
+                    $("#admin_projid").val(null);
+
+                    var project_i               = pid_correct;
+                    app.cache.active_project    = project_i;
+                }else{
+                    alert("Wrong ProjectID/Password");
+                    return false;
+                }
 
                 //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
                 app.cache.projects["active_project"] = project_i;
                 datastore.writeDB(app.cache.localprojdb, app.cache.projects);
-                
-                app.loadProject(app.cache.projects["projects"][project_i]);
+                app.loadProject(app.cache.projects["project_list"][project_i]);
             }else{
                 //ONE TIME DEAL if NOT STEP ZERO
                 $("#main").addClass("loaded");
@@ -183,6 +194,16 @@ var app = {
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
                 app.takePhoto();
+            }else if($(this).hasClass("playing")){
+                app.stopPlaying();
+                //change button to play
+                $(this).removeClass("playing");
+                return false;
+            }else if($(this).hasClass("audioplay")){
+                app.startPlaying();
+                //change button to stop
+                $(this).addClass("playing");
+                return false;
             }else{
                 app.recordAudio();
             }
@@ -207,18 +228,6 @@ var app = {
 
             app.closeCurrentPanel($(".panel.loaded"));
             app.transitionToPanel($("#"+tempnext));
-            return false;
-        });
-
-        $(".panel").on("click",".listen", function(){
-            var url = $(this).attr("href");
-            var my_media = new Media(url,
-                 function () {  console.log("playAudio():Audio Success"); }
-                ,function (err) { console.log(err.message); }
-            );
-
-            my_media.play();
-            my_media.release();
             return false;
         });
 
@@ -266,6 +275,22 @@ var app = {
             app.transitionToPanel($("#"+next));
         });
 
+        $(".panel").on("click",".listen", function(){
+            var url = $(this).attr("href");
+            var my_media = new Media(url,
+                 function () {  console.log("playAudio():Audio Success"); }
+                ,function (err) { console.log(err.message); }
+            );
+
+            my_media.play();
+            my_media.release();
+            return false;
+        });
+
+        // $("#main").addClass("loaded");
+        // app.transitionToPanel($("#audio_record"));
+        // app.recordAudio();
+
         $("#audio_controls a").click(function(){
             var ctl_id = $(this).attr("id");
             switch(ctl_id){
@@ -274,6 +299,7 @@ var app = {
                 break;
 
                 case "ctl_record":
+                console.log("this event?");
                     app.recordAudio();
                 break;
 
@@ -282,10 +308,19 @@ var app = {
                 break
 
                 case "ctl_stop":
+                    app.cache.audioStatus = "stop_release";
                     app.stopRecording();
                     var panel = $(this).closest(".panel");
                     var next  = "pic_review";
 
+                    //CHANGE THE RECORD BUTTON IN PIC PREVIEW
+                    $("#pic_review .device_actions").addClass("has_audio");
+                    var playbutton = $("<a>").attr("href","#").addClass("daction").addClass("audioplay");
+                    var or = $("<span>").text(" or ");
+                    $("#pic_review .device_actions").prepend(or);
+                    $("#pic_review .device_actions").prepend(playbutton);
+                    
+                    //TO PLAY or RECORD NEW
                     app.closeCurrentPanel(panel);
                     app.transitionToPanel($("#"+next));
                 break
@@ -301,9 +336,19 @@ var app = {
         $("#resetdevice").click(function(){
             //DITCH USER TOO
             app.cache.user = config["default_user"];
-            
+            $("#admin_null").show();
+            $("#admin_passed").hide();
+
+            $("#main").addClass("loaded");
+
             app.closeCurrentPanel($("#step_zero"));
             app.transitionToPanel($("#step_setup"));
+            return false;
+        });
+
+        $("#cancelreset").click(function(){
+            app.closeCurrentPanel($("#step_setup"));
+            app.transitionToPanel($("#step_zero"));
             return false;
         });
 
@@ -334,6 +379,13 @@ var app = {
         });
     }
 
+    ,adminSetup : function(){
+        app.cache.admin_pass = null;
+        $("#main").addClass("loaded");
+        app.transitionToPanel($("#step_setup"),1); 
+        return;
+    }
+
     ,loadProject : function(project){
         var p = project;
 
@@ -355,6 +407,7 @@ var app = {
             $("#step_zero b.proj_name").text(p["project_name"]);
             $("#step_zero b.user_id").text(app.cache.participant_id);
 
+            $("select[name='language']").empty();
             for(var l in p["lang"]){
                 var l_option = $("<option>").val(p["lang"][l]["lang"]).text(p["lang"][l]["language"]);
                  $("select[name='language']").append(l_option);
@@ -384,8 +437,8 @@ var app = {
 
     ,updateLanguage : function(projid,lang){
         lang = !lang ? "en" :lang;
-        for(var p in app.cache.projects["projects"]){
-            var project = app.cache.projects["projects"][p];
+        for(var p in app.cache.projects["project_list"]){
+            var project = app.cache.projects["project_list"][p];
             if(project["project_id"] == projid){
                 var trans = project["lang"];
                 for(var l in trans){
@@ -571,6 +624,13 @@ var app = {
         } else if (app.cache.audioStatus == 'playing') {
             app.cache.audioObj.stop();            
             console.log("Play stopped");
+        }else if(app.cache.audioStatus == "stop_release"){
+            app.cache.audioObj.stop();
+            $("#audio_time").text("00:00");
+
+            // app.cache.audioObj.release();
+            console.log("Recording stopped");
+            console.log("Media Released");
         } else {
             console.log("Nothing stopped");
         }
@@ -590,7 +650,6 @@ var app = {
         //without full path saves to documents/tmp or LocalFileSystem.TEMPORARY
         //Files can be recorded and played back using the documents URI: var myMedia = new Media("documents://beer.mp3")
         //IOS requires the file to be created if it doesnt exist.
-        
         if(app.cache.audioObj != null) {
             console.log("audioOBJ exists start recording");
             app.startRecording();
@@ -599,7 +658,6 @@ var app = {
 
         if(app.cache.platform == "iOS") {
             var recordFileName = "temp_recording.wav";
-
             //first create file if not exist
             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
                 fileSystem.root.getFile(recordFileName, {
@@ -611,13 +669,21 @@ var app = {
                     // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
                     // ,toURI,remove,getParent]
                     // fileEntry.fullPath
-                    app.cache.audioObj = new Media(recordFileName, function(){
-                        console.log("MediaObject created successfully");
-                        app.startRecording();
+                    app.cache.audioObj = new Media(recordFileName
+                    ,  function(){
+                        //The callback that executes after a Media object 
+                        //has completed the current play, record, or stop action
+                        console.log("MediaObject successfully completed the current play, record, or stop action");
                     }, function(err){
+                        // The callback that executes if an error occurs.
                         console.log(err.message);
                         console.log(err.code);
-                    }, null); //of new Media
+                    }, function(){
+                        // The callback that executes to indicate status changes.
+                        console.log("what does status change mean?");
+                    }); //of new Media
+
+                    app.startRecording();
                 }, function(err){
                     console.log(err.code +  " : " + err.message);
                     console.log("fileSystem.root error()");
