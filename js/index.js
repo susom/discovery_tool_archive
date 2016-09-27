@@ -77,7 +77,7 @@ var app = {
         var networkState        = utils.checkConnection();
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
-        
+
         //1) (RE)OPEN LOCAL DB
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
         app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
@@ -85,25 +85,31 @@ var app = {
         app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
         app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
 
-        // //DELETING THE LOCAL PROJ DB
-        // //DON'T NEED THIS ANYMORE!  CAN JUST REFRESH
+        //DELETING THE LOCAL PROJ DB
+        //DON'T NEED THIS ANYMORE!  CAN JUST REFRESH
+        // app.cache.localusersdb.destroy().then(function (response) {
+        //   console.log("byebye local users db");
+        // }).catch(function (err) {
+        //   console.log(err);
+        // });
         // app.cache.localprojdb.destroy().then(function (response) {
         //   console.log("byebye local proj db");
         // }).catch(function (err) {
         //   console.log(err);
         // });
         // return;
-
+        
         //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
         datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);
 
+        console.log("i hope this is better");
+        
         //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
             app.cache.active_project = doc;
 
-            // console.log("got active project, now throw error and load projects");
             throw err;
         }).catch(function (err) {
             //EITHER WAY END UP  HERE, USING THIS MORE LIKE A then but also else and error catch
@@ -181,7 +187,7 @@ var app = {
             
                 //STORE THE USER AND THEN WIPE THE CACHE
                 console.log("SAVING THE USER NOW!!!");
-                datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                // datastore.writeDB(app.cache.localusersdb , app.cache.user);
                 app.initCache();
             }
 

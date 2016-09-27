@@ -8,6 +8,9 @@ var ourvoice = {
 
     ,getAllProjects : function(){
         //LOAD UP PROJECTS FROM LOCAL DB
+        
+        console.log(app.cache.localprojdb);
+        
         app.cache.localprojdb.get("all_projects").then(function (doc) {
             app.cache.projects = doc;
             
@@ -15,7 +18,7 @@ var ourvoice = {
             if(app.cache.projects["project_list"] < 1){
                 //DELIBERATLEY THROW ERROR, NO PROJECTS IN THE LOCAL DB
                 throw err;
-            }
+            } 
 
             //CHECK TO SEE IF THERE IS AN "active_project" SET YET
             if(app.cache.active_project.hasOwnProperty("i")){
@@ -27,6 +30,7 @@ var ourvoice = {
                 ourvoice.adminSetup();
             }
         }).catch(function (err) {
+            console.log(err);
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
 
             //IF NO PROJECTS THEN PUT UP THIS LOADING ERROR
@@ -40,7 +44,7 @@ var ourvoice = {
 
         //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
         var partial_id  = datastore.pouchCollate([app.cache.uuid, p["project_id"]]);
-
+console.log("partial id duh pouch collate" . partial_id);
         app.cache.localusersdb.allDocs({
             // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
              startkey   : partial_id
@@ -56,7 +60,7 @@ var ourvoice = {
             //Display This Info
             $("#step_zero b.proj_name").text(p["project_name"]);
             $("#step_zero b.user_id").text(app.cache.participant_id);
-
+            console.log("FUCK YOU FUUUUUUs");
             if(!app.cache.proj_thumbs){
                 $("#pic_review li.good_or_bad").hide();
             }
@@ -384,9 +388,7 @@ var ourvoice = {
                 //PREPARE ATTACHEMENT
                 var attref      = "pic_" + thispic_i + ".jpg";
                 app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : fileurl };
-                
-                console.log("user _id");
-                console.log(app.cache.user._id);
+
                 //SET UP PHOTO PREVIEW PAGE
                 ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
 

@@ -129,11 +129,11 @@ var datastore = {
     }
 
     ,pouchCollate : function(component_array){
-        return pouchdbCollate.toIndexableString(component_array).replace(/\u0000/g, '\u0001');
+        return window.pouchCollate.toIndexableString(component_array).replace(/\u0000/g, '\u0001');
     }
 
     ,pouchDeCollate : function(_id){
-        return pouchdbCollate.parseIndexableString(_id);
+        return window.pouchCollate.parseIndexableString(_id);
     }
 };
 
