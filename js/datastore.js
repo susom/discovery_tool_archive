@@ -48,6 +48,7 @@ var datastore = {
     }
 
     ,writeDB : function(db,_o){
+        console.log(_o);
         db.put(_o).then(function (wut) {
             console.log('Successfully saved a json object?');
         }).catch(function (err) {
@@ -104,7 +105,8 @@ var datastore = {
         }).on('complete', function (wut) {
             console.log("REPLICATED FROM REMOTE!");
         }).on('change',function(change){
-            console.log("REPLICATE FROM , CHANGE, SYNC!")
+            console.log("REPLICATE FROM , CHANGE, SYNC!");
+            utils.dump(change.last_seq);
         }).on('uptodate',function(update){
             console.log("REPLICATION FROM DONE");
         }).catch(function (err) {

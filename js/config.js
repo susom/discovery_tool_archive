@@ -16,7 +16,8 @@ var config = {
         ,"lang"                 : null
         ,"photos"               : []
         ,"geotags"              : []
-        ,"history"              : []
+        ,"survey"               : []
+        ,"_attachments"         : {}
     }
     
     ,default_projects  : {
@@ -25,12 +26,18 @@ var config = {
              {
                  "project_id"  : "XYZ"
                 ,"project_name": "The XYZ Project"
+                ,"project_pass": "discxyz"
+                ,"thumbs"      : true
                 ,"lang"        : [
                      { "lang" : "en"
                       ,"language" : "English" 
                       ,"translations" : [
-                         { "letsgo" : "Let's Go English!"}
+                         { "project_about" : "The XYZ Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                        ,{ "letsgo" : "Let's Go English!"}
                         ,{ "consent_block" : "The Discovery Tool will help you gather information so that you can work with others to make positive changes in your community."}
+                        ,{ "consent_block_A"  : "CONSENT BLOCK A"}
+                        ,{ "consent_block_B"  : "CONSENT BLOCK B"}
+                        ,{ "consent_block_C"  : "CONSENT BLOCK C"}
                         ,{ "next" : "Next"}
                         ,{ "safety_tips" : "CONSENT TO PARTICIPATE IN OUR VOICE" }
                         ,{ "saftey_header" : "While you are using the Discovery Tool:"}
@@ -46,7 +53,7 @@ var config = {
                         ,{ "why_audio" : "Why did you take this photo?"}
                         ,{ "good_or_bad" : "Is this good or bad for the community?"}
                         ,{ "thank_you_participant" : "Thank you for sharing your neighborhood with us!" }
-                        ,{ "your_photos" : "Your Photos" }
+                        ,{ "your_photos" : "Review Your Photos" }
                         ,{ "done_walk" : "I am done with my walk"}
                         ,{ "take_photo" : "Take a Photo" }
                         ,{ "step_2" : "Step 2 - Take Photos..."}
@@ -71,8 +78,12 @@ var config = {
                     ,{   "lang" : "es"
                         ,"language" : "Spanish"
                         ,"translations" : [
-                         { "letsgo"         : "¡Vamos!"}
+                         { "project_about" : "Spanish The XYZ Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                        ,{ "letsgo"         : "¡Vamos!"}
                         ,{ "consent_block"  : "La Herramienta de Descubrimiento le ayudará a capturar  información importante para que entonces pueda colaborar con otros para hacer cambios positivos en su comunidad."}
+                        ,{ "consent_block_A"  : "CONSENT BLOCK A"}
+                        ,{ "consent_block_B"  : "CONSENT BLOCK B"}
+                        ,{ "consent_block_C"  : "CONSENT BLOCK C"}
                         ,{ "next"           : "Próximo"}
                         ,{ "safety_tips"    : "Consejos de seguridad" }
                         ,{ "saftey_header"  : "Mientras utilize La Herramienta de Descubrimiento:"}
@@ -110,19 +121,74 @@ var config = {
                         ,{ "no_continue"    : "No, quiero continuar con mi caminata"} 
                         ,{ "photos_here"    : "SP Your photos will show here..."}                      
                     ]}
-                    
+                ]
+                ,"surveys"     : [
+                    { "type"        : "radio"
+                      ,"name"       : "gender"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "Are you male or female?"}
+                        ,{"lang" : "es", "text" : "Tu es stupido?"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Yes", "value" : "Yes"}
+                            ,{"lang" : "es", "text" : "Si" , "value" : "Si"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "No", "value" : "No"}
+                            ,{"lang" : "es", "text" : "No", "value" : "No"}
+                         ] 
+                      ] 
+                    }
+                    ,{ "type"       : "select"
+                      ,"name"       : "birthplace"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "Were you born in the USA?"}
+                        ,{"lang" : "es", "text" : "Vamos la puerta da recha?"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Yes", "value" : "Yes"}
+                            ,{"lang" : "es", "text" : "Si" , "value" : "Si" }
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "No", "value" : "No"}
+                            ,{"lang" : "es", "text" : "No", "value" : "No"}
+                         ] 
+                      ] 
+                    }
+                    ,{ "type"       : "text"
+                      ,"name"       : "neighborhood_name" 
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "What is your neighborhood name?"}
+                        ,{"lang" : "es", "text" : "Donde es la biblioteca?"} 
+                      ] 
+                    }
+                    ,{ "type"       : "number"
+                      ,"name"       : "age" 
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "What is your age?"}
+                        ,{"lang" : "es", "text" : "Yo quiero taco bell?"} 
+                      ] 
+                    }
                 ]
              }
 
              ,{
                  "project_id"  : "ABC"
                 ,"project_name": "The ABC Project"
+                ,"project_pass": "discabc"
+                ,"thumbs"      : false
                 ,"lang"        : [
                      { "lang" : "en"
                       ,"language" : "English" 
                       ,"translations" : [
-                         { "letsgo" : "Let's Go English!"}
+                         { "project_about" : "The ABC Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                        ,{ "letsgo" : "Let's Go English!"}
                         ,{ "consent_block" : "The Discovery Tool will help you gather information so that you can work with others to make positive changes in your community."}
+                        ,{ "consent_block_A"  : "CONSENT BLOCK A"}
+                        ,{ "consent_block_B"  : "CONSENT BLOCK B"}
+                        ,{ "consent_block_C"  : "CONSENT BLOCK C"}
                         ,{ "next" : "Next"}
                         ,{ "safety_tips" : "Safety Tips" }
                         ,{ "saftey_header" : "While you are using the Discovery Tool:"}
@@ -163,8 +229,12 @@ var config = {
                     ,{   "lang" : "es"
                         ,"language" : "Spanish"
                         ,"translations" : [
-                         { "letsgo"         : "Let's Go Spanish!"}
+                         { "project_about" : "Spanish The ABC Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                        ,{ "letsgo"         : "Let's Go Spanish!"}
                         ,{ "consent_block"  : "SP The Discovery Tool will help you gather information so that you can work with others to make positive changes in your community."}
+                        ,{ "consent_block_A"  : "CONSENT BLOCK A"}
+                        ,{ "consent_block_B"  : "CONSENT BLOCK B"}
+                        ,{ "consent_block_C"  : "CONSENT BLOCK C"}
                         ,{ "next"           : "SP Next"}
                         ,{ "safety_tips"    : "SP Safety Tips" }
                         ,{ "saftey_header"  : "SP While you are using the Discovery Tool:"}
@@ -205,8 +275,12 @@ var config = {
                     ,{   "lang" : "ch"
                         ,"language" : "Chinese"
                         ,"translations" : [
-                         { "letsgo"         : "Let's Go Chinese!"}
+                         { "project_about" : "Chinese The ABC Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                        ,{ "letsgo"         : "Let's Go Chinese!"}
                         ,{ "consent_block"  : "CH The Discovery Tool will help you gather information so that you can work with others to make positive changes in your community."}
+                        ,{ "consent_block_A"  : "CONSENT BLOCK A"}
+                        ,{ "consent_block_B"  : "CONSENT BLOCK B"}
+                        ,{ "consent_block_C"  : "CONSENT BLOCK C"}
                         ,{ "next"           : "CH Next"}
                         ,{ "safety_tips"    : "CH Safety Tips" }
                         ,{ "saftey_header"  : "CH While you are using the Discovery Tool:"}
@@ -244,6 +318,64 @@ var config = {
                         ,{ "no_continue"    : "CH No, I want to continue my walk"}
                         ,{ "photos_here"    : "CH Your photos will show here..."}                      
                     ]}
+                ]
+                ,"surveys"     : [
+                    { "type"        : "radio"
+                      ,"name"       : "gender"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "Are you male or female?" }
+                        ,{"lang" : "es", "text" : "Tu es stupido?"          } 
+                        ,{"lang" : "ch", "text" : "CH Tu es stupido?"       } 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Yes", "value" : "Yes"}
+                            ,{"lang" : "es", "text" : "Si" , "value" : "Si" }
+                            ,{"lang" : "ch", "text" : "Hai", "value" : "Hai"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "No", "value" : "No"}
+                            ,{"lang" : "es", "text" : "No", "value" : "No"}
+                            ,{"lang" : "ch", "text" : "BU", "value" : "BU"}
+                         ] 
+                      ] 
+                    }
+                    ,{ "type"       : "select"
+                      ,"name"       : "birthplace"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "Were you born in the USA?"   }
+                        ,{"lang" : "es", "text" : "Vamos la puerta da recha?"   } 
+                        ,{"lang" : "ch", "text" : "CH Vamos la puerta da recha?"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Yes", "value" : "Yes"}
+                            ,{"lang" : "es", "text" : "Si" , "value" : "Si" }
+                            ,{"lang" : "ch", "text" : "Hai", "value" : "Hai"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "No", "value" : "No"}
+                            ,{"lang" : "es", "text" : "No", "value" : "No"}
+                            ,{"lang" : "ch", "text" : "BU", "value" : "BU"}
+                         ] 
+                      ] 
+                    }
+                    ,{ "type"       : "text"
+                      ,"name"       : "neighborhood_name" 
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "What is your neighborhood name?"}
+                        ,{"lang" : "es", "text" : "Donde es la biblioteca?"} 
+                        ,{"lang" : "ch", "text" : "CH Donde es la biblioteca?"} 
+                      ] 
+                    }
+                    ,{ "type"       : "number"
+                      ,"name"       : "age" 
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "What is your age?"}
+                        ,{"lang" : "es", "text" : "Yo quiero taco bell?"} 
+                        ,{"lang" : "ch", "text" : "CH Yo quiero taco bell?"} 
+                      ] 
+                    }
                 ]
              }
         ]
