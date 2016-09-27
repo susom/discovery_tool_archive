@@ -498,10 +498,7 @@ var ourvoice = {
     ,resetDevice : function(){
         $(".loaded").removeClass("loaded");
 
-        //STORE THE USER AND THEN WIPE THE CACHE
-        console.log("SAVING THE USER NOW!!!");
-        // datastore.writeDB(app.cache.localusersdb , app.cache.user);
-        app.initCache();
+        
 
         $(".mi_slideout b").text(0);
         $(".nomedia").show();

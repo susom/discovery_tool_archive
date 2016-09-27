@@ -178,6 +178,11 @@ var app = {
 
             if(next == "finish"){
                 no_history = true;
+            
+                //STORE THE USER AND THEN WIPE THE CACHE
+                console.log("SAVING THE USER NOW!!!");
+                datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                app.initCache();
             }
 
             //TRANSITION TO NEXT PANEL
