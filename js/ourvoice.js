@@ -220,9 +220,31 @@ var ourvoice = {
 
     ,startPlaying : function(photo_i){
         $("#audio_record").addClass("playing");
-        var attref      = "music_" + photo_i + ".wav";
-        // var audiofile   = app.cache.user["_attachments"][attref]["data"];
-        
+        var attref      = "audio_" + photo_i + ".wav";
+        var audioblob   = app.cache.user["_attachments"][attref]["data"];
+
+        // var reader      = new FileReader();
+        // reader.addEventListener("loadend", function() {
+        //    // reader.result contains the contents of blob as a typed array
+        // });
+        // reader.readAsArrayBuffer(audioblob);
+
+        // console.log("ok what is this reader");
+        // console.log(reader);
+
+        // var my_media = new Media(audiofile,
+        //     // success callback
+        //     function () {
+        //         console.log("playAudio():Audio Success");
+        //     },
+        //     // error callback
+        //     function (err) {
+        //         console.log("playAudio():Audio Error: " + err);
+        //     }
+        // );
+        // // Play audio
+        // my_media.play();
+
         app.cache.audioStatus = "playing";
         app.cache.audioObj.play();
 
@@ -255,9 +277,12 @@ var ourvoice = {
             $("#pic_review .daction.audio").addClass("hasAudio");
 
             //NOW SAVE IT AS ATTACHMENT
-            var data        = new Blob(["this would be the audio file"] , {type: 'audio/wav'});
+            var data        = new Blob( [app.cache.currentAudio]  , {type: 'audio/wav'});
             var attref      = "audio_" + photo_i + ".wav";
             app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : data };
+            
+            app.cache.audioObj.release();
+            // app.cache.audioObj = null;
         } else {
             console.log("Nothing stopped");
         }
@@ -303,12 +328,12 @@ var ourvoice = {
         //IOS requires the file to be created if it doesnt exist.
         
         if(app.cache.audioObj != null) {
-            console.log("audioOBJ exists start recording");
             ourvoice.startRecording(photo_i);
             return;
         }
 
         if(app.cache.platform == "iOS") {
+            var recordFileName = "audio_"+ photo_i +".wav";
             var recordFileName = "temp_recording.wav";
 
             //first create file if not exist
@@ -323,8 +348,12 @@ var ourvoice = {
                         // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
                         // ,toURI,remove,getParent]
                         // fileEntry.fullPath
+                        
+                        //PUT THIS ACTUAL FILE INTO CACHE, THEN WHEN STOPPED RECORDING STORE IT 
+                        app.cache.currentAudio = fileEntry; 
                         app.cache.audioObj = new Media(recordFileName
                             ,function(){
+                                // console.log(fileEntry);
                                 // console.log("MediaObject successfully completed play, record, or stop action");
                             }
                             ,function(err){

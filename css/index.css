@@ -777,7 +777,7 @@ nav .back{
     padding:0;
 }
 #walk_survey div {
-    margin-bottom:15px;
+    margin-bottom:20px;
 }
 #walk_survey span {
     display:block;
@@ -785,8 +785,8 @@ nav .back{
     font-size:130%;
 }
 #walk_survey label {
-    display:inline-block;
-    margin:0 5px 0 0;
+    display:block;
+    margin:0  0 5px 0;
 }
 
 

@@ -49,6 +49,7 @@ var app = {
 
         app.cache.audioObj          = null; //FOR VOICE RECORDINGS
         app.cache.audioStatus       = null;
+        app.cache.currentAudio      = null;
     }
 
     ,bindEvents: function() {
@@ -276,7 +277,6 @@ var app = {
 
             if( $(this).hasClass("hasAudio") ){
                 ourvoice.startPlaying(photo_i);
-                console.log("is this not playing?");
             }else{
                 ourvoice.recordAudio(photo_i);
             }
