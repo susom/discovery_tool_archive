@@ -308,8 +308,19 @@ nav .back{
     color              : #333;
     padding-bottom     : 100px;
 }
+.consent_title{
+    font-size:170%;
+    font-weight:600;
+    width:90%;
+    margin:20px auto 0;
+    padding:0;
+}
 .consent blockquote{
-    font-size          : 200%;
+    font-size          : 170%;
+    line-height:135%;
+    letter-spacing:-.2px;
+    width: 90%;
+    margin :0 auto;
 }
 .consent h3{
     width              : 90%;
@@ -325,7 +336,7 @@ nav .back{
     margin-bottom      : 5px;
 }
 .consent .button{
-    width              : 80%;
+    width              : 90%;
     border             : 1px solid #888;
 }
 #consent_two h2 {

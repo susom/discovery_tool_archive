@@ -128,6 +128,9 @@ var app = {
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
 
+                    app.initCache();
+                    ourvoice.resetDevice();
+
                     //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
                     app.cache.active_project["i"] = pid_correct;
                     datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
@@ -172,8 +175,14 @@ var app = {
                 no_history = true;
             
                 //STORE THE USER AND THEN WIPE THE CACHE
-                console.log("SAVING THE USER NOW!!!");
-                // datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                // console.log("SAVING THE USER NOW!!!");
+                // console.log(app.cache.user);
+                // console.log(app.cache.user.survey);
+                // console.log(app.cache.user.photos);
+                // console.log(app.cache.user.geotags);
+
+
+                datastore.writeDB(app.cache.localusersdb , app.cache.user);
                 app.initCache();
             }
 
@@ -256,15 +265,15 @@ var app = {
             app.transitionToPanel($("#"+next));
             return false;
         });
-        
+
         $("#mediacaptured").on("click",".audiorec", function(){
             var photo_i = $(this).data("photo_i");
-            if( $(this).hasClass("audio")){
+            if( $(this).hasClass("audio") ){
                 console.log("play the clip for " + photo_i);
-                ourvoice.startPlaying();
+                // ourvoice.startPlaying();
             }else{
                 console.log("record the audio for " + photo_i);
-                ourvoice.recordAudio();
+                // ourvoice.recordAudio(photo_i);
             }
             return;
         });
@@ -304,7 +313,6 @@ var app = {
 
         $("#resetdevice").click(function(){
             //DITCH USER TOO
-            app.cache.user = config["default_user"];
             $("#admin_null").show();
             $("#admin_passed").hide();
 
@@ -356,6 +364,7 @@ var app = {
         $("#end_session").click(function(){
             //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
             ourvoice.resetDevice();
+            ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
             app.closeCurrentPanel($("#finish"));
             app.transitionToPanel($("#step_zero"),1);

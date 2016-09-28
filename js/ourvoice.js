@@ -59,6 +59,8 @@ var ourvoice = {
             $("#step_zero b.user_id").text(app.cache.participant_id);
             if(!app.cache.proj_thumbs){
                 $("#pic_review li.good_or_bad").hide();
+            }else{
+                $("#pic_review li.good_or_bad").show();
             }
 
             $("select[name='language']").empty();
@@ -241,20 +243,17 @@ var ourvoice = {
         }else if(app.cache.audioStatus == "stop_release"){
             app.cache.audioObj.stop();
             $("#audio_time").text("00:00");
-            app.cache.audioObj.release();
-            // console.log("Recording stopped");
-            // console.log("Media Released");
 
             app.cache.user.photos[photo_i]["audio"] = true;
             $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
             $("#pic_review .daction.audio").addClass("hasAudio");
 
-            console.log(app.cache.user);
-
             //NOW SAVE IT AS ATTACHMENT
-            // var data        = new Blob(["this would be the audio file"] , {type: 'audio/wav'});
-            // var attref      = "audio_" + photo_i + ".wav";
-            // app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : data };
+            var data        = new Blob(["this would be the audio file"] , {type: 'audio/wav'});
+            var attref      = "audio_" + photo_i + ".wav";
+            app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : data };
+            
+            app.cache.audioObj.release();
         } else {
             console.log("Nothing stopped");
         }
@@ -289,8 +288,6 @@ var ourvoice = {
 
         $("#soundwaves").removeClass("pause");
         $("#ctl_stop").data("photo_i",photo_i).removeClass("off");
-        
-        console.log("started recording?");
         return;
     }
 
@@ -373,7 +370,7 @@ var ourvoice = {
                 var geotag      = ourvoice.tagLocation(app.cache.user.photos[thispic_i]);
 
                 //PREPARE ATTACHEMENT
-                var attref      = "pic_" + thispic_i + ".jpg";
+                var attref      = "photo_" + thispic_i + ".jpg";
                 app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
 
                 //SET UP PHOTO PREVIEW PAGE
@@ -485,7 +482,6 @@ var ourvoice = {
         $(".mi_slideout b").text(0);
         $(".nomedia").show();
         $(".delete_on_reset").remove();
-        ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
         return;
     }
 };
