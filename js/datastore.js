@@ -135,5 +135,21 @@ var datastore = {
     ,pouchDeCollate : function(_id){
         return window.pouchCollate.parseIndexableString(_id);
     }
+
+    ,deleteLocalDB : function(){
+        //DELETE LOCAL DBs
+        app.cache.localusersdb.destroy().then(function (response) {
+          console.log("byebye local users db");
+        }).catch(function (err) {
+          console.log(err);
+        });
+
+        app.cache.localprojdb.destroy().then(function (response) {
+          console.log("byebye local proj db");
+        }).catch(function (err) {
+          console.log(err);
+        });
+        return;
+    }
 };
 

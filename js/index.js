@@ -63,13 +63,13 @@ var app = {
     ,onDevicePause: function() {
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
-        console.log("pausing the device ... should i clear the user/data?");
+        console.log("pausing the device ... do anything?");
     }
 
     ,onDeviceResume: function() {
         //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
         //SO NO DO NOT RELOAD PROJECT
-        console.log("resuming device ... should i update the localDB, reload project??");
+        console.log("resuming device ... update anything?");
     }
 
     ,onDeviceReady: function() {
@@ -85,35 +85,21 @@ var app = {
         app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
         app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
 
-        //DELETING THE LOCAL PROJ DB
-        //DON'T NEED THIS ANYMORE!  CAN JUST REFRESH
-        // app.cache.localusersdb.destroy().then(function (response) {
-        //   console.log("byebye local users db");
-        // }).catch(function (err) {
-        //   console.log(err);
-        // });
-        // app.cache.localprojdb.destroy().then(function (response) {
-        //   console.log("byebye local proj db");
-        // }).catch(function (err) {
-        //   console.log(err);
-        // });
+        // DELETE!
+        // datastore.deleteLocalDB();
         // return;
         
         //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
         datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);
 
-        console.log("i hope this is better");
-        
         //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
             app.cache.active_project = doc;
-
             throw err;
         }).catch(function (err) {
             //EITHER WAY END UP  HERE, USING THIS MORE LIKE A then but also else and error catch
-            // console.log("now im in the error, get all projects");
             ourvoice.getAllProjects();
         });
 
@@ -197,34 +183,6 @@ var app = {
             return false;
         });
 
-        //ADD EVENTS TO device Actions
-        $(".panel").on("click",".daction",function(){
-            var panel   = $(this).closest(".panel");
-            var next    = $(this).data("next");
-
-            if($(this).hasClass("camera")){
-                //GET CURRENT PANEL
-                ourvoice.takePhoto();
-            }else if($(this).hasClass("playing")){
-                ourvoice.stopPlaying();
-                //change button to play
-                $(this).removeClass("playing");
-                return false;
-            }else if($(this).hasClass("audioplay")){
-                ourvoice.startPlaying();
-                //change button to stop
-                $(this).addClass("playing");
-                return false;
-            }else{
-                var photo_i = $(this).data("photo_i");
-                ourvoice.recordAudio(photo_i);
-            }
-
-            app.closeCurrentPanel(panel);
-            app.transitionToPanel($("#"+next));
-            return false;
-        });
-
         $(".panel").on("click",".votes .vote", function(){
             //VOTE GOOD OR BAD
             var curPhoto    = $(this).data("photo_i");
@@ -281,23 +239,41 @@ var app = {
             return false;
         });
 
+        //ADD EVENTS TO device Actions
+        $(".panel").on("click",".daction",function(){
+            var panel   = $(this).closest(".panel");
+            var next    = $(this).data("next");
+
+            if($(this).hasClass("camera")){
+                //GET CURRENT PANEL
+                ourvoice.takePhoto();
+            }else{
+                var photo_i = $(this).data("photo_i");
+                ourvoice.recordAudio(photo_i);
+            }
+
+            app.closeCurrentPanel(panel);
+            app.transitionToPanel($("#"+next));
+            return false;
+        });
+        
+        $("#mediacaptured").on("click",".audiorec", function(){
+            var photo_i = $(this).data("photo_i");
+            if( $(this).hasClass("audio")){
+                console.log("play the clip for " + photo_i);
+                ourvoice.startPlaying();
+            }else{
+                console.log("record the audio for " + photo_i);
+                ourvoice.recordAudio();
+            }
+            return;
+        });
+
         $("#audio_controls").on("click","a", function(){
             var ctl_id  = $(this).attr("id");
             var photo_i = $(this).data("photo_i");
 
             switch(ctl_id){
-                // case "ctl_play":
-                //     ourvoice.startPlaying();
-                // break;
-
-                // case "ctl_record":
-                //     ourvoice.recordAudio();
-                // break;
-
-                // case "ctl_pause":
-                //     ourvoice.stopRecording(photo_i);
-                // break
-
                 case "ctl_stop":                 
                     app.cache.audioStatus = "stop_release";
                     ourvoice.stopRecording(photo_i);
@@ -312,7 +288,6 @@ var app = {
                 break
 
                 default:
-
                 break;
             }
 
@@ -409,6 +384,7 @@ var app = {
             $(this).hide();
             next();
         });
+        return;
     }
 
     ,transitionToPanel: function(panel,nosave){
@@ -420,6 +396,7 @@ var app = {
             $(this).addClass("loaded");
             next();
         });
+        return;
     }
 
     ,showNotif : function(title,bodytext){

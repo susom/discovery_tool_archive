@@ -8,9 +8,6 @@ var ourvoice = {
 
     ,getAllProjects : function(){
         //LOAD UP PROJECTS FROM LOCAL DB
-        
-        console.log(app.cache.localprojdb);
-        
         app.cache.localprojdb.get("all_projects").then(function (doc) {
             app.cache.projects = doc;
             
@@ -29,8 +26,8 @@ var ourvoice = {
                 //SHOW ADMIN DEVICE SET UP 
                 ourvoice.adminSetup();
             }
+
         }).catch(function (err) {
-            console.log(err);
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
 
             //IF NO PROJECTS THEN PUT UP THIS LOADING ERROR
@@ -44,7 +41,7 @@ var ourvoice = {
 
         //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
         var partial_id  = datastore.pouchCollate([app.cache.uuid, p["project_id"]]);
-console.log("partial id duh pouch collate" . partial_id);
+        
         app.cache.localusersdb.allDocs({
             // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
              startkey   : partial_id
@@ -60,7 +57,6 @@ console.log("partial id duh pouch collate" . partial_id);
             //Display This Info
             $("#step_zero b.proj_name").text(p["project_name"]);
             $("#step_zero b.user_id").text(app.cache.participant_id);
-            console.log("FUCK YOU FUUUUUUs");
             if(!app.cache.proj_thumbs){
                 $("#pic_review li.good_or_bad").hide();
             }
@@ -147,11 +143,8 @@ console.log("partial id duh pouch collate" . partial_id);
                 app.cache.currentWalkMap.push(
                     new google.maps.LatLng(curLat, curLong)
                 );
-                console.log(curLat + " : " + curLong);
-                console.log("new geodatapoint : " + app.cache.currentWalkMap.length);
             }
             ,function(err){
-                console.log("error?");
                 console.log(err);
             }
             ,{
@@ -228,38 +221,9 @@ console.log("partial id duh pouch collate" . partial_id);
         app.cache.audioObj.play();
 
         $("#soundwaves").removeClass("pause");
-
         $("#ctl_stop").removeClass("off");
-        $("#ctl_pause").removeClass("off");
-
-        $("#ctl_record").addClass("off");
         $("#ctl_play").addClass("off");
-
-    }
-
-    ,startRecording : function(photo_i){
-        app.cache.audioStatus = "recording";
-        app.cache.audioObj.startRecord();
- 
-        app.cache.audioTimer = setInterval(function(){
-            var curtime = $("#audio_time").text();
-            var splits  = curtime.split(":");
-            var mins    = parseInt(splits[0]);
-            var secs    = parseInt(splits[1]);
-            
-            var time    = mins*60 + secs;
-            time++;
-
-            var date = new Date(null);
-            date.setSeconds(time);
-            $("#audio_time").text(date.toISOString().substr(14,5));
-        },1000);
-
-        $("#soundwaves").removeClass("pause");
-        $("#ctl_stop").data("photo_i",photo_i).removeClass("off");
-        // $("#ctl_pause").removeClass("off");
-        // $("#ctl_record").addClass("off");
-        // $("#ctl_play").addClass("off");
+        return;
     }
 
     ,stopRecording : function(photo_i){
@@ -284,10 +248,13 @@ console.log("partial id duh pouch collate" . partial_id);
             app.cache.user.photos[photo_i]["audio"] = true;
             $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
             $("#pic_review .daction.audio").addClass("hasAudio");
+
+            console.log(app.cache.user);
+
             //NOW SAVE IT AS ATTACHMENT
-            // var data        = new Blob(["this would be the audio file"] , {type: 'text/plain'});
+            // var data        = new Blob(["this would be the audio file"] , {type: 'audio/wav'});
             // var attref      = "audio_" + photo_i + ".wav";
-            // app.cache.user._attachments[attref] = { "content_type": "text/plain" , "data" : data };
+            // app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : data };
         } else {
             console.log("Nothing stopped");
         }
@@ -300,6 +267,31 @@ console.log("partial id duh pouch collate" . partial_id);
         $("#ctl_record").removeClass("off");
         $("#ctl_play").removeClass("off");
         app.cache.audioStatus = 'stopped';
+    }
+
+    ,startRecording : function(photo_i){
+        app.cache.audioStatus = "recording";
+        app.cache.audioObj.startRecord();
+ 
+        app.cache.audioTimer = setInterval(function(){
+            var curtime = $("#audio_time").text();
+            var splits  = curtime.split(":");
+            var mins    = parseInt(splits[0]);
+            var secs    = parseInt(splits[1]);
+            
+            var time    = mins*60 + secs;
+            time++;
+
+            var date = new Date(null);
+            date.setSeconds(time);
+            $("#audio_time").text(date.toISOString().substr(14,5));
+        },1000);
+
+        $("#soundwaves").removeClass("pause");
+        $("#ctl_stop").data("photo_i",photo_i).removeClass("off");
+        
+        console.log("started recording?");
+        return;
     }
 
     ,recordAudio: function(photo_i){
@@ -316,54 +308,50 @@ console.log("partial id duh pouch collate" . partial_id);
 
         if(app.cache.platform == "iOS") {
             var recordFileName = "temp_recording.wav";
+
             //first create file if not exist
             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
                 fileSystem.root.getFile(recordFileName, {
-                    create: true,
-                    exclusive: false
-                }, function(fileEntry){
-                    // [isFile,isDirectory,name,fullPath,filesystem,nativeURL
-                    // ,constructor,createWriter,file,getMetadata,setMetadata
-                    // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
-                    // ,toURI,remove,getParent]
-                    // fileEntry.fullPath
-                    app.cache.audioObj = new Media(recordFileName
-                    ,  function(){
-                        //The callback that executes after a Media object 
-                        //has completed the current play, record, or stop action
-                        console.log("MediaObject successfully completed the current play, record, or stop action");
-                    }, function(err){
-                        // The callback that executes if an error occurs.
-                        console.log(err.message);
-                        console.log(err.code);
-                    }, function(){
-                        // The callback that executes to indicate status changes.
-                        console.log("what does status change mean?");
-                    }); //of new Media
-
-                    ourvoice.startRecording(photo_i);
-                }, function(err){
-                    console.log(err.code +  " : " + err.message);
-                    console.log("fileSystem.root error()");
-                }); //of getFile
-            }, function(){
-                console.log("window.requestFileSystem  error()");
+                        create: true,
+                        exclusive: false
+                    }
+                    ,function(fileEntry){
+                        // [isFile,isDirectory,name,fullPath,filesystem,nativeURL
+                        // ,constructor,createWriter,file,getMetadata,setMetadata
+                        // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
+                        // ,toURI,remove,getParent]
+                        // fileEntry.fullPath
+                        app.cache.audioObj = new Media(recordFileName
+                            ,function(){
+                                // console.log("MediaObject successfully completed play, record, or stop action");
+                            }
+                            ,function(err){
+                                console.log(err.code +  " : " + err.message);
+                            }
+                            ,function(){
+                                // The callback that executes to indicate status changes.
+                            }); //of new Media
+                    }
+                    ,function(err){
+                        console.log(err.code +  " : " + err.message);
+                    }); //of getFile
+            }
+            ,function(){
+                // console.log("window.requestFileSystem  error()");
             }); //of requestFileSystem
+
+            ourvoice.startRecording(photo_i);
         }else{
             var recordFileName = "temp_recording.mp3";
-
             app.cache.audioObj = new Media(recordFileName, function(){
-                console.log("Media created successfully");
+                // console.log("Media created successfully");
             }, function(err){
-                console.log(err.message);
-                console.log(err.code);
-                console.log("android error");
+                //ANDROID ERROR
+                console.log(err.code +  " : " + err.message);
             }, null); 
-            
+
             ourvoice.startRecording(photo_i);
         }
-
-        console.log("is it recording?");
         return;
     }
 
@@ -375,9 +363,8 @@ console.log("partial id duh pouch collate" . partial_id);
                 var fileurl = "data:image/jpeg;base64," + imageData;
 
                 app.cache.user.photos.push({
-                         "geotag"   : null 
-                        ,"synced"   : false
-                        ,"audio"    : false
+                         "audio"    : false
+                        ,"geotag"   : null 
                         ,"goodbad"  : null
                     });
 
@@ -387,7 +374,7 @@ console.log("partial id duh pouch collate" . partial_id);
 
                 //PREPARE ATTACHEMENT
                 var attref      = "pic_" + thispic_i + ".jpg";
-                app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : fileurl };
+                app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
 
                 //SET UP PHOTO PREVIEW PAGE
                 ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
@@ -454,7 +441,6 @@ console.log("partial id duh pouch collate" . partial_id);
             //IF HAS AUDIO THEN SHOW PLAY BUTTON
             audiorec.addClass("hasAudio");
         }
-
         newlink.prepend(newthum);
         newitem.append(newlink);
         newitem.append(audiorec);
@@ -467,17 +453,15 @@ console.log("partial id duh pouch collate" . partial_id);
             thumbs.append(thumbsdown);
             newitem.append(thumbs);
         }
-
         newitem.append(trash);
 
         $(".nomedia").hide();
         newitem.addClass("delete_on_reset");
         $("#mediacaptured").append(newitem);
 
-        var pic_count = $(".mi_slideout b").text();
-        pic_count = parseInt(pic_count) + 1;
+        var pic_count   = $(".mi_slideout b").text();
+        pic_count       = parseInt(pic_count) + 1;
         $(".mi_slideout b").text(pic_count);
-
         return;
     }
 
@@ -488,10 +472,9 @@ console.log("partial id duh pouch collate" . partial_id);
         app.cache.user.photos[photo_i] = null;
         $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
             $(this).remove();
-            var pic_count = $(".mi_slideout b").text();
-            pic_count = parseInt(pic_count) - 1;
+            var pic_count   = $(".mi_slideout b").text();
+            pic_count       = parseInt(pic_count) - 1;
             $(".mi_slideout b").text(pic_count);
-            
             next();
         });
         return;
@@ -499,15 +482,10 @@ console.log("partial id duh pouch collate" . partial_id);
 
     ,resetDevice : function(){
         $(".loaded").removeClass("loaded");
-
-        
-
         $(".mi_slideout b").text(0);
         $(".nomedia").show();
         $(".delete_on_reset").remove();
-
         ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
-
         return;
     }
 };
