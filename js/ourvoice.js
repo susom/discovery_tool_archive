@@ -218,13 +218,17 @@ var ourvoice = {
         $("#distance").text(app.cache.user.currentDistance);
     }
 
-    ,startPlaying : function(){
+    ,startPlaying : function(photo_i){
+        $("#audio_record").addClass("playing");
+        var attref      = "music_" + photo_i + ".wav";
+        // var audiofile   = app.cache.user["_attachments"][attref]["data"];
+        
         app.cache.audioStatus = "playing";
         app.cache.audioObj.play();
 
         $("#soundwaves").removeClass("pause");
         $("#ctl_stop").removeClass("off");
-        $("#ctl_play").addClass("off");
+        // $("#ctl_play").addClass("off");
         return;
     }
 
@@ -240,6 +244,8 @@ var ourvoice = {
         } else if (app.cache.audioStatus == 'playing') {
             app.cache.audioObj.stop();            
             console.log("Play stopped");
+
+            app.cache.audioObj.release();
         }else if(app.cache.audioStatus == "stop_release"){
             app.cache.audioObj.stop();
             $("#audio_time").text("00:00");
@@ -252,8 +258,6 @@ var ourvoice = {
             var data        = new Blob(["this would be the audio file"] , {type: 'audio/wav'});
             var attref      = "audio_" + photo_i + ".wav";
             app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : data };
-            
-            app.cache.audioObj.release();
         } else {
             console.log("Nothing stopped");
         }
@@ -269,6 +273,7 @@ var ourvoice = {
     }
 
     ,startRecording : function(photo_i){
+        $("#audio_record").removeClass("playing");
         app.cache.audioStatus = "recording";
         app.cache.audioObj.startRecord();
  
@@ -371,7 +376,7 @@ var ourvoice = {
 
                 //PREPARE ATTACHEMENT
                 var attref      = "photo_" + thispic_i + ".jpg";
-                app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
+                app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : fileurl };
 
                 //SET UP PHOTO PREVIEW PAGE
                 ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);

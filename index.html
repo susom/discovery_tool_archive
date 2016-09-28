@@ -233,12 +233,13 @@
     </div>
 
     <div id="audio_record" class="panel">
-        <h3 data-translation-key="you_recording"></h3>
+        <h3 class="record" data-translation-key="you_recording"></h3>
+        <h3 class="play" data-translation-key="you_playing"></h3>
         <div id="soundwaves"></div>
         <div id="audio_time">00:00</div>
         <div id="audio_controls">
             <ul>
-                <li><a id="ctl_stop" href="#"><i data-translation-key="done_recording"></i></a></li>
+                <li><a id="ctl_stop" href="#"><i class="record" data-translation-key="done_recording"></i><i class="play" data-translation-key="done_playing"></i></a></li>
             </ul>
         </div>
     </div>
@@ -281,7 +282,7 @@
         </div>
     </div>
 </div>
-<script src="http://192.168.0.105:8080/target/target-script-min.js#anonymous"></script>
+<!-- <script src="http://192.168.0.105:8080/target/target-script-min.js#anonymous"></script> -->
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/pouchdb.min.js"></script>
 <script type="text/javascript" src="js/pouchdb-collate.js"></script>

@@ -710,6 +710,14 @@ nav .back{
 #audio_record {
     text-align         : center;
 }
+#audio_record.playing .play {
+    display:block;
+}
+#audio_record.playing .record,
+#audio_record.playing #audio_time,
+#audio_record .play {
+    display:none;
+}
 #audio_time {
     font-size          : 180%;
     margin-bottom      : 15px;

@@ -176,13 +176,13 @@ var app = {
             
                 //STORE THE USER AND THEN WIPE THE CACHE
                 // console.log("SAVING THE USER NOW!!!");
-                // console.log(app.cache.user);
+                console.log(app.cache.user);
                 // console.log(app.cache.user.survey);
                 // console.log(app.cache.user.photos);
                 // console.log(app.cache.user.geotags);
 
 
-                datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                // datastore.writeDB(app.cache.localusersdb , app.cache.user);
                 app.initCache();
             }
 
@@ -227,7 +227,8 @@ var app = {
         $(".panel").on("click",".previewthumb",function(){
             //OPEN UP PREVIEW PAGE FOR PHOTO
             var thispic_i   = $(this).data("photo_i");
-            ourvoice.previewPhoto(app.cache.user.photos[thispic_i]);
+            var fileurl     = $(this).find("img").attr("src");
+            ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
 
             var panel       = $(this).closest(".panel");
             var next        = "pic_review";
@@ -253,29 +254,38 @@ var app = {
             var panel   = $(this).closest(".panel");
             var next    = $(this).data("next");
 
+            var savehistory = false;
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
                 ourvoice.takePhoto();
             }else{
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i);
+                savehistory = true;
             }
 
             app.closeCurrentPanel(panel);
-            app.transitionToPanel($("#"+next));
+            app.transitionToPanel($("#"+next),savehistory);
             return false;
         });
 
         $("#mediacaptured").on("click",".audiorec", function(){
+            var panel   = $(this).closest(".panel");
+            var next    = "audio_record";
             var photo_i = $(this).data("photo_i");
-            if( $(this).hasClass("audio") ){
-                console.log("play the clip for " + photo_i);
-                // ourvoice.startPlaying();
+
+            if( $(this).hasClass("hasAudio") ){
+                ourvoice.startPlaying(photo_i);
+                console.log("is this not playing?");
             }else{
-                console.log("record the audio for " + photo_i);
-                // ourvoice.recordAudio(photo_i);
+                ourvoice.recordAudio(photo_i);
             }
-            return;
+
+            app.closeCurrentPanel(panel);
+            app.transitionToPanel($("#"+next), true);
+
+            //I WANT THEM BOTH TO GO TO THE AUDIO PAGE, THEN RETURN
+            return false;
         });
 
         $("#audio_controls").on("click","a", function(){

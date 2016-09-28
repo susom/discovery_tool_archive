@@ -68,7 +68,9 @@ var config = {
                         ,{ "good_or_bad" : "Is this good or bad for the community?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
+                        ,{ "you_playing" : "Audio playback..."}
                         ,{ "done_recording" : "Done Recording"}
+                        ,{ "done_playing" : "End Playback"}
 
                         ,{ "almost_there" : "Almost there..."}
                         ,{ "please_answer" : "Please answer a few questions."}
@@ -130,7 +132,9 @@ var config = {
                         ,{ "good_or_bad"    : "¿Es algo bueno o malo para la comunidad?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
+                        ,{ "you_playing" : "Audio playback..."}
                         ,{ "done_recording" : "Done Recording"}
+                        ,{ "done_playing" : "End Playback"}
 
                         ,{ "almost_there" : "Almost there..."}
                         ,{ "please_answer" : "Please answer a few questions."}
@@ -203,6 +207,123 @@ var config = {
                         ,{"lang" : "es", "text" : "Yo quiero taco bell?"} 
                       ] 
                     }
+
+                    ,{ "type"        : "radio"
+                      ,"name"       : "close_knit"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'This is a close-knit neighborhood.'"}
+                        ,{"lang" : "es", "text" : "'This is a close-knit neighborhood.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                         ]  
+                      ] 
+                    }
+                    ,{ "type"        : "radio"
+                      ,"name"       : "influence"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'I can influence decisions that affect my community.'"}
+                        ,{"lang" : "es", "text" : "'I can influence decisions that affect my community.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                         ]  
+                      ] 
+                    }
+                    ,{ "type"        : "radio"
+                      ,"name"       : "community"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"}
+                        ,{"lang" : "es", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                         ]  
+                      ] 
+                    }
+                    ,{ "type"        : "radio"
+                      ,"name"       : "connections"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'People in my community have connections to people who can influence what happens in my community.'"}
+                        ,{"lang" : "es", "text" : "'People in my community have connections to people who can influence what happens in my community.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                         ]  
+                      ] 
+                    }
                 ]
              }
 
@@ -251,7 +372,9 @@ var config = {
                         ,{ "good_or_bad" : "Is this good or bad for the community?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
+                        ,{ "you_playing" : "Audio playback..."}
                         ,{ "done_recording" : "Done Recording"}
+                        ,{ "done_playing" : "End Playback"}
 
                         ,{ "almost_there" : "Almost there..."}
                         ,{ "please_answer" : "Please answer a few questions."}
@@ -313,7 +436,9 @@ var config = {
                         ,{ "good_or_bad"    : "¿Es algo bueno o malo para la comunidad?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
+                        ,{ "you_playing" : "Audio playback..."}
                         ,{ "done_recording" : "Done Recording"}
+                        ,{ "done_playing" : "End Playback"}
 
                         ,{ "almost_there" : "Almost there..."}
                         ,{ "please_answer" : "Please answer a few questions."}
@@ -375,7 +500,9 @@ var config = {
                         ,{ "good_or_bad" : "Is this good or bad for the community?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
+                        ,{ "you_playing" : "Audio playback..."}
                         ,{ "done_recording" : "Done Recording"}
+                        ,{ "done_playing" : "End Playback"}
 
                         ,{ "almost_there" : "Almost there..."}
                         ,{ "please_answer" : "Please answer a few questions."}
@@ -454,6 +581,146 @@ var config = {
                          {"lang" : "en", "text" : "What is your age?"}
                         ,{"lang" : "es", "text" : "Yo quiero taco bell?"} 
                         ,{"lang" : "ch", "text" : "CH Yo quiero taco bell?"} 
+                      ] 
+                    }
+                    ,{ "type"        : "radio"
+                      ,"name"       : "close_knit"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'This is a close-knit neighborhood.'"}
+                        ,{"lang" : "es", "text" : "'This is a close-knit neighborhood.'"} 
+                        ,{"lang" : "ch", "text" : "'This is a close-knit neighborhood.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                            ,{"lang" : "ch", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "ch", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "ch", "text" : "Strongly agree", "value" : "5"}
+                         ]  
+                      ] 
+                    }
+                    ,{ "type"        : "radio"
+                      ,"name"       : "influence"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'I can influence decisions that affect my community.'"}
+                        ,{"lang" : "es", "text" : "'I can influence decisions that affect my community.'"} 
+                        ,{"lang" : "ch", "text" : "'I can influence decisions that affect my community.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                            ,{"lang" : "ch", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "ch", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "ch", "text" : "Strongly agree", "value" : "5"}
+                         ]  
+                      ]
+                    }
+                    ,{ "type"        : "radio"
+                      ,"name"       : "community"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"}
+                        ,{"lang" : "es", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"} 
+                        ,{"lang" : "ch", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                            ,{"lang" : "ch", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "ch", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "ch", "text" : "Strongly agree", "value" : "5"}
+                         ]  
+                      ]
+                    }
+                    ,{ "type"        : "radio"
+                      ,"name"       : "connections"
+                      ,"label"      : [
+                         {"lang" : "en", "text" : "'People in my community have connections to people who can influence what happens in my community.'"}
+                        ,{"lang" : "es", "text" : "'People in my community have connections to people who can influence what happens in my community.'"} 
+                        ,{"lang" : "ch", "text" : "'People in my community have connections to people who can influence what happens in my community.'"} 
+                      ] 
+                      ,"options"    : [
+                         [  
+                             {"lang" : "en", "text" : "Strongly Disagree", "value" : "1"}
+                            ,{"lang" : "es", "text" : "Strongly Disagree" , "value" : "1"}
+                            ,{"lang" : "ch", "text" : "Strongly Disagree" , "value" : "1"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
+                            ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
+                         ]
+                         ,[  
+                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "es", "text" : "Somewhat agree", "value" : "4"}
+                            ,{"lang" : "ch", "text" : "Somewhat agree", "value" : "4"}
+                         ] 
+                         ,[  
+                             {"lang" : "en", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "es", "text" : "Strongly agree", "value" : "5"}
+                            ,{"lang" : "ch", "text" : "Strongly agree", "value" : "5"}
+                         ]  
                       ] 
                     }
                 ]
