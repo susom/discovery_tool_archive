@@ -100,6 +100,8 @@ var app = {
         datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);
 
+        $("#debug").val("does it get here");
+        return;
         //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
