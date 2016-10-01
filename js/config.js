@@ -64,7 +64,7 @@ var config = {
                         ,{ "photos_here" : "Your photos will show here..."}                
 
                         ,{ "photo_detail" : "Photo Preview"}
-                        ,{ "why_audio" : "Tell us why you took this photo?"}
+                        ,{ "why_audio" : "Tell us why you took this photo."}
                         ,{ "good_or_bad" : "Is this good or bad for the community?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
@@ -128,7 +128,7 @@ var config = {
                         ,{ "photos_here" : "Your photos will show here..."}                
 
                         ,{ "photo_detail" : "Photo Preview"}
-                        ,{ "why_audio"      : "¿Porqué tomó esta fotografía?"}
+                        ,{ "why_audio"      : "¿Porqué tomó esta fotografía."}
                         ,{ "good_or_bad"    : "¿Es algo bueno o malo para la comunidad?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
@@ -167,12 +167,12 @@ var config = {
                       ] 
                       ,"options"    : [
                          [  
-                             {"lang" : "en", "text" : "Yes", "value" : "Yes"}
-                            ,{"lang" : "es", "text" : "Si" , "value" : "Si"}
+                             {"lang" : "en", "text" : "Male", "value" : "m"}
+                            ,{"lang" : "es", "text" : "Male", "value" : "m" }
                          ] 
                          ,[  
-                             {"lang" : "en", "text" : "No", "value" : "No"}
-                            ,{"lang" : "es", "text" : "No", "value" : "No"}
+                             {"lang" : "en", "text" : "Female", "value" : "f"}
+                            ,{"lang" : "es", "text" : "Female", "value" : "f"}
                          ] 
                       ] 
                     }
@@ -368,7 +368,7 @@ var config = {
                         ,{ "photos_here" : "Your photos will show here..."}                
 
                         ,{ "photo_detail" : "Photo Preview"}
-                        ,{ "why_audio" : "Tell us why you took this photo?"}
+                        ,{ "why_audio" : "Tell us why you took this photo."}
                         ,{ "good_or_bad" : "Is this good or bad for the community?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
@@ -432,7 +432,7 @@ var config = {
                         ,{ "photos_here" : "Your photos will show here..."}                
 
                         ,{ "photo_detail" : "Photo Preview"}
-                        ,{ "why_audio"      : "¿Porqué tomó esta fotografía?"}
+                        ,{ "why_audio"      : "¿Porqué tomó esta fotografía."}
                         ,{ "good_or_bad"    : "¿Es algo bueno o malo para la comunidad?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
@@ -496,7 +496,7 @@ var config = {
                         ,{ "photos_here" : "Your photos will show here..."}                
 
                         ,{ "photo_detail" : "Photo Preview"}
-                        ,{ "why_audio" : "Tell us why you took this photo?"}
+                        ,{ "why_audio" : "Tell us why you took this photo."}
                         ,{ "good_or_bad" : "Is this good or bad for the community?"}
                         ,{ "review_done" : "Done with photo!"}
                         ,{ "you_recording" : "You are recording..."}
@@ -536,14 +536,14 @@ var config = {
                       ] 
                       ,"options"    : [
                          [  
-                             {"lang" : "en", "text" : "Yes", "value" : "Yes"}
-                            ,{"lang" : "es", "text" : "Si" , "value" : "Si" }
-                            ,{"lang" : "ch", "text" : "Hai", "value" : "Hai"}
+                             {"lang" : "en", "text" : "Male", "value" : "m"}
+                            ,{"lang" : "es", "text" : "Male", "value" : "m" }
+                            ,{"lang" : "ch", "text" : "Male", "value" : "m"}
                          ] 
                          ,[  
-                             {"lang" : "en", "text" : "No", "value" : "No"}
-                            ,{"lang" : "es", "text" : "No", "value" : "No"}
-                            ,{"lang" : "ch", "text" : "BU", "value" : "BU"}
+                             {"lang" : "en", "text" : "Female", "value" : "f"}
+                            ,{"lang" : "es", "text" : "Female", "value" : "f"}
+                            ,{"lang" : "ch", "text" : "Female", "value" : "f"}
                          ] 
                       ] 
                     }

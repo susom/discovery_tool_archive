@@ -40,18 +40,19 @@ var ourvoice = {
         var p = project;
 
         //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
-        var partial_id  = datastore.pouchCollate([app.cache.uuid, p["project_id"]]);
-        
+        var partial_id  = datastore.pouchCollate([app.cache.uuid,  p["project_id"]]);
+        var partial_end = partial_id + "\uffff";
         app.cache.localusersdb.allDocs({
             // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
              startkey   : partial_id
-            ,endkey     : partial_id + "\ufff0"
+            ,endkey     : partial_end
         }).then(function (res) {
-            // console.log("will always return total docs: " + res["total_rows"]);
+            app.initCache();
+
             //SET THE NEXT AVAILABLE USER OBJECT _id
             app.cache.active_project["proj_id"] = p["project_id"];
             app.cache.participant_id            = (res["rows"].length + 1);
-            app.cache.next_id                   = datastore.pouchCollate([app.cache.uuid, app.cache.active_project["proj_id"], app.cache.participant_id]);
+            app.cache.next_id                   = datastore.pouchCollate([app.cache.uuid,   app.cache.active_project["proj_id"],   app.cache.participant_id]);
             app.cache.proj_thumbs               = p["thumbs"];
 
             //Display This Info
@@ -220,37 +221,43 @@ var ourvoice = {
 
     ,startPlaying : function(photo_i){
         $("#audio_record").addClass("playing");
-        var attref      = "audio_" + photo_i + ".wav";
-        var audioblob   = app.cache.user["_attachments"][attref]["data"];
+        var attref          = "audio_" + photo_i + ".wav";
+        var base64_or_arbuf = app.cache.user["_attachments"][attref]["data"];
+            
+        // TODO /9/30/16
+        // GOTTA FIGURE OUT IF THE BASE64 AUDIO IS VIABLE 
+        // BY SEEING IF IT CAN BE REPLAYED
+        // var strip_typedata  = base64_or_arbuf.replace("data:audio/wav;base64,","");
+        // var snd             = new Audio(strip_typedata);
+        // snd.play();
 
-        // var reader      = new FileReader();
-        // reader.addEventListener("loadend", function() {
-        //    // reader.result contains the contents of blob as a typed array
-        // });
-        // reader.readAsArrayBuffer(audioblob);
+        // console.log(strip_typedata);
+        // var decodedData     = window.atob(strip_typedata);
+        // console.log("this dont work?");
+        // console.log(decodedData);
 
-        // console.log("ok what is this reader");
-        // console.log(reader);
+        // window.AudioContext = window.AudioContext||window.webkitAudioContext||window.mozAudioContext;
+        // var context         = new AudioContext();
 
-        // var my_media = new Media(audiofile,
-        //     // success callback
-        //     function () {
-        //         console.log("playAudio():Audio Success");
-        //     },
-        //     // error callback
-        //     function (err) {
-        //         console.log("playAudio():Audio Error: " + err);
-        //     }
-        // );
-        // // Play audio
-        // my_media.play();
+        // //this represents the audio source. We need to now populate it with binary data.
+        // var source          = context.createBufferSource(); 
 
-        app.cache.audioStatus = "playing";
-        app.cache.audioObj.play();
+        // //populate audio source from the retrieved binary data. This can be done using decodeAudioData function.
+        // //first parameter of decodeAudioData needs to be array buffer type. 
+        // //So from wherever you retrieve binary data make sure you get in form of array buffer type.
+        // context.decodeAudioData(base64_or_arbuf, function(buffer) {
+        //     source.buffer   = buffer;
+
+        //     //destination property is reference the default audio device
+        //     source.connect(context.destination);
+
+        //     //now play the sound.
+        //     source.start(0);
+        // }, null);
+        // console.log("neighter audiocontext");
 
         $("#soundwaves").removeClass("pause");
         $("#ctl_stop").removeClass("off");
-        // $("#ctl_play").addClass("off");
         return;
     }
 
@@ -259,7 +266,6 @@ var ourvoice = {
             return;
         }
         clearInterval(app.cache.audioTimer);
-
         if (app.cache.audioStatus == 'recording') {
             app.cache.audioObj.stopRecord();
             console.log("Recording stopped");
@@ -276,15 +282,29 @@ var ourvoice = {
             $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
             $("#pic_review .daction.audio").addClass("hasAudio");
 
-            //NOW SAVE IT AS ATTACHMENT
-            var data        = new Blob( [app.cache.currentAudio]  , {type: 'audio/wav'});
+            //NOW SAVE IT AS AN INLINE ATTACHMENT
+            var fileEntry   = app.cache.currentAudio ; 
             var attref      = "audio_" + photo_i + ".wav";
-            app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : data };
-            
+            fileEntry.file(function(file) {
+                    var reader       = new FileReader();
+                    reader.onloadend = function(e) {
+                        var base64_or_arbuf = this.result;
+                        var strip_typedata  = base64_or_arbuf.replace("data:audio/wav;base64,","");
+                        var blobit          = new Blob([base64_or_arbuf], {type: 'audio/wav'})
+                        app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : blobit };
+                    };
+                    // reader.readAsArrayBuffer(file);
+                    reader.readAsDataURL(file);
+                }
+                ,function(err){
+                    console.log(err);
+                    // console.log("ERROR FILE");                
+                }
+            );
             app.cache.audioObj.release();
-            // app.cache.audioObj = null;
+            app.cache.audioObj = null;
         } else {
-            console.log("Nothing stopped");
+            // console.log("Nothing stopped");
         }
 
         $("#soundwaves").addClass("pause");
@@ -337,39 +357,41 @@ var ourvoice = {
             var recordFileName = "temp_recording.wav";
 
             //first create file if not exist
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-                fileSystem.root.getFile(recordFileName, {
-                        create: true,
-                        exclusive: false
-                    }
-                    ,function(fileEntry){
-                        // [isFile,isDirectory,name,fullPath,filesystem,nativeURL
-                        // ,constructor,createWriter,file,getMetadata,setMetadata
-                        // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
-                        // ,toURI,remove,getParent]
-                        // fileEntry.fullPath
-                        
-                        //PUT THIS ACTUAL FILE INTO CACHE, THEN WHEN STOPPED RECORDING STORE IT 
-                        app.cache.currentAudio = fileEntry; 
-                        app.cache.audioObj = new Media(recordFileName
-                            ,function(){
-                                // console.log(fileEntry);
-                                // console.log("MediaObject successfully completed play, record, or stop action");
-                            }
-                            ,function(err){
-                                console.log(err.code +  " : " + err.message);
-                            }
-                            ,function(){
-                                // The callback that executes to indicate status changes.
-                            }); //of new Media
-                    }
-                    ,function(err){
-                        console.log(err.code +  " : " + err.message);
-                    }); //of getFile
-            }
-            ,function(){
-                // console.log("window.requestFileSystem  error()");
-            }); //of requestFileSystem
+            window.requestFileSystem(LocalFileSystem.TEMPORARY, 0
+                ,function(fileSystem){
+                    fileSystem.root.getFile(recordFileName, {
+                            create    : true,
+                            exclusive : false
+                        }
+                        ,function(fileEntry){
+                            // [isFile,isDirectory,name,fullPath,filesystem,nativeURL
+                            // ,constructor,createWriter,file,getMetadata,setMetadata
+                            // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
+                            // ,toURI,remove,getParent]
+
+                            //PUT THIS ACTUAL FILE INTO CACHE, THEN WHEN STOPPED RECORDING STORE IT 
+                            app.cache.currentAudio  = fileEntry; 
+                            app.cache.audioObj      = new Media(recordFileName
+                                ,function(){
+                                    // console.log(fileEntry);
+                                    // console.log("MediaObject successfully completed play, record, or stop action");
+                                }
+                                ,function(err){
+                                    console.log(err.code +  " : " + err.message);
+                                }
+                                ,function(){
+                                    // The callback that executes to indicate status changes.
+                                }); //of new Media
+                        }
+                        ,function(err){
+                            console.log("IOS FUCKING ERROR");
+                            console.log(err.code +  " : " + err.message);
+                        }); //of getFile
+                }
+                ,function(){
+                    // console.log("window.requestFileSystem  error()");
+                }
+            ); //of requestFileSystem
 
             ourvoice.startRecording(photo_i);
         }else{
@@ -378,6 +400,7 @@ var ourvoice = {
                 // console.log("Media created successfully");
             }, function(err){
                 //ANDROID ERROR
+                console.log("ANDROID FUCKING ERROR?");
                 console.log(err.code +  " : " + err.message);
             }, null); 
 
@@ -405,7 +428,7 @@ var ourvoice = {
 
                 //PREPARE ATTACHEMENT
                 var attref      = "photo_" + thispic_i + ".jpg";
-                app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : fileurl };
+                app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
 
                 //SET UP PHOTO PREVIEW PAGE
                 ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
@@ -516,6 +539,8 @@ var ourvoice = {
         $(".mi_slideout b").text(0);
         $(".nomedia").show();
         $(".delete_on_reset").remove();
+        app.initCache();
+
         return;
     }
 };

@@ -34,10 +34,17 @@ var app = {
         app.cache.active_project    = { "_id" : "active_project" }; //active project ID
 
         app.cache.uuid              = null; //DEVICE UNIQUE ID
+        app.cache.platform          = null; //IOS/ANDROID ETC
     }
     
     ,initCache : function(){
+        app.cache.user              = null;
         app.cache.user              = config["default_user"]; //NEED TO USE COLLATE
+        app.cache.user["_attachments"] = {};
+        app.cache.user["photos"]    = [];
+        app.cache.user["geotags"]   = [];
+        app.cache.user["survey"]    = [];
+
         app.cache.positionTrackerId = null; //ref to setInterval
         app.cache.curmap            = null; //ref to google map
         app.cache.currentWalkMap    = [];   //array of geotags for current walk
@@ -45,7 +52,6 @@ var app = {
 
         app.cache.next_id           = null; //NEXT USER ID - POUCH COLLATED
         app.cache.participant_id    = null; //JUST SIMPLE INTEGER
-        app.cache.platform          = null; //IOS/ANDROID ETC
 
         app.cache.audioObj          = null; //FOR VOICE RECORDINGS
         app.cache.audioStatus       = null;
@@ -177,14 +183,13 @@ var app = {
             
                 //STORE THE USER AND THEN WIPE THE CACHE
                 // console.log("SAVING THE USER NOW!!!");
-                console.log(app.cache.user);
                 // console.log(app.cache.user.survey);
                 // console.log(app.cache.user.photos);
                 // console.log(app.cache.user.geotags);
 
-
-                // datastore.writeDB(app.cache.localusersdb , app.cache.user);
-                app.initCache();
+                console.log("finished! show user obj to be saved");
+                console.log(app.cache.user);
+                datastore.writeDB(app.cache.localusersdb , app.cache.user);
             }
 
             //TRANSITION TO NEXT PANEL
@@ -345,7 +350,7 @@ var app = {
         var hammertime  = new Hammer(myElement);
         hammertime.on('swipeleft', function(ev) {
             //swipe left go to forward?
-            //console.log("swiped left");
+            console.log("swiped left");
         });
         hammertime.on('swiperight',function(){
             //swipe right to go back
@@ -373,7 +378,7 @@ var app = {
 
         $("#end_session").click(function(){
             //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
-            ourvoice.resetDevice();
+            ourvoice.resetDevice();            
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
             app.closeCurrentPanel($("#finish"));

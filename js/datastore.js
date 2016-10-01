@@ -129,7 +129,8 @@ var datastore = {
     }
 
     ,pouchCollate : function(component_array){
-        return window.pouchCollate.toIndexableString(component_array).replace(/\u0000/g, '\u0001');
+        // return window.pouchCollate.toIndexableString(component_array).replace(/\u0000/g, '\u0001')
+        return component_array.join("_");
     }
 
     ,pouchDeCollate : function(_id){

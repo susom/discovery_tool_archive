@@ -322,6 +322,9 @@ nav .back{
     width: 90%;
     margin :0 auto;
 }
+#consent_eight .consent blockquote{
+    font-size:130%;
+}
 .consent h3{
     width              : 90%;
     margin             : 0 auto;
@@ -408,11 +411,19 @@ nav .back{
     background      : #f78384 url(../img/icon_stop.png) 50% 50% no-repeat;
     background-size : 70%;
     text-align      :center;
+
+    /*SINCE HIDING PIC REVIEW*/
+    width:100%;
+    background-size : 36%;
 }
 .walk_actions .endwalk i {
     font-size       : 120%;
     line-height     : 110%;
     width           : 55%;
+
+    /*SINCE HIDING PIC REVIEW*/
+    width:32%;
+    font-size:110%;
 }
 .mi_slideout {
     float           : left;
@@ -422,6 +433,9 @@ nav .back{
     text-decoration : none;
     text-align      : left ;
     color           : #333;
+
+    /*HIDE FOR NOW*/
+    display:none;
 }
 .mi_slideout b {
     font-weight     : normal;
@@ -431,10 +445,10 @@ nav .back{
     text-indent     : 23%;
     margin          : 10px auto 0;
 }
-.mi_slideout b:after {
+/*.mi_slideout b:after {
     content         : "x";
     margin-left     : 8px;
-}
+}*/
 .mi_slideout i {
     width           : 90%;
     transform       : translate(-50%,70%);
@@ -768,39 +782,6 @@ nav .back{
     transform: translate(-50%,-50%);
 }
 
-
-
-
-#walk_survey fieldset {
-    border:none;
-    margin:0;
-    padding:0;
-}
-#walk_survey div {
-    margin-bottom:20px;
-}
-#walk_survey span {
-    display:block;
-    margin-bottom:5px;
-    font-size:130%;
-}
-#walk_survey label {
-    display:block;
-    margin:0  0 5px 0;
-}
-
-
-#walkmap {
-    width: 90%;
-    margin: 0 auto
-}
-#google_map {
-    border:1px solid #475464; 
-    min-height:200px;
-    max-width:calc(100%);
-}
-
-
 /*FINAL PAGE*/
 #finish {
     font-size:170%;
@@ -821,7 +802,149 @@ nav .back{
     font-size: 110%;
 }
 
-
 .delete_on_reset {
 
+}
+
+
+#walkmap {
+    width: 90%;
+    margin: 0 auto
+}
+#google_map {
+    border:1px solid #475464; 
+    min-height:200px;
+    max-width:calc(100%);
+}
+#step_three .button {
+    color:#333;
+    font-weight:500;
+    background:#ccc;
+    box-shadow:0 0 1px 1px #888;
+}
+
+/*BIGGER TOUCH FRIENDLY RADIOS/CHECKBOXES*/
+#walk_survey fieldset {
+    border:none;
+    margin:0;
+    padding:0;
+}
+#walk_survey div {
+    padding-bottom:30px;
+    margin-bottom:35px;
+    border-bottom:1px solid #cfcfcf;
+}
+#walk_survey label {
+    display:block;
+    margin:0 0 0 0;
+}
+
+.survey_q {
+    display:block;
+    margin-bottom:5px;
+    font-size:150%; 
+    font-weight:500;
+}
+.touchify_radio,
+.touchify_checkbox,
+.touchify_text,
+.touchify_select{
+    position:relative;
+    font-size:130%;
+    font-weight:500;
+}
+
+.touchify_checkbox input,
+.touchify_radio input {
+    visibility : hidden;
+    position   : absolute;
+    z-index    : -2;
+}
+.touchify_checkbox:focus + span,
+.touchify_radio:focus + span {
+    border-color: #706f65;
+    box-shadow: 0 0 4px #706f65;
+}
+.touchify_checkbox,
+.touchify_radio {
+    text-indent  : initial;
+    display      : inline-block;
+    padding      : 5px 15px 7px 35px;
+    margin-right : 5px;
+    cursor       : pointer;
+    position     : relative;
+}
+
+.touchify_radio input + span {
+    border-radius : 10px;
+    position:relative;
+}
+
+.touchify_checkbox input + span,
+.touchify_radio input + span {
+    position           : absolute;
+    top                : calc(50% - 13px);
+    left               : 8px;
+    display            : inline-block;
+    background         : #fff;
+    border             : 1px solid #999;
+    width              : 20px;
+    height             : 20px;
+    margin             : 3px 10px 0 0;
+    -moz-box-sizing    : border-box;
+    box-sizing         : border-box;
+    -webkit-transition : all 0.1s linear;
+    transition         : all 0.1s linear;
+}
+
+.touchify_checkbox input + span:after,
+.touchify_radio input + span:after {
+    border             : 2px solid #fff;
+    border-top         : none;
+    border-left        : none;
+    width              : 7px;
+    height             : 12px;
+    position           : absolute;
+    top                : 1px;
+    left               : 6px;
+    content            : " ";
+    -moz-box-sizing    : border-box;
+    box-sizing         : border-box;
+    opacity            : 0;
+    filter             : alpha(opacity=0);
+    -webkit-transform  : scale(0.7) rotate(45deg);
+    -ms-transform      : scale(0.7) rotate(45deg);
+    transform          : scale(0.7) rotate(45deg);
+    -webkit-transition : all 0.1s linear;
+    transition         : all 0.1s linear;
+}
+
+.touchify_checkbox input:checked + span,
+.touchify_radio input:checked + span {
+    background   : #333;
+    border-color : #333;
+}
+
+.touchify_checkbox input:checked + span:after,
+.touchify_radio input:checked + span:after {
+    opacity           : 1;
+    filter            : alpha(opacity=100);
+    -webkit-transform : rotate(45deg);
+    -ms-transform     : rotate(45deg);
+    transform         : rotate(45deg);
+}
+
+
+/*BIGGER SELECT BOX*/
+.touchify_text input,
+.touchify_select select,
+.touchify_textarea textarea {
+    background: #fff;
+    display:block;
+    width: 90%;
+    padding: 8px;
+    font-size: 24px;
+    line-height: 1;
+    border: 1px solid #888;
+    border-radius: 8px;
 }

@@ -18,12 +18,15 @@ var survey = {
             var type    = inp["type"];
 
             var div     = $("<div>").addClass("inputs");
-            var span    = $("<span>").text(labeltxt);
+            var span    = $("<span>").text(labeltxt).addClass("survey_q");
             var label   = $("<label>");
             var input   = $("<input>").attr("type","text").attr("name",name);
+            var labelclass = "touchify_radio";
 
             div.append(span);
             switch(type){
+                case "checkbox":
+                labelclass = "touchify_checkbox";
                 case "radio":
                     opts = inp["options"]; 
 
@@ -39,16 +42,18 @@ var survey = {
                                 break;
                             }
                         }
-
                         var label   = $("<label>");
                         var input   = $("<input>").attr("type","radio").attr("name",name).val(optval);
                         label.text(optxt);
+                        label.addClass(labelclass);
                         label.prepend(input);
+                        label.append($("<span>"));
                         div.append(label);
                     }
                 break;
 
                 case "select":
+                    labelclass  = "touchify_select";
                     opts        = inp["options"]; 
                     var select  = $("<select>");
                     select.attr("name",name);
@@ -72,7 +77,7 @@ var survey = {
                         var option = $("<option>").val(optval).text(optxt);
                         select.append(option);
                     }
-
+                    label.addClass(labelclass);
                     label.append(select);
                     div.append(label);
                 break;
@@ -80,10 +85,13 @@ var survey = {
                 case "number":
                     input.attr("type","tel").attr("name",name);
                 default:
+                    labelclass = "touchify_text";
+                    label.addClass(labelclass);
                     label.append(input);
                     div.append(label);
                 break;
             }
+
 
             div.addClass("delete_on_reset")
             $("#survey fieldset").append(div);
