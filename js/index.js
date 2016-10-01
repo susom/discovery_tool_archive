@@ -99,9 +99,9 @@ var app = {
         //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
         datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);
+        
+        alert("what the freak");
 
-        $("#debug").val("does it get here");
-        return;
         //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY

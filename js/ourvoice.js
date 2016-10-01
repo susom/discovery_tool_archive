@@ -26,7 +26,6 @@ var ourvoice = {
                 //SHOW ADMIN DEVICE SET UP 
                 ourvoice.adminSetup();
             }
-
         }).catch(function (err) {
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
 
