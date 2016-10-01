@@ -8,6 +8,7 @@ var ourvoice = {
 
     ,getAllProjects : function(){
         //LOAD UP PROJECTS FROM LOCAL DB
+        $("#debug").val("getAllProjects");
         app.cache.localprojdb.get("all_projects").then(function (doc) {
             app.cache.projects = doc;
             
@@ -16,13 +17,18 @@ var ourvoice = {
                 //DELIBERATLEY THROW ERROR, NO PROJECTS IN THE LOCAL DB
                 throw err;
             } 
-
+            $("#debug").val("does it get here?");
+            
             //CHECK TO SEE IF THERE IS AN "active_project" SET YET
             if(app.cache.active_project.hasOwnProperty("i")){
                 //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
+                 $("#debug").val("or here?");
+                
                 ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
                 app.transitionToPanel($("#step_zero"));
             }else{
+                 $("#debug").val("no here i mean");
+
                 //SHOW ADMIN DEVICE SET UP 
                 ourvoice.adminSetup();
             }

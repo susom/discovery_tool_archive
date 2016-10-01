@@ -81,7 +81,6 @@ var app = {
 
     ,onDeviceReady: function() {
         //0 CHECK NETWORK STATE, AND GET UUID
-        alert("maybe got a problem here");
         var networkState        = utils.checkConnection();
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
