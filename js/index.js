@@ -302,7 +302,7 @@ var app = {
                     app.cache.audioStatus = "stop_release";
                     ourvoice.stopRecording(photo_i);
                     var panel = $(this).closest(".panel");
-                    var next  = "step_two";
+                    var next  = "pic_review";
                     //CHANGE THE RECORD BUTTON IN PIC PREVIEW
                     $("#pic_review .device_actions").addClass("has_audio");
 
