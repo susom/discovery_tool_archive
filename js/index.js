@@ -161,7 +161,7 @@ var app = {
                 app.cache.user._id           = app.cache.next_id; //COLLATED
 
                 if(!$("header hgroup h3").length){
-                    $("header hgroup").append($("<h3>").addClass("delete_on_reset").text("Project : " + app.cache.active_project["proj_id"].toUpperCase() + ", Participant : " + app.cache.participant_id));
+                    // $("header hgroup").append($("<h3>").addClass("delete_on_reset").text("Project : " + app.cache.active_project["proj_id"].toUpperCase() + ", Participant : " + app.cache.participant_id));
                 }
             }
 
