@@ -3,6 +3,7 @@ var datastore = {
 
     ,startupDB: function(dbname){
         var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default'});
+        app.log(dbname + " DB GOT");
         return db;
     }
 
@@ -48,10 +49,12 @@ var datastore = {
     }
 
     ,writeDB : function(db,_o){
-        console.log(_o);
         db.put(_o).then(function (wut) {
+            app.log("JSON OBJECT SUCCESFULLY SAVED");
             console.log('Successfully saved a json object?');
+
         }).catch(function (err) {
+            app.log("ERROR WRITING TO A DB");
             console.log("ERROR writeDB():");
             datastore.showError(err);
         });
@@ -88,6 +91,7 @@ var datastore = {
         localdb_obj.replicate.to(remotedb_str,{
             live: true
         }).on('complete', function (wut) {
+            app.log("LOCAL DB REPLICATED TO REMOTE!");
             console.log("REPLICATED TO REMOTE!");
         }).on('change',function(change){
             console.log("REPLICATE TO , CHANGE, SYNC!")
@@ -103,13 +107,16 @@ var datastore = {
         localdb_obj.replicate.from(remotedb_str,{
             live: true
         }).on('complete', function (wut) {
+            app.log("REPLICATED FROM REMOTE");
             console.log("REPLICATED FROM REMOTE!");
         }).on('change',function(change){
+            app.log("REPLICATED FROM REMOTE : CHANGE AND SYNC");
             console.log("REPLICATE FROM , CHANGE, SYNC!");
             utils.dump(change.last_seq);
         }).on('uptodate',function(update){
             console.log("REPLICATION FROM DONE");
         }).catch(function (err) {
+            app.log("ERROR ON REPLICATING FROM REMOTE");
             console.log("ERROR remoteSyncDB( WHAT? ):");
             datastore.showError(err);
         });
@@ -150,6 +157,8 @@ var datastore = {
         }).catch(function (err) {
           console.log(err);
         });
+
+        app.log("DELETEING LOCAL DATABASES");
         return;
     }
 };

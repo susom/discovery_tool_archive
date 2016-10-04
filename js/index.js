@@ -27,8 +27,11 @@ var app = {
 
         app.cache.localusersdb      = null; //ref to local users DB
         app.cache.localprojdb       = null; //ref to local copy of projects DB
+        app.cache.locallogdb        = null; //ref to local copy of log DB
+
         app.cache.remoteusersdb     = null; //ref to remote users DB
         app.cache.remoteprojdb      = null; //ref to remote projects DB
+        app.cache.remotelogdb       = null; //ref to remote log DB
 
         app.cache.projects          = null; //ref to projects list from local proj DB
         app.cache.active_project    = { "_id" : "active_project" }; //active project ID
@@ -71,12 +74,14 @@ var app = {
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
         console.log("pausing the device ... do anything?");
+        app.log("DEVICE PAUSING");
     }
 
     ,onDeviceResume: function() {
         //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
         //SO NO DO NOT RELOAD PROJECT
         console.log("resuming device ... update anything?");
+        app.log("DEVICE RESUMING");
     }
 
     ,onDeviceReady: function() {
@@ -88,17 +93,22 @@ var app = {
         //1) (RE)OPEN LOCAL DB
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
         app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
-        
+        app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
+
         app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
         app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
+        app.cache.remotelogdb   = datastore.startupDB(config["database"]["log_remote"]);
 
         // DELETE!
         // datastore.deleteLocalDB();
         // return;
         
         //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
-        datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);
-        datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);
+        datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);  //ONE WAY LOCAL TO REMOTE SYNCING
+        datastore.localSyncDB(app.cache.locallogdb,app.cache.remotelogdb);      //""
+        datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);   //ONE WAY REMOTE TO LOCAL SYNCING
+
+        app.log("DEVICE READY, DATABASE CONNECTED, ADDING EVENTS TO APP");
 
         //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
@@ -135,7 +145,6 @@ var app = {
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
 
-                    app.initCache();
                     ourvoice.resetDevice();
 
                     //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
@@ -148,6 +157,8 @@ var app = {
                     app.showNotif("Wrong ProjectID or Password");
                     return false;
                 }
+
+                app.log("Setting up Device with " + app.cache.projects["project_list"][i]["project_id"]);
             }else{
                 //ONE TIME DEAL if NOT STEP ZERO
                 $("#main").addClass("loaded");
@@ -163,6 +174,7 @@ var app = {
                 if(!$("header hgroup h3").length){
                     // $("header hgroup").append($("<h3>").addClass("delete_on_reset").text("Project : " + app.cache.active_project["proj_id"].toUpperCase() + ", Participant : " + app.cache.participant_id));
                 }
+                app.log("Starting consent process for User " + app.cache.user._id);
             }
 
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
@@ -180,16 +192,10 @@ var app = {
 
             if(next == "finish"){
                 no_history = true;
-            
-                //STORE THE USER AND THEN WIPE THE CACHE
-                // console.log("SAVING THE USER NOW!!!");
-                // console.log(app.cache.user.survey);
-                // console.log(app.cache.user.photos);
-                // console.log(app.cache.user.geotags);
-
                 console.log("finished! show user obj to be saved");
                 console.log(app.cache.user);
                 datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
             }
 
             //TRANSITION TO NEXT PANEL
@@ -330,7 +336,7 @@ var app = {
             //DITCH USER TOO
             $("#admin_null").show();
             $("#admin_passed").hide();
-
+            app.cache.history.push("step_zero")
             app.closeCurrentPanel($("#step_zero"));
             ourvoice.adminSetup();
             return false;
@@ -354,7 +360,8 @@ var app = {
         });
         hammertime.on('swiperight',function(){
             //swipe right to go back
-            app.goBack()
+            console.log("swiped right");
+            // app.goBack()
         });
 
         //pic review media items.
@@ -381,6 +388,7 @@ var app = {
             ourvoice.resetDevice();            
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
+            app.log("Ending a user's session");
             app.closeCurrentPanel($("#finish"));
             app.transitionToPanel($("#step_zero"),1);
             return false;
@@ -388,6 +396,7 @@ var app = {
     }
 
     ,goBack : function(){
+        console.log(app.cache.history);
         if(app.cache.history.length <= 1){
             //NO HISTORY TO GO BACK TO
             return false;
@@ -430,5 +439,28 @@ var app = {
         }
         $("#notif").fadeIn("fast");
         return;
+    }
+
+    ,log : function(msg,type){
+        var msg_type    = !type ? "INFO" : type;
+        var timestamp   = Date.now();
+        var proj_id     = app.cache.active_project.hasOwnProperty("i") ? app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] : "GENERAL";
+        var msg_id      = datastore.pouchCollate([
+             proj_id
+            ,msg_type
+            ,app.cache.uuid
+            ,timestamp
+        ]);
+        var log_obj     = {
+             "_id"      : msg_id
+            ,"type"     : msg_type
+            ,"timestamp": timestamp
+            ,"msg"      : msg
+            ,"user_id"  : app.cache.user.user_id
+            ,"platform" : app.cache.platform
+        }
+
+        console.log(log_obj);
+        // datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };

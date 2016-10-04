@@ -5,6 +5,9 @@ var config = {
 
         ,"proj_local"      : "disc_projects"
         ,"proj_remote"     : "http://cdbadm:AsoupedUp784U@cci-hrp-cdb.stanford.edu/disc_projects"
+    
+        ,"log_local"       : "disc_log"
+        ,"log_remote"      : "http://cdbadm:AsoupedUp784U@cci-hrp-cdb.stanford.edu/disc_log"
     }
 
     ,default_user : {

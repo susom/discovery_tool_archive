@@ -20,12 +20,16 @@ var ourvoice = {
             if(app.cache.active_project.hasOwnProperty("i")){
                 //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                 ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
+                app.log("LOADING PROJECT " + app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] ); 
+                console.log(app.cache.history);
                 app.transitionToPanel($("#step_zero"));
             }else{
                 //SHOW ADMIN DEVICE SET UP 
                 ourvoice.adminSetup();
+                app.log("ADMIN SETUP REQUIRED, NO ACTIVE PROJECT SET"); 
             }
         }).catch(function (err) {
+            app.log("NO PROJECTS IN LOCALDB, NOT SYNCING FROM REMOTE","ERROR");           
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
 
             //IF NO PROJECTS THEN PUT UP THIS LOADING ERROR
@@ -111,11 +115,13 @@ var ourvoice = {
         //SAVE GEO TAGS FOR MAP
         ourvoice.trackPosition(); //manually do the first one
         app.cache.positionTrackerId = setInterval(app.trackPosition, freq);
+        app.log("STARTING WALK"); 
     }
 
     ,stopWatch: function(){
         clearInterval(app.cache.positionTrackerId);
         app.cache.positionTrackerId = null;
+        app.log("ENDING WALK"); 
     }
     
     ,trackPosition: function(){
@@ -270,7 +276,6 @@ var ourvoice = {
         } else if (app.cache.audioStatus == 'playing') {
             app.cache.audioObj.stop();            
             console.log("Play stopped");
-
             app.cache.audioObj.release();
         }else if(app.cache.audioStatus == "stop_release"){
             app.cache.audioObj.stop();
@@ -299,6 +304,9 @@ var ourvoice = {
                     // console.log("ERROR FILE");                
                 }
             );
+
+
+            app.log("FINISHED RECORDING");
             app.cache.audioObj.release();
             app.cache.audioObj = null;
         } else {
@@ -334,6 +342,7 @@ var ourvoice = {
             $("#audio_time").text(date.toISOString().substr(14,5));
         },1000);
 
+        app.log("START RECORDING");
         $("#soundwaves").removeClass("pause");
         $("#ctl_stop").data("photo_i",photo_i).removeClass("off");
         return;
@@ -371,6 +380,7 @@ var ourvoice = {
                             app.cache.currentAudio  = fileEntry; 
                             app.cache.audioObj      = new Media(recordFileName
                                 ,function(){
+                                    app.log("CREATED AUDIO OBJECT, FOR RECORDING");
                                     // console.log(fileEntry);
                                     // console.log("MediaObject successfully completed play, record, or stop action");
                                 }
@@ -398,7 +408,6 @@ var ourvoice = {
                 // console.log("Media created successfully");
             }, function(err){
                 //ANDROID ERROR
-                console.log("ANDROID FUCKING ERROR?");
                 console.log(err.code +  " : " + err.message);
             }, null); 
 
@@ -431,6 +440,7 @@ var ourvoice = {
                 //SET UP PHOTO PREVIEW PAGE
                 ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
 
+                app.log("TOOK A PHOTO");
                 //ADD LIST ITEM TO REVIEW PAGE
                 setTimeout(function(){
                     ourvoice.addMediaItem(app.cache.user.photos[thispic_i], fileurl);
@@ -527,6 +537,8 @@ var ourvoice = {
             var pic_count   = $(".mi_slideout b").text();
             pic_count       = parseInt(pic_count) - 1;
             $(".mi_slideout b").text(pic_count);
+
+            app.log("DELETED PHOTO");
             next();
         });
         return;
@@ -538,7 +550,7 @@ var ourvoice = {
         $(".nomedia").show();
         $(".delete_on_reset").remove();
         app.initCache();
-
+        app.log("RESETING DEVICE STATE");
         return;
     }
 };
