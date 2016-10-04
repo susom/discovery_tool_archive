@@ -165,6 +165,9 @@ nav a{
 }
 nav .help{
     float           : right;
+
+    /*TODO for now no help*/
+    display:none;
 }
 nav .back{
     float           : left;
@@ -652,6 +655,16 @@ nav .back{
 }
 #pic_review .daction.hasAudio {
     background-color:tomato;
+    
+    /*IF NO RERECORDING THEN HIDE*/
+    display:none;
+}
+#pic_review .daction + i {
+    display:none;
+}
+#pic_review .daction.hasAudio + i {
+    display:block;
+    font-weight:lighter;
 }
 #pic_review .actions {
     position:relative;

@@ -177,9 +177,9 @@ var ourvoice = {
     ,plotGoogleMap: function(){
         // Create the map
         var myOptions = {
-            zoom        : 16,
+            zoom        : 32,
             center      : app.cache.currentWalkMap[0],
-            mapTypeId   : google.maps.MapTypeId.HYBRID
+            mapTypeId   : google.maps.MapTypeId.ROADMAP
         }
         if(app.cache.curmap != null){
             var map             = app.cache.curmap;
@@ -283,6 +283,7 @@ var ourvoice = {
 
             app.cache.user.photos[photo_i]["audio"] = true;
             $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
+            
             $("#pic_review .daction.audio").addClass("hasAudio");
 
             //NOW SAVE IT AS AN INLINE ATTACHMENT
