@@ -35,7 +35,7 @@ var config = {
                      { "lang" : "en"
                       ,"language" : "English" 
                       ,"translations" : [
-                         { "project_about" : "The XYZ Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                         { "project_about" : "Welcome to the Discovery Tool! Before you get started, we want to make sure you fully understand your role in this project."}
                         ,{ "main_title" : "Discovery Tool" }
                         ,{ "help" : "Help"}
                         ,{ "back" : "Back" }
@@ -54,9 +54,10 @@ var config = {
                         ,{ "consent_block_6"  : "You will receive no payments for your participation."}
                         ,{ "consent_title_7"  : "SUBJECT’S RIGHTS"}
                         ,{ "consent_block_7"  : "The results of this study may be published or presented but your identity will not be shared. Your participation in this project is 100% voluntary and you can stop at any time."}
-                        ,{ "consent_title_8"  : "CONTACT INFORMATION "}
-                        ,{ "consent_block_8_p1"  : "Questions: If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
-                        ,{ "consent_block_8_p2" : "Independent Contact: If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
+                        ,{ "consent_title_8"  : "Questions"}
+                        ,{ "consent_block_8"  : "If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
+                        ,{ "consent_title_9"  : "Independent Contact"}
+                        ,{ "consent_block_9"  : "If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
                         ,{ "next" : "Next"}
                         ,{ "i_understand"   : "I Understand"}
                         ,{ "step_1" : "Step 1 - Go for a walk" }
@@ -99,7 +100,7 @@ var config = {
                     ,{   "lang" : "es"
                         ,"language" : "Spanish"
                         ,"translations" : [
-                         { "project_about" : "Spanish The XYZ Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                         { "project_about" : "Welcome to the Discovery Tool! Before you get started, we want to make sure you fully understand your role in this project."}
                         ,{ "main_title"     : "La Herramienta de Descubrimiento"}
                         ,{ "help"           : "Ayuda"}
                         ,{ "back"           : "Regresar" }
@@ -118,9 +119,10 @@ var config = {
                         ,{ "consent_block_6"  : "You will receive no payments for your participation."}
                         ,{ "consent_title_7"  : "SUBJECT’S RIGHTS"}
                         ,{ "consent_block_7"  : "The results of this study may be published or presented but your identity will not be shared. Your participation in this project is 100% voluntary and you can stop at any time."}
-                        ,{ "consent_title_8"  : "CONTACT INFORMATION "}
-                        ,{ "consent_block_8_p1"  : "Questions: If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
-                        ,{ "consent_block_8_p2" : "Independent Contact: If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
+                        ,{ "consent_title_8"  : "Questions"}
+                        ,{ "consent_block_8"  : "If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
+                        ,{ "consent_title_9"  : "Independent Contact"}
+                        ,{ "consent_block_9"  : "If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
                         ,{ "next"           : "Próximo"}
                         ,{ "i_understand"   : "Entiendo"}
                         ,{ "step_1"         : "Paso 1 - Dar una caminata" }
@@ -214,8 +216,8 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "close_knit"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'This is a close-knit neighborhood.'"}
-                        ,{"lang" : "es", "text" : "'This is a close-knit neighborhood.'"} 
+                         {"lang" : "en", "text" : "This is a close-knit neighborhood."}
+                        ,{"lang" : "es", "text" : "This is a close-knit neighborhood."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -227,8 +229,8 @@ var config = {
                             ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
@@ -243,8 +245,8 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "influence"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'I can influence decisions that affect my community.'"}
-                        ,{"lang" : "es", "text" : "'I can influence decisions that affect my community.'"} 
+                         {"lang" : "en", "text" : "I can influence decisions that affect my community."}
+                        ,{"lang" : "es", "text" : "I can influence decisions that affect my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -256,8 +258,8 @@ var config = {
                             ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
@@ -272,8 +274,8 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "community"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"}
-                        ,{"lang" : "es", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"} 
+                         {"lang" : "en", "text" : "BY working together with others in my community, I can influence decisions that affect my community."}
+                        ,{"lang" : "es", "text" : "BY working together with others in my community, I can influence decisions that affect my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -285,8 +287,8 @@ var config = {
                             ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
@@ -301,8 +303,8 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "connections"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'People in my community have connections to people who can influence what happens in my community.'"}
-                        ,{"lang" : "es", "text" : "'People in my community have connections to people who can influence what happens in my community.'"} 
+                         {"lang" : "en", "text" : "PEople in my community have connections to people who can influence what happens in my community."}
+                        ,{"lang" : "es", "text" : "PEople in my community have connections to people who can influence what happens in my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -314,8 +316,8 @@ var config = {
                             ,{"lang" : "es", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
@@ -339,7 +341,7 @@ var config = {
                      { "lang" : "en"
                       ,"language" : "English" 
                       ,"translations" : [
-                         { "project_about" : "The ABC Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                         { "project_about" : "Welcome to the Discovery Tool! Before you get started, we want to make sure you fully understand your role in this project."}
                         ,{ "main_title" : "Discovery Tool" }
                         ,{ "help" : "Help"}
                         ,{ "back" : "Back" }
@@ -358,9 +360,10 @@ var config = {
                         ,{ "consent_block_6"  : "You will receive no payments for your participation."}
                         ,{ "consent_title_7"  : "SUBJECT’S RIGHTS"}
                         ,{ "consent_block_7"  : "The results of this study may be published or presented but your identity will not be shared. Your participation in this project is 100% voluntary and you can stop at any time."}
-                        ,{ "consent_title_8"  : "CONTACT INFORMATION "}
-                        ,{ "consent_block_8_p1"  : "Questions: If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
-                        ,{ "consent_block_8_p2" : "Independent Contact: If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
+                        ,{ "consent_title_8"  : "Questions"}
+                        ,{ "consent_block_8"  : "If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
+                        ,{ "consent_title_9"  : "Independent Contact"}
+                        ,{ "consent_block_9"  : "If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
                         ,{ "next" : "Next"}
                         ,{ "i_understand"   : "I Understand"}
                         ,{ "step_1" : "Step 1 - Go for a walk" }
@@ -403,7 +406,7 @@ var config = {
                     ,{   "lang" : "es"
                         ,"language" : "Spanish"
                         ,"translations" : [
-                         { "project_about" : "Spanish The ABC Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                         { "project_about" : "Welcome to the Discovery Tool! Before you get started, we want to make sure you fully understand your role in this project."}
                         ,{ "main_title"     : "La Herramienta de Descubrimiento"}
                         ,{ "help"           : "Ayuda"}
                         ,{ "back"           : "Regresar" }
@@ -422,9 +425,10 @@ var config = {
                         ,{ "consent_block_6"  : "You will receive no payments for your participation."}
                         ,{ "consent_title_7"  : "SUBJECT’S RIGHTS"}
                         ,{ "consent_block_7"  : "The results of this study may be published or presented but your identity will not be shared. Your participation in this project is 100% voluntary and you can stop at any time."}
-                        ,{ "consent_title_8"  : "CONTACT INFORMATION "}
-                        ,{ "consent_block_8_p1"  : "Questions: If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
-                        ,{ "consent_block_8_p2" : "Independent Contact: If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
+                        ,{ "consent_title_8"  : "Questions"}
+                        ,{ "consent_block_8"  : "If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
+                        ,{ "consent_title_9"  : "Independent Contact"}
+                        ,{ "consent_block_9"  : "If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
                         ,{ "next"           : "Próximo"}
                         ,{ "i_understand"   : "Entiendo"}
                         ,{ "step_1"         : "Paso 1 - Dar una caminata" }
@@ -467,7 +471,7 @@ var config = {
                     ,{   "lang" : "ch"
                         ,"language" : "Chinese"
                         ,"translations" : [
-                         { "project_about" : "Chinese The ABC Project is recruiting citizen scientists like yourself to help improve the wellness of your community!"}
+                         { "project_about" : "Welcome to the Discovery Tool! Before you get started, we want to make sure you fully understand your role in this project."}
                         ,{ "main_title" : "Discovery Tool" }
                         ,{ "help" : "Help"}
                         ,{ "back" : "Back" }
@@ -486,9 +490,10 @@ var config = {
                         ,{ "consent_block_6"  : "You will receive no payments for your participation."}
                         ,{ "consent_title_7"  : "SUBJECT’S RIGHTS"}
                         ,{ "consent_block_7"  : "The results of this study may be published or presented but your identity will not be shared. Your participation in this project is 100% voluntary and you can stop at any time."}
-                        ,{ "consent_title_8"  : "CONTACT INFORMATION "}
-                        ,{ "consent_block_8_p1"  : "Questions: If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
-                        ,{ "consent_block_8_p2" : "Independent Contact: If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
+                        ,{ "consent_title_8"  : "Questions"}
+                        ,{ "consent_block_8"  : "If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact Ann Banchoff (banchoff@stanford.edu)."}
+                        ,{ "consent_title_9"  : "Independent Contact"}
+                        ,{ "consent_block_9"  : "If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at (650)-723-2480 or toll free at 1-866-680-2906.  You can also write to the Stanford IRB, Stanford University, 3000 El Camino Real, Five Palo Alto Square, 4th Floor, Palo Alto, CA 94306."}
                         ,{ "next" : "Next"}
                         ,{ "i_understand"   : "I Understand"}
                         ,{ "step_1" : "Step 1 - Go for a walk" }
@@ -589,9 +594,9 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "close_knit"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'This is a close-knit neighborhood.'"}
-                        ,{"lang" : "es", "text" : "'This is a close-knit neighborhood.'"} 
-                        ,{"lang" : "ch", "text" : "'This is a close-knit neighborhood.'"} 
+                         {"lang" : "en", "text" : "THis is a close-knit neighborhood."}
+                        ,{"lang" : "es", "text" : "THis is a close-knit neighborhood."} 
+                        ,{"lang" : "ch", "text" : "THis is a close-knit neighborhood."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -605,9 +610,9 @@ var config = {
                             ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
@@ -624,9 +629,9 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "influence"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'I can influence decisions that affect my community.'"}
-                        ,{"lang" : "es", "text" : "'I can influence decisions that affect my community.'"} 
-                        ,{"lang" : "ch", "text" : "'I can influence decisions that affect my community.'"} 
+                         {"lang" : "en", "text" : "I can influence decisions that affect my community."}
+                        ,{"lang" : "es", "text" : "I can influence decisions that affect my community."} 
+                        ,{"lang" : "ch", "text" : "I can influence decisions that affect my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -640,9 +645,9 @@ var config = {
                             ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
@@ -659,9 +664,9 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "community"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"}
-                        ,{"lang" : "es", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"} 
-                        ,{"lang" : "ch", "text" : "'By working together with others in my community, I can influence decisions that affect my community.'"} 
+                         {"lang" : "en", "text" : "BY working together with others in my community, I can influence decisions that affect my community."}
+                        ,{"lang" : "es", "text" : "BY working together with others in my community, I can influence decisions that affect my community."} 
+                        ,{"lang" : "ch", "text" : "BY working together with others in my community, I can influence decisions that affect my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -675,9 +680,9 @@ var config = {
                             ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}
@@ -694,9 +699,9 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "connections"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "'People in my community have connections to people who can influence what happens in my community.'"}
-                        ,{"lang" : "es", "text" : "'People in my community have connections to people who can influence what happens in my community.'"} 
-                        ,{"lang" : "ch", "text" : "'People in my community have connections to people who can influence what happens in my community.'"} 
+                         {"lang" : "en", "text" : "PEople in my community have connections to people who can influence what happens in my community."}
+                        ,{"lang" : "es", "text" : "PEople in my community have connections to people who can influence what happens in my community."} 
+                        ,{"lang" : "ch", "text" : "PEople in my community have connections to people who can influence what happens in my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -710,9 +715,9 @@ var config = {
                             ,{"lang" : "ch", "text" : "Somewhat Disagree", "value" : "2"}
                          ]
                          ,[  
-                             {"lang" : "en", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "es", "text" : "Nuetral", "value" : "3"}
-                            ,{"lang" : "ch", "text" : "Nuetral", "value" : "3"}
+                             {"lang" : "en", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "es", "text" : "Neutral", "value" : "3"}
+                            ,{"lang" : "ch", "text" : "Neutral", "value" : "3"}
                          ] 
                          ,[  
                              {"lang" : "en", "text" : "Somewhat agree", "value" : "4"}

@@ -325,6 +325,7 @@ nav .back{
     width: 90%;
     margin :0 auto;
 }
+#consent_nine .consent blockquote,
 #consent_eight .consent blockquote{
     font-size:130%;
 }
