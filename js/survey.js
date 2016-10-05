@@ -18,6 +18,10 @@ var survey = {
             var type    = inp["type"];
 
             var div     = $("<div>").addClass("inputs");
+            if(i == 0){
+                div.addClass("active");
+            }
+
             var span    = $("<span>").text(labeltxt).addClass("survey_q");
             var label   = $("<label>");
             var input   = $("<input>").attr("type","text").attr("name",name);
@@ -93,9 +97,32 @@ var survey = {
             }
 
 
-            div.addClass("delete_on_reset")
+            div.addClass("delete_on_reset");
+            var nextbtn = $("<a>").addClass("button").text("Next").data("next_q", i+1);   
+            div.append(nextbtn);
             $("#survey fieldset").append(div);
         }
+
+        survey.addEvents();
         return;
     }
+
+    ,addEvents : function(){
+        $("#survey fieldset .button").on("click", function(){
+            var this_q = $(this).closest("div.inputs");
+            var next_q = this_q.next();
+
+            this_q.addClass("off");
+            if(next_q.length){
+                next_q.addClass("active");
+            }else{
+                var panel = $(this).closest(".panel");
+                ourvoice.finished();
+                
+                //TRANSITION TO NEXT PANEL
+                app.closeCurrentPanel(panel);
+                app.transitionToPanel($("#finish"),1);
+            }
+        });
+    }   
 }

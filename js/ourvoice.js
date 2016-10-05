@@ -545,6 +545,12 @@ var ourvoice = {
         return;
     }
 
+    ,finished : function(){
+        console.log("finished! show user obj to be saved");
+        console.log(app.cache.user);
+        datastore.writeDB(app.cache.localusersdb , app.cache.user);
+        app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
+    }
     ,resetDevice : function(){
         $(".loaded").removeClass("loaded");
         $(".mi_slideout b").text(0);

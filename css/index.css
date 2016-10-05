@@ -393,11 +393,10 @@ nav .back{
     text-align      : initial;
 }
 .walk_actions {
-    position        : fixed;
+    position        : static;
     bottom          : 38px;
     width           : 100%;
     overflow        : hidden;
-    border-top      : 1px solid #ccc;
 }
 .walk_actions .button {
     float           : left;
@@ -412,7 +411,7 @@ nav .back{
 }
 .walk_actions .endwalk {
     float           : right;
-    background      : #f78384 url(../img/icon_stop.png) 50% 50% no-repeat;
+    background      : url(../img/icon_stop.png) 50% 50% no-repeat;
     background-size : 70%;
     text-align      :center;
 
@@ -839,14 +838,35 @@ nav .back{
 
 /*BIGGER TOUCH FRIENDLY RADIOS/CHECKBOXES*/
 #walk_survey fieldset {
-    border:none;
     margin:0;
     padding:0;
+    position:relative;
+    border:none;
 }
-#walk_survey div {
+#walk_survey fieldset + a {
+    display:none; 
+}
+#walk_survey fieldset div {
     padding-bottom:30px;
     margin-bottom:35px;
-    border-bottom:1px solid #cfcfcf;
+    position:absolute;
+    left:30px;
+    width:100%;
+    opacity:0;
+    transition: opacity .25s, left .25s; 
+}
+#walk_survey fieldset div.active{
+    left:0; 
+    opacity:1;
+    z-index:100;
+}
+#walk_survey fieldset div.active.off{
+    left:-30px;
+    opacity:0; 
+}
+#walk_survey fieldset div .button {
+    margin-top:30px;
+    width:100%;
 }
 #walk_survey label {
     display:block;
@@ -907,8 +927,8 @@ nav .back{
     margin             : 3px 10px 0 0;
     -moz-box-sizing    : border-box;
     box-sizing         : border-box;
-    -webkit-transition : all 0.1s linear;
-    transition         : all 0.1s linear;
+    -webkit-transition : all 0.1s ease-in-out;
+    transition         : all 0.1s ease-in-out;
 }
 
 .touchify_checkbox input + span:after,
@@ -929,8 +949,8 @@ nav .back{
     -webkit-transform  : scale(0.7) rotate(45deg);
     -ms-transform      : scale(0.7) rotate(45deg);
     transform          : scale(0.7) rotate(45deg);
-    -webkit-transition : all 0.1s linear;
-    transition         : all 0.1s linear;
+    -webkit-transition : all 0.1s ease-in-out;
+    transition         : all 0.1s ease-in-out;
 }
 
 .touchify_checkbox input:checked + span,

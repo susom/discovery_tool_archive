@@ -274,8 +274,8 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "community"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "BY working together with others in my community, I can influence decisions that affect my community."}
-                        ,{"lang" : "es", "text" : "BY working together with others in my community, I can influence decisions that affect my community."} 
+                         {"lang" : "en", "text" : "By working together with others in my community, I can influence decisions that affect my community."}
+                        ,{"lang" : "es", "text" : "By working together with others in my community, I can influence decisions that affect my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -303,8 +303,8 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "connections"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "PEople in my community have connections to people who can influence what happens in my community."}
-                        ,{"lang" : "es", "text" : "PEople in my community have connections to people who can influence what happens in my community."} 
+                         {"lang" : "en", "text" : "People in my community have connections to people who can influence what happens in my community."}
+                        ,{"lang" : "es", "text" : "People in my community have connections to people who can influence what happens in my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -594,9 +594,9 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "close_knit"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "THis is a close-knit neighborhood."}
-                        ,{"lang" : "es", "text" : "THis is a close-knit neighborhood."} 
-                        ,{"lang" : "ch", "text" : "THis is a close-knit neighborhood."} 
+                         {"lang" : "en", "text" : "This is a close-knit neighborhood."}
+                        ,{"lang" : "es", "text" : "This is a close-knit neighborhood."} 
+                        ,{"lang" : "ch", "text" : "This is a close-knit neighborhood."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -664,9 +664,9 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "community"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "BY working together with others in my community, I can influence decisions that affect my community."}
-                        ,{"lang" : "es", "text" : "BY working together with others in my community, I can influence decisions that affect my community."} 
-                        ,{"lang" : "ch", "text" : "BY working together with others in my community, I can influence decisions that affect my community."} 
+                         {"lang" : "en", "text" : "By working together with others in my community, I can influence decisions that affect my community."}
+                        ,{"lang" : "es", "text" : "By working together with others in my community, I can influence decisions that affect my community."} 
+                        ,{"lang" : "ch", "text" : "By working together with others in my community, I can influence decisions that affect my community."} 
                       ] 
                       ,"options"    : [
                          [  
@@ -699,9 +699,9 @@ var config = {
                     ,{ "type"        : "radio"
                       ,"name"       : "connections"
                       ,"label"      : [
-                         {"lang" : "en", "text" : "PEople in my community have connections to people who can influence what happens in my community."}
-                        ,{"lang" : "es", "text" : "PEople in my community have connections to people who can influence what happens in my community."} 
-                        ,{"lang" : "ch", "text" : "PEople in my community have connections to people who can influence what happens in my community."} 
+                         {"lang" : "en", "text" : "People in my community have connections to people who can influence what happens in my community."}
+                        ,{"lang" : "es", "text" : "People in my community have connections to people who can influence what happens in my community."} 
+                        ,{"lang" : "ch", "text" : "People in my community have connections to people who can influence what happens in my community."} 
                       ] 
                       ,"options"    : [
                          [  

@@ -121,7 +121,7 @@ var app = {
         });
 
         //4) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
-        $(".button[data-next]").not(".camera,.audiorec").click(function(){
+        $(".button[data-next]").not(".camera,.audiorec").on("click",function(){
             //GET CURRENT PANEL
             var panel       = $(this).closest(".panel");
             var next        = $(this).data("next");
@@ -192,10 +192,7 @@ var app = {
 
             if(next == "finish"){
                 no_history = true;
-                console.log("finished! show user obj to be saved");
-                console.log(app.cache.user);
-                datastore.writeDB(app.cache.localusersdb , app.cache.user);
-                app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
+                ourvoice.finished();
             }
 
             //TRANSITION TO NEXT PANEL
