@@ -1,4 +1,4 @@
-<widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0" id="edu.stanford.hrp.discovery-tool" version="1.0.0">
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0" id="edu.stanford.hrp.discovery-tool" version="1.0.1">
   <name>HRP Discovery Tool</name>
   <description>The HRP Discovery Tool</description>
   <author href="http://scci.stanford.edu" email="andy123@stanford.edu">Stanford Center for Clinical Informatics</author>
