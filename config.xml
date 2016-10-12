@@ -1,11 +1,11 @@
 <widget xmlns="http://www.w3.org/ns/widgets" 
   xmlns:gap="http://phonegap.com/ns/1.0" 
-  id="edu.stanford.hrp.discovery-tool" 
+  id="edu.stanford.researchit.discovery-tool" 
   versionCode="10001"
   version="1.0.1">
-  <name>HRP Discovery Tool</name>
-  <description>The HRP Discovery Tool</description>
-  <author href="http://scci.stanford.edu" email="andy123@stanford.edu">Stanford Center for Clinical Informatics</author>
+  <name>Discovery Tool</name>
+  <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
+  <author href="http://researchit.stanford.edu" email="irvins@stanford.edu">Stanford Research IT</author>
   <content src="index.html"/>
   <preference name="DisallowOverscroll" value="true"/>
   <preference name="android-minSdkVersion" value="14"/>
