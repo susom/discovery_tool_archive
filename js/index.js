@@ -361,6 +361,18 @@ var app = {
             // app.goBack()
         });
 
+        // show delete buttons on swipe
+        $('#main').swipe(function(){
+          console.log("swiped");
+        })
+
+        // delete row on tapping delete button
+        $('.button').tap(function(){
+            alert("shieet");  
+            console.log("now what?");
+          console.log("is this more responsive?");
+        })
+
         //pic review media items.
         $(".mi_slideout").click(function(){
             $("#mediacaptured").addClass("preview");
