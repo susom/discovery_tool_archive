@@ -724,7 +724,7 @@ nav .back{
     padding:3px;
     border-radius:10px;
     opacity:.80;
-    transition: opacity 0.2s linear;
+    transition: opacity 0.1s linear;
 }
 .votes .down{
     background-position:-49px 3px;

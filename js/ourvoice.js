@@ -10,7 +10,7 @@ var ourvoice = {
         //LOAD UP PROJECTS FROM LOCAL DB
         app.cache.localprojdb.get("all_projects").then(function (doc) {
             app.cache.projects = doc;
-            
+
             //THERE SHOULD BE AT LEAST 1 PROJECT
             if(app.cache.projects["project_list"] < 1){
                 //DELIBERATLEY THROW ERROR, NO PROJECTS IN THE LOCAL DB
@@ -21,11 +21,11 @@ var ourvoice = {
                 //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                 ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
                 app.log("LOADING PROJECT " + app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] ); 
-                console.log(app.cache.history);
                 app.transitionToPanel($("#step_zero"));
             }else{
                 //SHOW ADMIN DEVICE SET UP 
                 ourvoice.adminSetup();
+                app.cache.history = [];
                 app.log("ADMIN SETUP REQUIRED, NO ACTIVE PROJECT SET"); 
             }
         }).catch(function (err) {
@@ -67,8 +67,9 @@ var ourvoice = {
             }
 
             $("select[name='language']").empty();
-            for(var l in p["lang"]){
-                var l_option = $("<option>").val(p["lang"][l]["lang"]).text(p["lang"][l]["language"]);
+            for(var l in p["app_lang"]){
+                var langoption  = p["app_lang"][l];
+                var l_option    = $("<option>").val(langoption["lang"]).text(langoption["language"]);
                  $("select[name='language']").append(l_option);
             }
             ourvoice.updateLanguage(app.cache.active_project["proj_id"],"en");
@@ -85,30 +86,21 @@ var ourvoice = {
     }
 
     ,updateLanguage : function(projid,lang){
-        lang = !lang ? "en" :lang;
-        for(var p in app.cache.projects["project_list"]){
-            var project = app.cache.projects["project_list"][p];
-            if(project["project_id"] == projid){
-                var trans = project["lang"];
-                for(var l in trans){
-                    var language = trans[l];
-                    if(language["lang"]== lang){
-                        //GOT THE RIGHT LANGUAGE
-                        for(var t in language["translations"]){
-                            var translation = language["translations"][t];
-                            var datakey = Object.keys(translation).shift();
-                            $("[data-translation-key='"+datakey+"']").text(translation[datakey]);
-                        }
-                        break;
-                    }
-                }
-                break;
-            }            
+        lang        = !lang ? "en" :lang;
+        var project = app.cache.projects["project_list"][app.cache.active_project["i"]];
+        var trans   = project["app_text"];
+        if(project["project_id"] == projid){
+            for(var n in trans){
+                var kvpair      = trans[n];
+                var translation = kvpair["val"].hasOwnProperty(lang) ? kvpair["val"][lang] : "";
+                var datakey     = kvpair["key"];
+                $("[data-translation-key='"+datakey+"']").text(translation);
+            }   
         }
 
         //OK JUST REDO THE SURVEY EVERYTIME
         $("#survey fieldset").empty();
-        survey.build(app.cache.projects["project_list"][app.cache.active_project.i]["surveys"], lang);           
+        survey.build(project["surveys"], lang);           
     }
 
     ,startWatch: function(freq) {

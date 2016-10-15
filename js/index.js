@@ -51,7 +51,7 @@ var app = {
         app.cache.positionTrackerId = null; //ref to setInterval
         app.cache.curmap            = null; //ref to google map
         app.cache.currentWalkMap    = [];   //array of geotags for current walk
-        app.cache.history           = [];   //the app usage forward history
+        app.cache.history           = ["step_zero"];   //the app usage forward history
 
         app.cache.next_id           = null; //NEXT USER ID - POUCH COLLATED
         app.cache.participant_id    = null; //JUST SIMPLE INTEGER
@@ -333,7 +333,6 @@ var app = {
             //DITCH USER TOO
             $("#admin_null").show();
             $("#admin_passed").hide();
-            app.cache.history.push("step_zero")
             app.closeCurrentPanel($("#step_zero"));
             ourvoice.adminSetup();
             return false;
@@ -360,18 +359,6 @@ var app = {
             console.log("swiped right");
             // app.goBack()
         });
-
-        // show delete buttons on swipe
-        $('#main').swipe(function(){
-          console.log("swiped");
-        })
-
-        // delete row on tapping delete button
-        $('.button').tap(function(){
-            alert("shieet");  
-            console.log("now what?");
-          console.log("is this more responsive?");
-        })
 
         //pic review media items.
         $(".mi_slideout").click(function(){
@@ -405,7 +392,6 @@ var app = {
     }
 
     ,goBack : function(){
-        console.log(app.cache.history);
         if(app.cache.history.length <= 1){
             //NO HISTORY TO GO BACK TO
             return false;

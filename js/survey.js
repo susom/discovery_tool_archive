@@ -1,23 +1,16 @@
 var survey = {
 	build : function(surveyitems, language){
+
         for(var i in surveyitems){
             var inp = surveyitems[i];
 
             var name 		= inp["name"];
-            var label       = inp["label"];
-            var labeltxt    = null; 
-            for(var l in label){
-                var lang = label[l]["lang"];
-                if(lang == language){
-                    labeltxt = label[l]["text"];
-                    break;
-                }
-            }
+            var labeltxt    = inp["label"][language];
+            var opts        = null; 
+            var type        = inp["type"];
+            var div         = $("<div>").addClass("inputs");
 
-            var opts    = null; 
-            var type    = inp["type"];
-
-            var div     = $("<div>").addClass("inputs");
+            //SET FIRST QUESTION AS FIRST ACTIVE PANEL
             if(i == 0){
                 div.addClass("active");
             }
@@ -33,19 +26,11 @@ var survey = {
                 labelclass = "touchify_checkbox";
                 case "radio":
                     opts = inp["options"]; 
-
                     for(var o in opts){
                         var opt     = opts[o];
-                        var optxt   = null;
-                        var optval 	= null;
-                        for(var l in opt){
-                            var lang = opt[l]["lang"];
-                            if(lang == language){
-                                optxt	= opt[l]["text"];
-                                optval 	= opt[l]["value"];
-                                break;
-                            }
-                        }
+                        var optxt   = opt[language];
+                        var optval 	= opt["value"];
+                        
                         var label   = $("<label>");
                         var input   = $("<input>").attr("type","radio").attr("name",name).val(optval);
                         label.text(optxt);
@@ -68,16 +53,9 @@ var survey = {
 
                     for(var o in opts){
                         var opt     = opts[o];
-                        var optxt   = null;
-                        var optval 	= null;
-                        for(var l in opt){
-                            var lang = opt[l]["lang"];
-                            if(lang == language){
-                                optxt 	= opt[l]["text"];
-                                optval 	= opt[l]["value"];
-                                break;
-                            }
-                        }
+                        var optxt   = opt[language];
+                        var optval  = opt["value"];
+                        
                         var option = $("<option>").val(optval).text(optxt);
                         select.append(option);
                     }
