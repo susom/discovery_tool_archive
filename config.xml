@@ -2,7 +2,7 @@
   xmlns:gap="http://phonegap.com/ns/1.0" 
   id="edu.stanford.researchit.discoverytool" 
   versionCode="10001"
-  version="1.0.1">
+  version="1.0.2">
   <name>Discovery Tool</name>
   <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
   <author href="http://researchit.stanford.edu" email="irvins@stanford.edu">Stanford Research IT</author>
