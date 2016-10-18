@@ -1,6 +1,6 @@
 <widget xmlns="http://www.w3.org/ns/widgets" 
   xmlns:gap="http://phonegap.com/ns/1.0" 
-  id="edu.stanford.researchit.discovery-tool" 
+  id="edu.stanford.researchit.discoverytool" 
   versionCode="10001"
   version="1.0.1">
   <name>Discovery Tool</name>
@@ -10,6 +10,7 @@
   <preference name="DisallowOverscroll" value="true"/>
   <preference name="android-minSdkVersion" value="14"/>
   <preference name="phonegap-version" value="cli-6.3.0"/>
+  <preference name="BackupWebStorage" value="local"/>
   <plugin name="cordova-plugin-battery-status" source="npm" spec="~1.1.1"/>
   <plugin name="cordova-plugin-camera" source="npm" spec="~2.1.1"/>
   <plugin name="cordova-plugin-media-capture" source="npm" spec="~1.2.0"/>
