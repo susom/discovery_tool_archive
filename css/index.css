@@ -324,6 +324,9 @@ nav .back{
     text-transform: uppercase;
     color:#333;
 }
+.consent_title {
+    min-height:34px;
+}
 .consent blockquote{
     font-size          : 170%;
     line-height:135%;
@@ -331,6 +334,7 @@ nav .back{
     width: 90%;
     margin :0 auto;
     padding:0; 
+    min-height:380px;
 }
 
 .consent h3{
@@ -350,14 +354,7 @@ nav .back{
     width              : 90%;
     border             : 1px solid #888;
 }
-#consent_two h2 {
-    background         : #F19192;
-    font-size          : 150%;
-    color              : #fff;
-    text-align         : center;
-    margin-top         : 0;
-    padding            : 10px 0;
-}
+
 
 /*STEP PAGES ARE ACTUAL CORE LOOP*/
 #step_two { 

@@ -87,6 +87,8 @@ var survey = {
 
     ,addEvents : function(){
         $("#survey fieldset .button").on("click", function(){
+            $("#survey_please").fadeOut();
+
             var this_q = $(this).closest("div.inputs");
             var next_q = this_q.next();
 
