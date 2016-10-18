@@ -16,6 +16,9 @@ var ourvoice = {
                 //DELIBERATLEY THROW ERROR, NO PROJECTS IN THE LOCAL DB
                 throw err;
             } 
+
+            $("h3.loadfail").remove();
+            
             //CHECK TO SEE IF THERE IS AN "active_project" SET YET
             if(app.cache.active_project.hasOwnProperty("i")){
                 //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
