@@ -111,8 +111,8 @@ var datastore = {
             console.log("REPLICATED FROM REMOTE!");
         }).on('change',function(change){
             app.log("REPLICATED FROM REMOTE : CHANGE AND SYNC");
-            console.log("REPLICATE FROM , CHANGE, SYNC!");
-            utils.dump(change.last_seq);
+            console.log("REPLICATE FROM REMOTE PROJECTS DB, CHANGE, SYNC! , SO REINITIALiZE APP?");
+            ourvoice.getAllProjects();
         }).on('uptodate',function(update){
             console.log("REPLICATION FROM DONE");
         }).catch(function (err) {

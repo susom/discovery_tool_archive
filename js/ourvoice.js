@@ -29,6 +29,7 @@ var ourvoice = {
                 app.log("ADMIN SETUP REQUIRED, NO ACTIVE PROJECT SET"); 
             }
         }).catch(function (err) {
+            console.log(err);
             app.log("NO PROJECTS IN LOCALDB, NOT SYNCING FROM REMOTE","ERROR");           
             console.log("ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE");
 
@@ -385,7 +386,7 @@ var ourvoice = {
                                 }); //of new Media
                         }
                         ,function(err){
-                            console.log("IOS FUCKING ERROR");
+                            console.log("IOS  ERROR");
                             console.log(err.code +  " : " + err.message);
                         }); //of getFile
                 }
