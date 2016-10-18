@@ -284,14 +284,16 @@ nav .back{
 .button{
     display         : block;
     border-radius   : 5px;
-    color           : #fff;
+    color           : #000;
     font-size       : 140%;
+    font-weight     : bold; 
     text-decoration : none;
-    background      : #4dc2ff;
+    background      : #ECF16D;
     margin          : 20px auto 0;
     padding         : 15px 0;
     text-align      : center;
     position        : relative;
+    box-shadow: 0 0 1px 1px #888;
 }
 .button i {
     display         : inline-block;
@@ -857,6 +859,17 @@ nav .back{
     width:100%;
     opacity:0;
     transition: opacity .25s, left .25s; 
+}
+#survey_please {
+    font-size:140%;
+}
+#survey_please h2{
+    font-size:120%;
+    margin-bottom:0;
+}
+#survey_please h4{
+    margin-top:0; 
+    font-size:92%;
 }
 #walk_survey fieldset div.active{
     left:0; 

@@ -357,7 +357,7 @@ var app = {
         hammertime.on('swiperight',function(){
             //swipe right to go back
             console.log("swiped right");
-            // app.goBack()
+            app.goBack()
         });
 
         //pic review media items.
