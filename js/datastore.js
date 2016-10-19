@@ -109,12 +109,14 @@ var datastore = {
         }).on('complete', function (wut) {
             app.log("REPLICATED FROM REMOTE");
             console.log("REPLICATED FROM REMOTE!");
+            ourvoice.getAllProjects();
         }).on('change',function(change){
             app.log("REPLICATED FROM REMOTE : CHANGE AND SYNC");
             console.log("REPLICATE FROM REMOTE PROJECTS DB, CHANGE, SYNC! , SO REINITIALiZE APP?");
             ourvoice.getAllProjects();
         }).on('uptodate',function(update){
             console.log("REPLICATION FROM DONE");
+            ourvoice.getAllProjects();
         }).catch(function (err) {
             app.log("ERROR ON REPLICATING FROM REMOTE");
             console.log("ERROR remoteSyncDB( WHAT? ):");
