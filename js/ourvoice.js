@@ -18,7 +18,7 @@ var ourvoice = {
             } 
 
             $("h3.loadfail").remove();
-            
+
             //CHECK TO SEE IF THERE IS AN "active_project" SET YET
             if(app.cache.active_project.hasOwnProperty("i")){
                 //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
@@ -82,6 +82,7 @@ var ourvoice = {
                 //REAL TIME LANGUAGE TRANSLATION UPDATES
                 var lang_id = $(this).val();
                 ourvoice.updateLanguage(app.cache.active_project["proj_id"],lang_id);
+                return false;
             });
         }).catch(function(err){
             console.log("ERROR localusers tables:");
