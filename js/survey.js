@@ -8,11 +8,17 @@ var survey = {
             var labeltxt    = inp["label"][language];
             var opts        = null; 
             var type        = inp["type"];
-            var div         = $("<div>").addClass("inputs");
+            var div         = $("<div>").addClass("inputs").data("qnum",parseInt(i));
+
+            var questionnum = parseInt(i)+1;
+
+            div.append($("<i class='qnum'>").text("Question " + questionnum + "/" + surveyitems.length));
 
             //SET FIRST QUESTION AS FIRST ACTIVE PANEL
             if(i == 0){
                 div.addClass("active");
+            }else{
+                div.find('.qnum').prepend($("<a>").attr("href","#").addClass("surveyback").data("qnum",parseInt(i)).text("« back"));
             }
 
             var span    = $("<span>").text(labeltxt).addClass("survey_q");
@@ -87,14 +93,14 @@ var survey = {
 
     ,addEvents : function(){
         $("#survey fieldset .button").on("click", function(){
-            $("#survey_please").fadeOut();
+            $("#survey_please").fadeOut("fast");
 
             var this_q = $(this).closest("div.inputs");
             var next_q = this_q.next();
 
             this_q.addClass("off");
             if(next_q.length){
-                next_q.addClass("active");
+                next_q.removeClass("off").addClass("active");
             }else{
                 var panel = $(this).closest(".panel");
                 ourvoice.finished();
@@ -103,6 +109,17 @@ var survey = {
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#finish"),1);
             }
+        });
+
+        $(".surveyback").click(function(){
+            var prev_q = $(this).data("qnum") - 1;
+
+            var this_q = $(this).closest("div.inputs");
+            var prev_q = this_q.prev();
+
+            this_q.addClass("off").removeClass("active");
+            prev_q.addClass("active").removeClass("off");
+            return false;
         });
     }   
 }

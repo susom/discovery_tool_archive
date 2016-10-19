@@ -886,6 +886,27 @@ nav .back{
     margin:0 0 0 0;
 }
 
+.qnum {
+    display:block;
+    font-style:normal;
+    font-weight:500;
+    font-size:130%;
+    color:#333;
+    text-align:right;
+    padding-bottom:3px;
+    margin-bottom:15px;
+    position:relative;
+    border-bottom:1px solid #888;
+}
+.qnum .surveyback {
+    position:absolute; 
+    left:0;
+    top:2px;
+    display:inline-block;
+    text-decoration:none;
+    font-size:92%;
+    color:#369;
+}
 .survey_q {
     display:block;
     margin-bottom:5px;
