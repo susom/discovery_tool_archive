@@ -885,7 +885,9 @@ nav .back{
     display:block;
     margin:0 0 0 0;
 }
-
+#walk_survey b {
+    font-weight:500;
+}
 .qnum {
     display:block;
     font-style:normal;

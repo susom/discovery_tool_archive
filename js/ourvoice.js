@@ -94,6 +94,11 @@ var ourvoice = {
         lang        = !lang ? "en" :lang;
         var project = app.cache.projects["project_list"][app.cache.active_project["i"]];
         var trans   = project["app_text"];
+        
+        //OK JUST REDO THE SURVEY EVERYTIME
+        $("#survey fieldset").empty();
+        survey.build(project["surveys"], lang);  
+
         if(project["project_id"] == projid){
             for(var n in trans){
                 var kvpair      = trans[n];
@@ -102,10 +107,6 @@ var ourvoice = {
                 $("[data-translation-key='"+datakey+"']").text(translation);
             }   
         }
-
-        //OK JUST REDO THE SURVEY EVERYTIME
-        $("#survey fieldset").empty();
-        survey.build(project["surveys"], lang);           
     }
 
     ,startWatch: function(freq) {

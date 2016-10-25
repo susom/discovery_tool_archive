@@ -1,6 +1,5 @@
 var survey = {
 	build : function(surveyitems, language){
-
         for(var i in surveyitems){
             var inp = surveyitems[i];
 
@@ -10,15 +9,18 @@ var survey = {
             var type        = inp["type"];
             var div         = $("<div>").addClass("inputs").data("qnum",parseInt(i));
 
+            var transQ      = $("<b data-translation-key='question'>").text("text");
+            var transNext   = $("<b data-translation-key='next'>").text("text");
+            var transBack   = $("<b data-translation-key='back'>").text("text");
+            
             var questionnum = parseInt(i)+1;
-
-            div.append($("<i class='qnum'>").text("Question " + questionnum + "/" + surveyitems.length));
+            div.append($("<i class='qnum'>").text(" " + questionnum + "/" + surveyitems.length).prepend(transQ));
 
             //SET FIRST QUESTION AS FIRST ACTIVE PANEL
             if(i == 0){
                 div.addClass("active");
             }else{
-                div.find('.qnum').prepend($("<a>").attr("href","#").addClass("surveyback").data("qnum",parseInt(i)).text("« back"));
+                div.find('.qnum').prepend($("<a>").attr("href","#").addClass("surveyback").data("qnum",parseInt(i)).text("« ").append(transBack));
             }
 
             var span    = $("<span>").text(labeltxt).addClass("survey_q");
@@ -82,7 +84,7 @@ var survey = {
 
 
             div.addClass("delete_on_reset");
-            var nextbtn = $("<a>").addClass("button").text("Next").data("next_q", i+1);   
+            var nextbtn = $("<a>").addClass("button").data("next_q", i+1).append(transNext);   
             div.append(nextbtn);
             $("#survey fieldset").append(div);
         }
