@@ -230,6 +230,7 @@ var app = {
             }
 
             ourvoice.deletePhoto(app.cache.user.photos[thispic_i]);
+            datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return false;
         });
 
@@ -326,6 +327,7 @@ var app = {
             var val = $(this).val();
             var nam = $(this).attr("name");
             app.cache.user.survey.push({"name" : nam , "value" : val});
+            datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return;
         });
 

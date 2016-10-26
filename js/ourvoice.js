@@ -143,7 +143,8 @@ var ourvoice = {
                     ,"timestamp"    : position.timestamp
                 };
                 app.cache.user.geotags.push(curpos);
-
+                datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                
                 //SAVE THE POINTS IN GOOGLE FORMAT
                 app.cache.currentWalkMap.push(
                     new google.maps.LatLng(curLat, curLong)
@@ -294,6 +295,7 @@ var ourvoice = {
                         var strip_typedata  = base64_or_arbuf.replace("data:audio/wav;base64,","");
                         var blobit          = new Blob([base64_or_arbuf], {type: 'audio/wav'})
                         app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : blobit };
+                        datastore.writeDB(app.cache.localusersdb , app.cache.user);
                     };
                     // reader.readAsArrayBuffer(file);
                     reader.readAsDataURL(file);
@@ -435,6 +437,7 @@ var ourvoice = {
                 //PREPARE ATTACHEMENT
                 var attref      = "photo_" + thispic_i + ".jpg";
                 app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
+                datastore.writeDB(app.cache.localusersdb , app.cache.user);
 
                 //SET UP PHOTO PREVIEW PAGE
                 ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
@@ -537,6 +540,7 @@ var ourvoice = {
             pic_count       = parseInt(pic_count) - 1;
             $(".mi_slideout b").text(pic_count);
 
+            datastore.writeDB(app.cache.localusersdb , app.cache.user);
             app.log("DELETED PHOTO");
             next();
         });
