@@ -41,24 +41,24 @@ var app = {
     }
     
     ,initCache : function(){
-        app.cache.user              = null;
-        app.cache.user              = config["default_user"]; //NEED TO USE COLLATE
+        app.cache.user                 = null;
+        app.cache.user                 = config["default_user"]; //NEED TO USE COLLATE
         app.cache.user["_attachments"] = {};
-        app.cache.user["photos"]    = [];
-        app.cache.user["geotags"]   = [];
-        app.cache.user["survey"]    = [];
+        app.cache.user["photos"]       = [];
+        app.cache.user["geotags"]      = [];
+        app.cache.user["survey"]       = [];
 
-        app.cache.positionTrackerId = null; //ref to setInterval
-        app.cache.curmap            = null; //ref to google map
-        app.cache.currentWalkMap    = [];   //array of geotags for current walk
-        app.cache.history           = ["step_zero"];   //the app usage forward history
+        app.cache.positionTrackerId    = null; //ref to setInterval
+        app.cache.curmap               = null; //ref to google map
+        app.cache.currentWalkMap       = [];   //array of geotags for current walk
+        app.cache.history              = ["step_zero"];   //the app usage forward history
 
-        app.cache.next_id           = null; //NEXT USER ID - POUCH COLLATED
-        app.cache.participant_id    = null; //JUST SIMPLE INTEGER
+        app.cache.next_id              = null; //NEXT USER ID - POUCH COLLATED
+        app.cache.participant_id       = null; //JUST SIMPLE INTEGER
 
-        app.cache.audioObj          = null; //FOR VOICE RECORDINGS
-        app.cache.audioStatus       = null;
-        app.cache.currentAudio      = null;
+        app.cache.audioObj             = null; //FOR VOICE RECORDINGS
+        app.cache.audioStatus          = null;
+        app.cache.currentAudio         = null;
     }
 
     ,bindEvents: function() {
@@ -90,19 +90,18 @@ var app = {
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
 
-        //1) (RE)OPEN LOCAL DB
-        app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
-        app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
-        app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
-
+        //1) (RE)OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
         app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
         app.cache.remotelogdb   = datastore.startupDB(config["database"]["log_remote"]);
 
-        // DELETE!
+        app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
+        app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
+        app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
+
+        // CLEAN SLATE 
         // datastore.deleteLocalDB();
-        // return;
-        
+
         //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
         datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);  //ONE WAY LOCAL TO REMOTE SYNCING
         datastore.localSyncDB(app.cache.locallogdb,app.cache.remotelogdb);      //""
@@ -146,6 +145,9 @@ var app = {
                     $("#admin_projid").val(null);
 
                     ourvoice.resetDevice();
+
+                    // EMPTY LOCAL DATABASE.... 
+                    datastore.emptyUsersDB();
 
                     //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
                     app.cache.active_project["i"] = pid_correct;

@@ -56,9 +56,10 @@ var ourvoice = {
             app.initCache();
 
             //SET THE NEXT AVAILABLE USER OBJECT _id
+            var time_stamp = Date.now();
             app.cache.active_project["proj_id"] = p["project_id"];
             app.cache.participant_id            = (res["rows"].length + 1);
-            app.cache.next_id                   = datastore.pouchCollate([app.cache.uuid,   app.cache.active_project["proj_id"],   app.cache.participant_id]);
+            app.cache.next_id                   = datastore.pouchCollate([app.cache.uuid,   app.cache.active_project["proj_id"],   app.cache.participant_id, time_stamp]);
             app.cache.proj_thumbs               = p["thumbs"];
 
             //Display This Info
@@ -144,7 +145,7 @@ var ourvoice = {
                 };
                 app.cache.user.geotags.push(curpos);
                 datastore.writeDB(app.cache.localusersdb , app.cache.user);
-                
+
                 //SAVE THE POINTS IN GOOGLE FORMAT
                 app.cache.currentWalkMap.push(
                     new google.maps.LatLng(curLat, curLong)

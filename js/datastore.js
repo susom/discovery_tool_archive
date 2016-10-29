@@ -2,7 +2,7 @@ var datastore = {
     db : null
 
     ,startupDB: function(dbname){
-        var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default'});
+        var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default', auto_compaction: true});
         app.log(dbname + " DB GOT");
         return db;
     }
@@ -49,7 +49,11 @@ var datastore = {
     }
 
     ,writeDB : function(db,_o){
-        db.put(_o).then(function (wut) {
+        db.put(_o).then(function (new_o) {
+            var _rev = new_o.rev;
+            _o._rev = _rev;
+            // console.log("new rev");
+            // console.log(_rev);
             app.log("JSON OBJECT SUCCESFULLY SAVED");
             console.log('Successfully saved a json object?');
 
@@ -149,18 +153,33 @@ var datastore = {
     ,deleteLocalDB : function(){
         //DELETE LOCAL DBs
         app.cache.localusersdb.destroy().then(function (response) {
-          console.log("byebye local users db");
+            console.log("EMPTYING local users db = DELETING, THEN RESTARTING");
+            app.cache.localusersdb    = datastore.startupDB(config["database"]["users_local"]); 
         }).catch(function (err) {
-          console.log(err);
+            console.log(err);
         });
 
         app.cache.localprojdb.destroy().then(function (response) {
-          console.log("byebye local proj db");
+            console.log("DELETEING local proj db");
+            app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
         }).catch(function (err) {
-          console.log(err);
+            console.log(err);
         });
 
-        app.log("DELETEING LOCAL DATABASES");
+        app.log("DELETING LOCAL DATABASES");
+        return;
+    }
+
+    ,emptyUsersDB : function(){
+        //DELETE LOCAL DBs
+        app.cache.localusersdb.destroy().then(function (response) {
+            console.log("EMPTYING local users db = DELETING, THEN RESTARTING");
+            app.cache.localusersdb    = datastore.startupDB(config["database"]["users_local"]); 
+        }).catch(function (err) {
+            console.log(err);
+        });
+
+        app.log("DELETING LOCAL DATABASES");
         return;
     }
 };
