@@ -44,6 +44,7 @@ var ourvoice = {
 
     ,loadProject : function(project){
         var p = project;
+        app.initCache();
 
         //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
         var partial_id  = datastore.pouchCollate([app.cache.uuid,  p["project_id"]]);
@@ -53,8 +54,6 @@ var ourvoice = {
              startkey   : partial_id
             ,endkey     : partial_end
         }).then(function (res) {
-            app.initCache();
-
             //SET THE NEXT AVAILABLE USER OBJECT _id
             var time_stamp = Date.now();
             app.cache.active_project["proj_id"] = p["project_id"];
@@ -549,9 +548,8 @@ var ourvoice = {
     }
 
     ,finished : function(){
-        console.log("finished! show user obj to be saved");
-        console.log(app.cache.user);
-        datastore.writeDB(app.cache.localusersdb , app.cache.user);
+        console.log("FINISHED");
+        app.initCache();
         app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
     }
     ,resetDevice : function(){

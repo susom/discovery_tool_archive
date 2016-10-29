@@ -12,7 +12,7 @@ var survey = {
             var transQ      = $("<b data-translation-key='question'>").text("text");
             var transNext   = $("<b data-translation-key='next'>").text("text");
             var transBack   = $("<b data-translation-key='back'>").text("text");
-            
+
             var questionnum = parseInt(i)+1;
             div.append($("<i class='qnum'>").text(" " + questionnum + "/" + surveyitems.length).prepend(transQ));
 
@@ -105,12 +105,15 @@ var survey = {
                 next_q.removeClass("off").addClass("active");
             }else{
                 var panel = $(this).closest(".panel");
+                app.initCache();
                 ourvoice.finished();
                 
                 //TRANSITION TO NEXT PANEL
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#finish"),1);
             }
+
+            return false;
         });
 
         $(".surveyback").click(function(){

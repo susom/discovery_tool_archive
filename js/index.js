@@ -48,6 +48,9 @@ var app = {
         app.cache.user["geotags"]      = [];
         app.cache.user["survey"]       = [];
 
+        delete app.cache.user._id;
+        delete app.cache.user._rev;
+
         app.cache.positionTrackerId    = null; //ref to setInterval
         app.cache.curmap               = null; //ref to google map
         app.cache.currentWalkMap       = [];   //array of geotags for current walk
@@ -217,6 +220,8 @@ var app = {
                 $("a.down[rel='" + curPhoto + "']").addClass("on");
                 $("a.up[rel='" + curPhoto + "']").addClass("off");
             }
+            
+            datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return false;
         });
 
@@ -459,7 +464,7 @@ var app = {
             ,"platform" : app.cache.platform
         }
 
-        console.log(log_obj);
+        // console.log(log_obj);
         // datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };
