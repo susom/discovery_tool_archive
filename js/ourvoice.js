@@ -58,7 +58,7 @@ var ourvoice = {
             var time_stamp = Date.now();
             app.cache.active_project["proj_id"] = p["project_id"];
             app.cache.participant_id            = (res["rows"].length + 1);
-            app.cache.next_id                   = datastore.pouchCollate([app.cache.uuid,   app.cache.active_project["proj_id"],   app.cache.participant_id, time_stamp]);
+            app.cache.next_id                   = datastore.pouchCollate([ app.cache.active_project["proj_id"], app.cache.uuid,   app.cache.participant_id, time_stamp]);
             app.cache.proj_thumbs               = p["thumbs"];
 
             //Display This Info
@@ -289,16 +289,8 @@ var ourvoice = {
             var fileEntry   = app.cache.currentAudio ; 
             var attref      = "audio_" + photo_i + ".wav";
             fileEntry.file(function(file) {
-                    var reader       = new FileReader();
-                    reader.onloadend = function(e) {
-                        var base64_or_arbuf = this.result;
-                        var strip_typedata  = base64_or_arbuf.replace("data:audio/wav;base64,","");
-                        var blobit          = new Blob([base64_or_arbuf], {type: 'audio/wav'})
-                        app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : blobit };
-                        datastore.writeDB(app.cache.localusersdb , app.cache.user);
-                    };
-                    // reader.readAsArrayBuffer(file);
-                    reader.readAsDataURL(file);
+                    app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : file };
+                    datastore.writeDB(app.cache.localusersdb , app.cache.user);
                 }
                 ,function(err){
                     console.log(err);
