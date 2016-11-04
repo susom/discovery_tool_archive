@@ -1,8 +1,8 @@
 <widget xmlns="http://www.w3.org/ns/widgets" 
   xmlns:gap="http://phonegap.com/ns/1.0" 
-  id="edu.stanford.ourvoice.discoverytool" 
-  versionCode="10005"
-  version="1.0.5">
+  id="edu.stanford.discoverytool.ourvoice" 
+  versionCode="10009"
+  version="1.0.9">
   <name>Discovery Tool</name>
   <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
   <author href="http://researchit.stanford.edu" email="irvins@stanford.edu">Stanford Research IT</author>
