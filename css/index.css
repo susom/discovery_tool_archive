@@ -404,66 +404,61 @@ nav .back{
     width           : 100%;
     overflow        : hidden;
 }
-.walk_actions .button {
-    float           : left;
-
-    width           : 50%;
-    min-height      : 140px;
-
-    border-radius   : 0;
-    margin          : 0;
-    padding         : 0;
-    text-align      : initial;
-}
 .walk_actions .endwalk {
-    float           : right;
+    border:none;
+    box-shadow:none;
+    min-height      : 100px;
+    width           : 50%;
+    margin          : 0 auto;
     background      : url(../img/icon_stop.png) 50% 50% no-repeat;
     background-size : 70%;
     text-align      :center;
+    color:#fff;
 
-    /*SINCE HIDING PIC REVIEW*/
-    width:100%;
-    background-size : 36%;
 }
 .walk_actions .endwalk i {
     font-size       : 120%;
     line-height     : 110%;
     width           : 55%;
-
-    /*SINCE HIDING PIC REVIEW*/
-    width:32%;
-    font-size:110%;
 }
 .mi_slideout {
-    float           : left;
+    box-shadow:none;
     position        : relative;
-    background      : #FBF792 url(../img/icon_photo.png) 85% 20% no-repeat;
-    background-size : 40%;
+    background      : url(../img/icon_photo.png) 100% 20% no-repeat;
+    background-size : 10%;
     text-decoration : none;
     text-align      : left ;
     color           : #333;
-
-    /*HIDE FOR NOW*/
-    display:none;
+}
+.mi_slideout{
+    margin:30px 10px 0 0;
+    padding:5px 40px 5px 0; 
+    font-weight:normal;
+    text-align:right;
 }
 .mi_slideout b {
+    float:none;
+    display         : inline-block;
     font-weight     : normal;
-    display         : block;
-    font-size       : 180%;
-    line-height     : 200%;
-    text-indent     : 23%;
-    margin          : 10px auto 0;
 }
-/*.mi_slideout b:after {
-    content         : "x";
-    margin-left     : 8px;
-}*/
 .mi_slideout i {
-    width           : 90%;
-    transform       : translate(-50%,70%);
-    font-size       : 110%;
-    line-height     : 110%;
+    width:auto;
+    transform:initial;
+    float:none;
+    position:static;
+    text-align:left;
+    display:inline-block;
+    font-weight:600;
+    color:#369;
 }
+.done_photos {
+    padding:5px 40px 5px ;
+    background      : url(../img/icon_photo.png) 100% 20% no-repeat;
+    background-size : 10%;
+    color           : #333;
+    text-align:right;
+}
+
 .button.camera {
     background:#4dc2ff url(../img/icon_camera.png) 50% 50% no-repeat;
 }
@@ -553,9 +548,11 @@ nav .back{
 .mediaitem .votes a{
     text-indent         : -5000px;
     display             : inline-block;
-    width               : 25px;
+    
+    width               : 25px; 
     height              : 30px;
     background          : #fff url(../img/icon_thumbs.png) 0 0 no-repeat;
+    
     background-size     : 200%;
     margin              : 0 15px 0 0;
     border-radius       : 3px;
@@ -644,6 +641,51 @@ nav .back{
     margin:0; padding:0;
     height:auto;
 }
+#pic_review .device_actions i {
+    display:block;
+}
+#pic_review .device_actions i span{
+    display:block;
+    margin-bottom:3px;
+}
+#pic_review  #saved_audio a{
+    display:inline-block;
+    width:30px; height:30px;
+    background:#4dc2ff url(../img/icon_listen_2.png) no-repeat;
+    background-size:contain;
+    border:2px solid #4dc2ff;
+    border-radius:5px;
+    text-align:center;
+    color:#333;
+    line-height:200%;
+    font-weight:bold;
+    font-style:normal;
+    text-decoration:none;
+    vertical-align:top;
+    box-shadow:0 0 0 2px #888; 
+    margin-right:5px;
+}
+
+#pic_review  #saved_audio a.playing{
+    border:none;
+    box-shadow:none;
+    width:34px; height:34px;
+    background:url(../img/icon_stop.png) no-repeat;
+    background-size:contain;
+}
+
+#pic_review  #saved_audio a.record_another{
+    background:#4dc2ff url(../img/icon_mic.png) 5px 3px no-repeat;
+    background-size:10%;
+    padding:0 10px 0 25px;
+    border-color:#4dc2ff;
+    color:#333;
+    text-shadow:none;
+    line-height:130%;
+    width:auto;
+    margin-right:0;
+}
+
 .daction.audio{
     background:#ff7fe5 url(../img/icon_mic.png) 50% 40% no-repeat;
     line-height: 450%;
@@ -694,7 +736,7 @@ nav .back{
 }
 #pic_review h4 {
     font-size:100%;
-    margin:0 0 10px;
+    margin:0 0 5px;
     line-height:initial;
 }
 #pic_review ol { 
@@ -720,23 +762,54 @@ nav .back{
 .votes a{
     text-indent:-5000px;
     display:inline-block;
+    margin:0 10px;
+    padding:3px;
+    border-radius:10px;
+
+    /*THUMBS*/
     width:50px;
     height:60px;
     background:#efefef url(../img/icon_thumbs.png) 4px 3px no-repeat;
-    margin:0 20px;
-    padding:3px;
-    border-radius:10px;
-    opacity:.80;
+    opacity:.40;
     transition: opacity 0.1s linear;
 }
-.votes .down{
-    background-position:-49px 3px;
+.votes.smilies a{
+    opacity:1;
+
+    /*SMILIES*/
+    width               : 50px; 
+    height              : 50px;
+    background          : #efefef url(../img/icon_smilies.png) bottom left no-repeat;
+    background-size:200%;
 }
+.votes .down{
+    /*THUMBS*/
+    background-position:-49px 3px;    
+}
+.votes.smilies .down{
+    /*SMILIES*/
+    background-position:bottom right;
+}
+
 .votes a.on {
+    /*THUMBS*/
     opacity:1;
 }
+.votes.smilies .on{
+    /*SMILIES*/
+    background-position:top left;
+}
+.votes.smilies .down.on{
+    /*SMILIES*/
+    background-position:top right;
+}
+
 .votes a.off{
+    /*THUMBS*/
     opacity:.2;
+
+    /*SMILIES*/
+    background-position:bottom right;
 }
 
 /*AUDIO RECORD PAGE*/

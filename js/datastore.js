@@ -3,25 +3,24 @@ var datastore = {
 
     ,startupDB: function(dbname){
         var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default', auto_compaction: true});
-        app.log(dbname + " DB GOT");
+        // app.log("GOT DB: " + dbname);
         return db;
     }
 
     ,destroyDB : function(dbname){
         new PouchDB(dbname).destroy().then(function (){
-          // console.log("DATABASE DESTROYED: " + dbname);
+          app.log("DB DESTROYED: " + dbname);
         }).catch(function (err) {
-          // console.log("ERROR destroyDB():");
+          app.log("ERROR destroyDB(): " + dbname);
           datastore.showError(err);
         });
     }
 
     ,getDB : function(db,_id,assign_to_this){
         db.get(_id).then(function (doc) {
-            // console.log(doc);
             assign_to_this = doc;
         }).catch(function (err) {
-            console.log("ERROR getDB():");
+            app.log("ERROR getDB(): " + _id);
             datastore.showError(err);
         });
     }
@@ -33,34 +32,29 @@ var datastore = {
             // ,startkey : 'id01'
             // ,endkey : 'id10'
             // ,limit : 10
-            // //inefficient
+            // inefficient
             // ,skip  : 5
             // ,descending : true
             // ,key : 'id01'
             // ,keys : ['id01','id02']
         }).then(function (res) {
-            // console.log(res["total_rows"]);
-            // console.log(res["offset"]);
-            utils.dump(res["rows"]);
+            console.log(res["rows"]);
+            // utils.dump(res["rows"]);
         }).catch(function(err){
-            console.log("ERROR getAll():");
+            app.log("ERROR getAll()");
             datastore.showError(err);
         });
     }
 
     ,writeDB : function(db,_o){
-        console.log("trying to write to DB");
-        console.log(_o);
         db.put(_o).then(function (new_o) {
-            console.log("old rev : " + _o._rev );
             var _rev = new_o.rev;
+            app.log("PUTTING old rev : " + _o._rev + " / new rev : " + _rev);
             _o._rev = _rev;
-            console.log("new rev : " + _rev);
-
             app.log("JSON OBJECT SUCCESFULLY SAVED : " + _o._id + " , rev : " + _o._rev);
         }).catch(function (err) {
-            console.log("ERROR writeDB():");
             app.log("ERROR WRITING TO A DB");
+            console.log(_o);
             datastore.showError(err);
         });
     }
@@ -73,7 +67,7 @@ var datastore = {
         }).on('change', function(){
             console.log("Incoming Changes From Remote , or Even Local Writes? I THINK EVEN LOCAL");
         }).catch(function (err) {
-            console.log("ERROR liveDB():");
+            app.log("ERROR liveDB()");
             datastore.showError(err);
         });
     }
@@ -97,13 +91,10 @@ var datastore = {
             live: true
         }).on('complete', function (wut) {
             app.log("LOCAL DB REPLICATED TO REMOTE!");
-            // console.log("REPLICATED TO REMOTE!");
         }).on('change',function(change){
-            // console.log("REPLICATE TO , CHANGE, SYNC!")
         }).on('uptodate',function(update){
-            // console.log("REPLICATION TO DONE");
         }).catch(function (err) {
-            // console.log("ERROR localSyncDB():");
+            app.log("ERROR localSyncDB()");
             datastore.showError(err);
         });
     }
@@ -112,20 +103,16 @@ var datastore = {
         localdb_obj.replicate.from(remotedb_str,{
             live: true
         }).on('complete', function (wut) {
-            app.log("REPLICATED FROM REMOTE");
-            // console.log("REPLICATED FROM REMOTE!");
+            app.log("REPLICATION (COMPLETE) FROM " + remotedb_str + " DONE");
             ourvoice.getAllProjects();
         }).on('change',function(change){
-            app.log("REPLICATED FROM REMOTE : CHANGE AND SYNC");
-            // console.log("REPLICATE FROM REMOTE PROJECTS DB, CHANGE, SYNC! , SO REINITIALiZE APP?");
+            app.log("REPLICATION (CHANGE) FROM " + remotedb_str + " DONE");
             ourvoice.getAllProjects();
         }).on('uptodate',function(update){
-            // console.log("REPLICATION FROM DONE");
+            app.log("REPLICATION (UPTODATE) FROM " + remotedb_str + " DONE");
             ourvoice.getAllProjects();
         }).catch(function (err) {
-            app.log("ERROR ON REPLICATING FROM REMOTE");
-            // console.log("ERROR remoteSyncDB( WHAT? ):");
-            // datastore.showError(err);
+            app.log("ERROR ON REPLICATING FROM REMOTE: " + remotedb_str);
         });
     }
 
@@ -134,7 +121,6 @@ var datastore = {
     }
 
     ,showError : function(e){
-        // utils.dump(e);
         console.log("status: "  + e["status"]);
         console.log("name: "    + e["name"]);
         console.log("message: " + e["message"]);
@@ -152,22 +138,16 @@ var datastore = {
     }
 
     ,deleteLocalDB : function(){
-        //DELETE LOCAL DBs
-        app.cache.localusersdb.destroy().then(function (response) {
-            console.log("EMPTYING local users db = DELETING, THEN RESTARTING");
-            app.cache.localusersdb    = datastore.startupDB(config["database"]["users_local"]); 
-        }).catch(function (err) {
-            console.log(err);
-        });
+        //DELETE LOCAL USER DB
+        datastore.emptyUsersDB();
 
+        //DELETE LOCAL PROJECT DB
         app.cache.localprojdb.destroy().then(function (response) {
             console.log("DELETEING local proj db");
-            app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
+            app.cache.localprojdb       = datastore.startupDB(config["database"]["proj_local"]);
         }).catch(function (err) {
             console.log(err);
         });
-
-        app.log("DELETING LOCAL DATABASES");
         return;
     }
 
@@ -179,8 +159,6 @@ var datastore = {
         }).catch(function (err) {
             console.log(err);
         });
-
-        app.log("DELETING LOCAL DATABASES");
         return;
     }
 };

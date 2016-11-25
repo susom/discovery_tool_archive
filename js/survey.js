@@ -82,13 +82,11 @@ var survey = {
                 break;
             }
 
-
             div.addClass("delete_on_reset");
             var nextbtn = $("<a>").addClass("button").data("next_q", i+1).append(transNext);   
             div.append(nextbtn);
             $("#survey fieldset").append(div);
         }
-
         survey.addEvents();
         return;
     }
@@ -112,7 +110,6 @@ var survey = {
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#finish"),1);
             }
-
             return false;
         });
 

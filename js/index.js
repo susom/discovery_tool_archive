@@ -38,6 +38,8 @@ var app = {
 
         app.cache.uuid              = null; //DEVICE UNIQUE ID
         app.cache.platform          = null; //IOS/ANDROID ETC
+
+        app.cache.testgoodbad       = null;
     }
     
     ,initCache : function(){
@@ -104,13 +106,14 @@ var app = {
 
         // CLEAN SLATE 
         // datastore.deleteLocalDB();
+        // return;
 
         //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
         datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);  //ONE WAY LOCAL TO REMOTE SYNCING
-        datastore.localSyncDB(app.cache.locallogdb,app.cache.remotelogdb);      //""
+        datastore.localSyncDB(app.cache.locallogdb,app.cache.remotelogdb);      
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);   //ONE WAY REMOTE TO LOCAL SYNCING
 
-        app.log("DEVICE READY, DATABASE CONNECTED, ADDING EVENTS TO APP");
+        app.log("DEVICE READY, DBs CONNECTED, LOOKING FOR ACTIVE PROJECT NEXT");
 
         //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
@@ -123,7 +126,7 @@ var app = {
         });
 
         //4) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
-        $(".button[data-next]").not(".camera,.audiorec").on("click",function(){
+        $(".button[data-next]").not(".audiorec,.camera").on("click",function(){
             //GET CURRENT PANEL
             var panel       = $(this).closest(".panel");
             var next        = $(this).data("next");
@@ -163,22 +166,23 @@ var app = {
                     return false;
                 }
 
-                app.log("Setting up Device with " + app.cache.projects["project_list"][i]["project_id"]);
+                app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
             }else{
                 //ONE TIME DEAL if NOT STEP ZERO
                 $("#main").addClass("loaded");
             }
 
             //SPECIAL RULES ENTERING INTO DIFFERNT "PAGES"
-            if(next == "consent_one"){
+            if(next == "project_about"){
+                //THIS IS IMPORTANT
                 app.cache.user.project_id    = app.cache.active_project.i;
                 app.cache.user.lang          = $("select[name='language']").val();
                 app.cache.user.user_id       = app.cache.participant_id;
                 app.cache.user._id           = app.cache.next_id; //COLLATED
+                console.log("USER OBJ CREATED NOT SAVED YET");
+            }
 
-                if(!$("header hgroup h3").length){
-                    // $("header hgroup").append($("<h3>").addClass("delete_on_reset").text("Project : " + app.cache.active_project["proj_id"].toUpperCase() + ", Participant : " + app.cache.participant_id));
-                }
+            if(next == "consent_0"){
                 app.log("Starting consent process for User " + app.cache.user._id);
             }
 
@@ -207,20 +211,32 @@ var app = {
         });
 
         $(".panel").on("click",".votes .vote", function(){
-            //VOTE GOOD OR BAD
+            //VOTE GOOD AND/OR BAD
             var curPhoto    = $(this).data("photo_i");
-            $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
             
+            // ONLY REMOVE IF MUTUALLY EXCLUSIVE
+            // $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
+            
+            var updown = "up";
+            // 0/null = no votes, 1 = bad vote, 2 = good vote, 3 = both votes WTF
             if($(this).hasClass("up")){
-                app.cache.user.photos[curPhoto].goodbad = 1;
-                $("a.up[rel='" + curPhoto + "']").addClass("on");
-                $("a.down[rel='" + curPhoto + "']").addClass("off");
+                $("a.up[rel='" + curPhoto + "']").toggleClass("on");
+                if($("a.up[rel='" + curPhoto + "']").hasClass("on")){
+                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad+2;
+                }else{
+                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad-2;
+                }
             }else{
-                app.cache.user.photos[curPhoto].goodbad = -1;
-                $("a.down[rel='" + curPhoto + "']").addClass("on");
-                $("a.up[rel='" + curPhoto + "']").addClass("off");
-            }
-            
+                updown = "down";
+                $("a.down[rel='" + curPhoto + "']").toggleClass("on");
+                if($("a.down[rel='" + curPhoto + "']").hasClass("on")){
+                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad+1;
+                }else{
+                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad-1;
+                }
+            } 
+         
+            console.log("WRITING "+updown+"VOTE TO THE DB");
             datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return false;
         });
@@ -237,7 +253,6 @@ var app = {
             }
 
             ourvoice.deletePhoto(app.cache.user.photos[thispic_i]);
-            datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return false;
         });
 
@@ -267,7 +282,7 @@ var app = {
         });
 
         //ADD EVENTS TO device Actions
-        $(".panel").on("click",".daction",function(){
+        $(".panel").on("click",".daction,.record_another",function(){
             var panel   = $(this).closest(".panel");
             var next    = $(this).data("next");
 
@@ -276,6 +291,7 @@ var app = {
                 //GET CURRENT PANEL
                 ourvoice.takePhoto();
             }else{
+                //TODO FIX THIS : WHY DOES THIS TAKE TWO CLICKS?
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i);
                 savehistory = true;
@@ -334,6 +350,8 @@ var app = {
             var val = $(this).val();
             var nam = $(this).attr("name");
             app.cache.user.survey.push({"name" : nam , "value" : val});
+
+            console.log("WRITING SURVEY ANSWER TO DB");
             datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return;
         });
@@ -359,6 +377,7 @@ var app = {
 
         var myElement   = document.getElementById('main');
         var hammertime  = new Hammer(myElement);
+        // hammertime.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
         hammertime.on('swipeleft', function(ev) {
             //swipe left go to forward?
             console.log("swiped left");
@@ -366,10 +385,10 @@ var app = {
         hammertime.on('swiperight',function(){
             //swipe right to go back
             console.log("swiped right");
-            app.goBack()
+            // app.goBack()
         });
 
-        //pic review media items.
+        //REVIEW PHOTOS SLIDEOUT
         $(".mi_slideout").click(function(){
             $("#mediacaptured").addClass("preview");
             return false;
@@ -378,6 +397,7 @@ var app = {
             $("#mediacaptured").removeClass("preview");
         });
 
+        //DOCUMENT CLICKS FOR CLOSING POPUPS
         $(document).on("click", function(event){
             if (!$(event.target).closest('#notif').length) {
                 $("#notif").fadeOut("fast");
@@ -393,7 +413,7 @@ var app = {
             ourvoice.resetDevice();            
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
-            app.log("Ending a user's session");
+            app.log("ENDING USER SESSION PLEASE");
             app.closeCurrentPanel($("#finish"));
             app.transitionToPanel($("#step_zero"),1);
             return false;
@@ -464,7 +484,7 @@ var app = {
             ,"platform" : app.cache.platform
         }
 
-        // console.log(log_obj);
+        console.log(msg);
         // datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };

@@ -37,7 +37,7 @@
     -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: 'unsafe-inline' https://ssl.gstatic.com; style-src 'self' 'unsafe-inline'; media-src *" /> -->
     <link rel="stylesheet" type="text/css" href="css/index.css" />
-    <title>HRP Discovery Tool</title>
+    <title>Our Voice Discovery Tool</title>
 </head>
 <body>
 <div id="main">
@@ -100,84 +100,10 @@
         <h2 class="consent_title"></h2>
         <div class="consent">
             <blockquote data-translation-key="project_about"></blockquote>
-            <a data-next="consent_one" class="button" href="#" data-translation-key="next">I Understand</a>
+            <a data-next="step_one" class="button" href="#" data-translation-key="next"></a>
         </div>
     </div>
-
-    <div id="consent_one" class="panel">
-        <h2 class="consent_title" data-translation-key="consent_title_1"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_1"></blockquote>
-            <a data-next="consent_two" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-
-    <div id="consent_two" class="panel">
-        <h2 class="consent_title"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_2"></blockquote>
-            <a data-next="consent_three" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-    
-    <div id="consent_three" class="panel">
-        <h2 class="consent_title"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_3"></blockquote>
-            <a data-next="consent_four" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-
-    <div id="consent_four" class="panel">
-        <h2 class="consent_title" data-translation-key="consent_title_4"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_4"></blockquote>
-            <a data-next="consent_five" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-
-    <div id="consent_five" class="panel">
-        <h2 class="consent_title" data-translation-key="consent_title_5"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_5"></blockquote>
-            <a data-next="consent_seven" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-    
-    <div id="consent_six" class="panel">
-        <h2 class="consent_title" data-translation-key="consent_title_6"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_6"></blockquote>
-            <a data-next="consent_seven" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-
-    <div id="consent_seven" class="panel">
-        <h2 class="consent_title" data-translation-key="consent_title_7"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_7"></blockquote>
-            <a data-next="consent_eight" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-
-    <div id="consent_eight" class="panel">
-        <h2 class="consent_title" data-translation-key="consent_title_8"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_8"></blockquote>
-            <a data-next="consent_nine" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-
-    <div id="consent_nine" class="panel">
-        <h2 class="consent_title" data-translation-key="consent_title_9"></h2>
-        <div class="consent">
-            <blockquote data-translation-key="consent_block_9"></blockquote>
-            <a data-next="step_one" class="button" href="#" data-translation-key="i_understand"></a>
-        </div>
-    </div>
-
-    
-
+  
     <div id="step_one" class="panel">
         <div class="actions">
             <h2 data-translation-key="step_1"></h2>
@@ -192,7 +118,10 @@
         </div>
         <div class="walk_actions">
             <a data-next="step_three" class="button endwalk" href="#"><i data-translation-key="done_walk"></i></a>
-            <a href="#" class="button mi_slideout" ><b>0</b><i data-translation-key="review_pics"></i></a>
+            <a href="#" class="button mi_slideout">
+                <i data-translation-key="review_pics"></i>
+                (<b>0</b>)
+            </a>
         </div>
         
         <ol id="mediacaptured">
@@ -206,15 +135,14 @@
         <div id="walkmap">
             <h3 data-translation-key="confirm_end"></h3>
             <div id="google_map"></div>
-            <!-- <div>
-                <b data-translation-key="dist_traveled"></b> : <span id="distance"></span>
-            </div> -->
+            <p class="done_photos">
+                <span data-translation-key="you_took">You took</span> <b>0</b> <span data-translation-key="photos">Photos</span>
+            </p>
         </div>
         <div class="consent">
             <a href='#' data-next="survey" class="button confirm endwalk" data-translation-key="yes_done"></a>
             <a href='#' data-next="step_two" class="button confirm continuewalk" data-translation-key="no_continue"></a>
         </div>
-
     </div>
 
     <div id="pic_review" class="panel">
@@ -228,14 +156,19 @@
                 <h4 data-translation-key="why_audio"></h4>
                 <div class="device_actions">
                     <a href='#' data-next="audio_record" class="button daction audiorec audio"></a>
-                    <i data-translation-key="audio_recorded">Audio Recorded. Thanks!</i>
+                    <i>
+                        <span data-translation-key="audio_recorded">Audio Recorded. Thanks!</span>
+                        <div id="saved_audio">
+                            <a href="#" data-next="audio_record" class="button daction audiorec record_another">Add Another</a>
+                        </div>
+                    </i>
                 </div>
             </li>
             <li class="good_or_bad">
                 <h4 data-translation-key="good_or_bad"></h4>
                 <div class="votes">
-                    <a href="#" class="vote up">vote up</a>
-                    <a href="#" class="vote down">vote down</a>
+                    <a href="#" class="vote up" rel="1">vote up</a>
+                    <a href="#" class="vote down" rel="1">vote down</a>
                 </div>
             </li>
             <li class="consent">
@@ -297,9 +230,8 @@
     </div>
 </div>
 
-<!-- <script src="http://10.0.1.113:8080/target/target-script-min.js#anonymous"></script> -->
+<!-- <script src="http://192.168.0.106:8080/target/target-script-min.js#anonymous"></script> -->
 <script type="text/javascript" src="js/jquery.min.js"></script>
-
 <script type="text/javascript" src="js/blob-util.min.js"></script>
 <script type="text/javascript" src="js/pouchdb.min.js"></script>
 <script type="text/javascript" src="js/pouchdb-collate.js"></script>
@@ -312,6 +244,7 @@
 <script type="text/javascript" src="js/utils.js"></script>
 <script type="text/javascript" src="js/datastore.js"></script>
 <script type="text/javascript" src="js/ourvoice.js"></script>
+<script type="text/javascript" src="js/consent.js"></script>
 <script type="text/javascript" src="js/survey.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
