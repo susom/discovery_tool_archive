@@ -2,7 +2,6 @@
 var consent = {
 	build : function(consentitems, language){
         $(".dynamic_consent").remove();
-        return;
         var consent_count   = consentitems.length;
         if(consent_count > 0){
             for(var i in consentitems){
