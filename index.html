@@ -26,7 +26,7 @@
     <meta name="msapplication-tap-highlight" content="no" />
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
     <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" /> -->
     <!-- Good default declaration:
     * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
     * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
@@ -51,16 +51,23 @@
         </div>
     </header>
 
-    <nav>
-        <a href="#" class="help" data-translation-key="help">Help</a>
-        <a href="#" class="back" data-translation-key="back">Back</a>
-    </nav>
-
     <aside id="notif">
         <h3>Wrong Project ID/Password</h3>
         <p></p>
         <em>* Tap outside this box to close it.</em>
     </aside>
+    
+    <div id="admin_view" class="panel">
+        <div class="consent">
+            <h2>Current upload status of Data on this device</h2>
+            <div id="admin_master">
+                <label><div>Master Password:</div> <input type="password" id="admin_master_pw"/></label>
+                <a href="#" data-next="admin_view" class="button adminbtn">View Data Upload Status</a>
+            </div>
+            <div id="list_data">
+            </div>
+        </div>
+    </div>
 
     <div id="step_setup" class="panel">
         <div class="consent">
@@ -74,7 +81,12 @@
             </div>
         </div>
     </div>
-
+    <nav>
+        <a href="#" class="help" data-translation-key="help">Help</a>
+        <a href="#" class="back" data-translation-key="back">Back</a>
+        <a href="#" class="list">List Local Data</a>
+    </nav>
+    
     <div id="step_zero" class="panel">
         <form id='projid'>
             <label>
@@ -159,7 +171,7 @@
                     <i>
                         <span data-translation-key="audio_recorded">Audio Recorded. Thanks!</span>
                         <div id="saved_audio">
-                            <a href="#" data-next="audio_record" class="button daction audiorec record_another">Add Another</a>
+                            <a href="#" data-next="audio_record" class="button daction audiorec record_another" data-translation-key="record_more">Record More</a>
                         </div>
                     </i>
                 </div>
@@ -230,7 +242,8 @@
     </div>
 </div>
 
-<!-- <script src="http://192.168.0.106:8080/target/target-script-min.js#anonymous"></script> -->
+<!-- <script src="http://10.34.251.12:8080/target/target-script-min.js#anonymous"></script> -->
+<!-- <script src="http://192.168.0.107:8080/target/target-script-min.js#anonymous"></script> -->
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/blob-util.min.js"></script>
 <script type="text/javascript" src="js/pouchdb.min.js"></script>
@@ -239,7 +252,6 @@
 <script thpe="text/javascript" src="js/fastclick.js"></script>
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo"></script>
 <script type="text/javascript" src="cordova.js"></script>
-
 <script type="text/javascript" src="js/config.js"></script>
 <script type="text/javascript" src="js/utils.js"></script>
 <script type="text/javascript" src="js/datastore.js"></script>

@@ -132,6 +132,34 @@ var app = {
             var next        = $(this).data("next");
             var no_history  = false;
 
+            if(next == "admin_view"){
+                var pw      = $("#admin_master_pw").val();
+                if(pw  == "disc123"){
+                    $("#admin_master").hide();
+                    $("#admin_master_pw").val("");
+
+                    app.cache.remoteusersdb.allDocs({}).then(function (res) {
+                        console.log(res["rows"]);
+                        // utils.dump(res["rows"]);
+                    }).catch(function(err){
+                        app.log("ERROR getAll()");
+                        datastore.showError(err);
+                    });
+ 
+                    app.cache.localusersdb.allDocs({}).then(function (res) {
+                        console.log(res["rows"]);
+                        // utils.dump(res["rows"]);
+                    }).catch(function(err){
+                        app.log("ERROR getAll()");
+                        datastore.showError(err);
+                    });
+                }else{
+                    app.showNotif("Wrong Master Password");
+                    $("#admin_master_pw").val("");
+                }
+                return false;
+            }
+
             if(next == "step_zero"){
                 var pid         = $("#admin_projid").val().toUpperCase();
                 var pid_correct = null;
@@ -165,7 +193,6 @@ var app = {
                     app.showNotif("Wrong ProjectID or Password");
                     return false;
                 }
-
                 app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
             }else{
                 //ONE TIME DEAL if NOT STEP ZERO
@@ -373,6 +400,11 @@ var app = {
 
         $(".back").click(function(){
             app.goBack();
+        });
+
+        $(".list").click(function(){
+            app.closeCurrentPanel($(".panel.loaded"));
+            app.transitionToPanel($("#admin_view"));
         });
 
         var myElement   = document.getElementById('main');

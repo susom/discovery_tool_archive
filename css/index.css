@@ -176,6 +176,14 @@ nav .help{
 nav .back{
     float           : left;
 }
+nav .list{
+    display:none;
+    float           : right;
+}
+#step_setup.loaded + nav .list{
+    display:block;
+    display:none;
+}
 #main.loaded nav {
     background      : #fff;
     display         : block;
@@ -193,6 +201,16 @@ nav .back{
 }
 
 /*ADMIN SPLASH - SETUP PAGE*/
+#admin_master label{
+    margin:0 auto;
+    text-align:center;
+    font-size:130%;
+}
+#admin_master input{
+    display:block;
+    margin:0 auto;
+    font-size:100%;
+}
 #step_setup{
     position      : absolute;
     height        : auto;
@@ -200,6 +218,7 @@ nav .back{
 #step_setup h4 {
     text-align    : center;
 }
+#admin_view .consent,
 #step_setup .consent{
     padding       : 0 15px 100px;
     background    : #fff;
@@ -417,7 +436,7 @@ nav .back{
 
 }
 .walk_actions .endwalk i {
-    font-size       : 120%;
+    font-size       : 100%;
     line-height     : 110%;
     width           : 55%;
 }

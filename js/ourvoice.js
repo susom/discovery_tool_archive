@@ -149,6 +149,7 @@ var ourvoice = {
                     ,"speed"        : position.coords.speed
                     ,"timestamp"    : position.timestamp
                 };
+                
                 app.cache.user.geotags.push(curpos);
 
                 console.log("WRITING GEOTAG TO DB");
@@ -156,7 +157,7 @@ var ourvoice = {
 
                 //SAVE THE POINTS IN GOOGLE FORMAT
                 app.cache.currentWalkMap.push(
-                    new google.maps.LatLng(curLat, curLong)
+                    // new google.maps.LatLng(curLat, curLong)
                 );
             }
             ,function(err){
@@ -183,6 +184,7 @@ var ourvoice = {
     }
 
     ,plotGoogleMap: function(){
+        return;
         // Create the map
         var myOptions = {
             zoom        : 32,
