@@ -2,10 +2,11 @@ var utils = {
     checkConnection : function() {
         var networkType = navigator.hasOwnProperty("connection") ? navigator.connection.type : false;
         var online      = navigator.onLine; 
-        return {
-             "online"   : online
-            ,"type"     : networkType 
-        };
+        return online;
+        // return {
+        //      "online"   : online
+        //     ,"type"     : networkType 
+        // };
     }
 
     ,calculateDistance : function (lat1, lon1, lat2, lon2) {

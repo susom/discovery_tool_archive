@@ -156,9 +156,11 @@ var ourvoice = {
                 datastore.writeDB(app.cache.localusersdb , app.cache.user);
 
                 //SAVE THE POINTS IN GOOGLE FORMAT
-                app.cache.currentWalkMap.push(
-                    // new google.maps.LatLng(curLat, curLong)
-                );
+                if(utils.checkConnection()){
+                    app.cache.currentWalkMap.push(
+                        new google.maps.LatLng(curLat, curLong)
+                    );
+                }
             }
             ,function(err){
                 console.log(err);
@@ -184,7 +186,9 @@ var ourvoice = {
     }
 
     ,plotGoogleMap: function(){
-        return;
+        if(!utils.checkConnection()){
+            return;
+        }
         // Create the map
         var myOptions = {
             zoom        : 32,
@@ -485,12 +489,15 @@ var ourvoice = {
 
     ,addMediaItem:function(_photo,fileurl){
         var photo_i     = app.cache.user.photos.indexOf(_photo);
-        var geotag      = _photo["geotag"];
-        var time        = utils.readableTime(geotag.timestamp);
-
+        var tmstmp      = "";
+        if(utils.checkConnection()){
+            var geotag      = _photo["geotag"];
+            var time        = utils.readableTime(geotag.timestamp);
+            tmstmp          = "@ " + time;
+        }
         //NOW ADD THIS TO THE VIEW #mediacaptured
         var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
-        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>").text("@ " + time));
+        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>").text(tmstmp));
         var newthum     = $("<img>").attr("src",fileurl);
         
         newlink.prepend(newthum);

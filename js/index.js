@@ -38,7 +38,6 @@ var app = {
 
         app.cache.uuid              = null; //DEVICE UNIQUE ID
         app.cache.platform          = null; //IOS/ANDROID ETC
-
         app.cache.testgoodbad       = null;
     }
     
@@ -94,7 +93,7 @@ var app = {
         var networkState        = utils.checkConnection();
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
-
+        
         //1) (RE)OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
         app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
@@ -206,7 +205,6 @@ var app = {
                 app.cache.user.lang          = $("select[name='language']").val();
                 app.cache.user.user_id       = app.cache.participant_id;
                 app.cache.user._id           = app.cache.next_id; //COLLATED
-                console.log("USER OBJ CREATED NOT SAVED YET");
             }
 
             if(next == "consent_0"){
@@ -218,7 +216,12 @@ var app = {
             }
 
             if(next == "step_three"){
-                ourvoice.plotGoogleMap();
+                if(utils.checkConnection()){
+                    $("#google_map").show();
+                    ourvoice.plotGoogleMap();
+                }else{
+                    $("#google_map").hide();
+                }
             }
 
             if(next == "survey"){
