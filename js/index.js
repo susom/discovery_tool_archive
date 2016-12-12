@@ -60,7 +60,7 @@ var app = {
         app.cache.next_id              = null; //NEXT USER ID - POUCH COLLATED
         app.cache.participant_id       = null; //JUST SIMPLE INTEGER
 
-        app.cache.audioObj             = null; //FOR VOICE RECORDINGS
+        app.cache.audioObj             = {}; //FOR VOICE RECORDINGS
         app.cache.audioStatus          = null;
         app.cache.currentAudio         = null;
     }
@@ -93,7 +93,7 @@ var app = {
         var networkState        = utils.checkConnection();
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
-        
+
         //1) (RE)OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
         app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
@@ -353,11 +353,12 @@ var app = {
         $("#audio_controls").on("click","a", function(){
             var ctl_id  = $(this).attr("id");
             var photo_i = $(this).data("photo_i");
+            var recordFileName = $(this).data("recordFileName");
 
             switch(ctl_id){
                 case "ctl_stop":                 
                     app.cache.audioStatus = "stop_release";
-                    ourvoice.stopRecording(photo_i);
+                    ourvoice.stopRecording(photo_i,recordFileName);
                     var panel = $(this).closest(".panel");
                     var next  = "pic_review";
                     //CHANGE THE RECORD BUTTON IN PIC PREVIEW
