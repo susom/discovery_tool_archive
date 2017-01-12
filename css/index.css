@@ -31,6 +31,7 @@ body {
     min-width  : 100%;
     min-height : 100%;
     height     : 100%;
+    overflow-x:hidden;
 }
 
 /*POP UP NOTIFICATION*/
@@ -177,12 +178,12 @@ nav .back{
     float           : left;
 }
 nav .list{
-    display:none;
+    display         : none;
     float           : right;
 }
 #step_setup.loaded + nav .list{
     display:block;
-    display:none;
+    /*display:none;*/
 }
 #main.loaded nav {
     background      : #fff;
@@ -201,6 +202,24 @@ nav .list{
 }
 
 /*ADMIN SPLASH - SETUP PAGE*/
+#list_data {
+    opacity:0;
+}
+#list_data table {
+    margin-top:20px;
+    width:100%;
+    text-align:center;
+}
+#list_data tbody td i{
+    display:inline-block;
+    width:25px; height:30px;
+    background:url(../img/icon_thumbs.png) top right no-repeat;
+    background-size:200%;
+}
+#list_data tbody td i.uploaded{
+    background-position:top left;
+}
+
 #admin_master label{
     margin:0 auto;
     text-align:center;
@@ -250,16 +269,29 @@ nav .list{
 }
 
 /*USER SPLASH PAGE*/
+#datastatus,
 #resetdevice {
     display            : block;
-    width              : 200px;
     text-align         : center;
     color              : #fff;
     position           : absolute;
-    left               : 50%;
+    left               : 0;
     bottom             : 5px;
-    margin-left        : -100px;
     text-decoration    : none;
+}
+#datastatus {
+    left:auto;
+    right:0;
+}
+#datastatus i {
+    display:inline-block;
+    vertical-align:top;
+    width:18px; height:18px;
+    background:url(../img/icon_smilies.png) top right no-repeat;
+    background-size:200%;
+}
+#datastatus i.synced{
+    background-position:top left;
 }
 #step_zero {
     position           : absolute;
@@ -440,42 +472,45 @@ nav .list{
     line-height     : 110%;
     width           : 55%;
 }
+.mi_slideout.reviewable {
+    float:right;
+    display:block;
+    width:120px;
+}
 .mi_slideout {
-    box-shadow:none;
+    display         : none;
+    box-shadow      : none;
     position        : relative;
     background      : url(../img/icon_photo.png) 100% 20% no-repeat;
-    background-size : 10%;
+    background-size : 20%;
     text-decoration : none;
     text-align      : left ;
     color           : #333;
-}
-.mi_slideout{
-    margin:30px 10px 0 0;
-    padding:5px 40px 5px 0; 
-    font-weight:normal;
-    text-align:right;
+    margin          : 0 10px 0 0;
+    padding         : 0 40px 0 0;
+    font-weight     : normal;
+    text-align      : right;
 }
 .mi_slideout b {
-    float:none;
+    float           : none;
     display         : inline-block;
     font-weight     : normal;
 }
 .mi_slideout i {
-    width:auto;
-    transform:initial;
-    float:none;
-    position:static;
-    text-align:left;
-    display:inline-block;
-    font-weight:600;
-    color:#369;
+    width           : auto;
+    transform       : initial;
+    float           : none;
+    position        : static;
+    text-align      : left;
+    display         : inline-block;
+    font-weight     : 500;
 }
 .done_photos {
-    padding:5px 40px 5px ;
+    padding         :5px 40px 5px ;
     background      : url(../img/icon_photo.png) 100% 20% no-repeat;
     background-size : 10%;
     color           : #333;
-    text-align:right;
+    text-align      :right;
 }
 
 .button.camera {
@@ -1116,3 +1151,15 @@ nav .list{
 }
 
 
+.uploadbtn.loading{
+  -webkit-animation-name: greenPulse;
+  -webkit-animation-duration: 2s;
+  -webkit-animation-iteration-count: infinite;
+}
+
+/*ANIMATION*/
+@-webkit-keyframes greenPulse {
+  from { background-color: #749a02; -webkit-box-shadow: 0 0 9px #333; }
+  50% { background-color: #91bd09; -webkit-box-shadow: 0 0 18px #91bd09; }
+  to { background-color: #749a02; -webkit-box-shadow: 0 0 9px #333; }
+}

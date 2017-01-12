@@ -3,14 +3,11 @@
   id="edu.stanford.discoverytool.ourvoice" 
   versionCode="10009"
   version="1.0.9">
-  <name>Discovery Tool</name>
+  <name>The Discovery Tool</name>
   <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
-  <author href="http://researchit.stanford.edu" email="irvins@stanford.edu">Stanford Research IT</author>
+  <author href="http://med.stanford.edu" email="irvins@stanford.edu">Stanford Research IT</author>
   <content src="index.html"/>
-  <preference name="DisallowOverscroll" value="true"/>
-  <preference name="android-minSdkVersion" value="14"/>
-  <preference name="phonegap-version" value="cli-6.3.0"/>
-  <preference name="BackupWebStorage" value="local"/>
+
   <plugin name="cordova-plugin-battery-status" source="npm" spec="~1.1.1"/>
   <plugin name="cordova-plugin-camera" source="npm" spec="~2.1.1"/>
   <plugin name="cordova-plugin-media-capture" source="npm" spec="~1.2.0"/>
@@ -31,6 +28,15 @@
   <plugin name="cordova-plugin-statusbar" source="npm" spec="~2.1.2"/>
   <plugin name="cordova-plugin-vibration" source="npm" spec="~2.1.0"/>
   <plugin name="cordova-plugin-whitelist" source="npm" spec="~1.2.1"/>
+  
+  <preference name="DisallowOverscroll" value="true"/>
+  <preference name="android-minSdkVersion" value="14"/>
+  <preference name="phonegap-version" value="cli-6.3.0"/>
+  <preference name="BackupWebStorage" value="local"/>
+  <preference name="StatusBarOverlaysWebView" value="false"/>
+  <preference name="StatusBarBackgroundColor" value="#A7A7A7"/>
+  <preference name="StatusBarStyle" value="default" />
+  
   <icon src="icon.png"/>
   <platform name="android">
     <icon src="www/res/icon/android/drawable-ldpi-icon.png" density="ldpi"/>
@@ -102,6 +108,7 @@
     <icon src="www/res/icon/windows/Wide310x150Logo.scale-240.png" platform="windows" width="744" height="360"/>
     <splash src="www/res/screen/windows/SplashScreenPhone.scale-240.png" platform="windows" width="1152" height="1920"/>
   </platform>
+
   <access origin="*"/>
   <allow-intent href="http://*/*"/>
   <allow-intent href="https://*/*"/>
@@ -109,6 +116,7 @@
   <allow-intent href="sms:*"/>
   <allow-intent href="mailto:*"/>
   <allow-intent href="geo:*"/>
+  
   <platform name="android">
     <allow-intent href="market:*"/>
   </platform>

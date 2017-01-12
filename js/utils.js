@@ -38,8 +38,7 @@ var utils = {
             out.push(i);
             // out.push(i + " : " + obj[i]);
         }
-        console.log("["+ out.join(",") + "]");
-        // console.log(out.join("\n"));
+        app.log("["+ out.join(" , ") + "]");
         return;
     }
 };

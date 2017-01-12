@@ -6,6 +6,38 @@ var ourvoice = {
         return;
     }
 
+    ,adminView: function(rows){
+        rows.reverse();
+        $("#list_data tbody").empty();
+        for(var i in rows){
+            var r_d     = rows[i]["doc"];
+            var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
+            var r_id    = r_d["_id"];
+            var r_rev   = r_d["_rev"];
+            var temp    = r_id.split("_");
+
+            var r_proj  = temp[0];
+            var r_uid   = temp[2];
+            var r_ts    = temp[3];
+
+            var tr      = $("<tr>")
+            var bb      = $("<td>").text(r_proj);
+            var ii      = $("<td>").text(r_uid);
+            var thumbs  = $("<i>").attr("data-docid",r_id);
+            if(synced){
+                thumbs.addClass("uploaded")
+            }
+            var up = $("<td>").append(thumbs);
+            tr.append(bb);
+            tr.append(ii);
+            tr.append(up);
+
+            $("#list_data tbody").append(tr);
+        }
+
+        return;
+    }
+
     ,getAllProjects : function(){
         //LOAD UP PROJECTS FROM LOCAL DB
         app.cache.localprojdb.get("all_projects").then(function (doc) {
@@ -119,7 +151,9 @@ var ourvoice = {
     ,startWatch: function(freq) {
         //SAVE GEO TAGS FOR MAP
         ourvoice.trackPosition(); //manually do the first one
-        app.cache.positionTrackerId = setInterval(app.trackPosition, freq);
+        app.cache.positionTrackerId = setInterval(function(){
+            ourvoice.trackPosition();
+        }, freq);
         app.log("STARTING WALK"); 
     }
 
@@ -554,8 +588,15 @@ var ourvoice = {
         return;
     }
 
+    ,syncLocalData: function(){
+        $("#datastatus i").removeClass("synced");
+        datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);  
+        datastore.localSyncDB(app.cache.locallogdb,app.cache.remotelogdb); 
+    }
+
     ,finished : function(){
         app.initCache();
+        ourvoice.syncLocalData();
         app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
     }
 

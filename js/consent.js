@@ -13,7 +13,9 @@ var consent = {
                 var container       = $("<div>").attr("id", div_id).addClass("panel").addClass("dynamic_consent");
                 var header          = $("<h2>").addClass("consent_title").text(consent_item["title"][language]);
                 var content         = $("<div>").addClass("consent"); 
-                var block           = $("<blockquote>").text(consent_item["text"][language]);
+                var bodytext        = consent_item["text"][language].replace(/\r/g,"<br>");
+                bodytext            = bodytext.replace(/\*/g,"&middot;");
+                var block           = $("<blockquote>").html(bodytext);
                 var next            = $("<a>").addClass("button").attr("href","#").data("next", next_id).text(consent_item["button"][language]);
 
                 if(next_i == consent_count){

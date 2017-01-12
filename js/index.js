@@ -77,14 +77,12 @@ var app = {
     ,onDevicePause: function() {
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
-        console.log("pausing the device ... do anything?");
         app.log("DEVICE PAUSING");
     }
 
     ,onDeviceResume: function() {
         //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
         //SO NO DO NOT RELOAD PROJECT
-        console.log("resuming device ... update anything?");
         app.log("DEVICE RESUMING");
     }
 
@@ -95,24 +93,23 @@ var app = {
         app.cache.platform      = device.platform;
 
         //1) (RE)OPEN LOCAL AND REMOTE DB
-        app.cache.remoteusersdb = datastore.startupDB(config["database"]["users_remote"]);
-        app.cache.remoteprojdb  = datastore.startupDB(config["database"]["proj_remote"]);
-        app.cache.remotelogdb   = datastore.startupDB(config["database"]["log_remote"]);
-
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
         app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
         app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
 
+        app.cache.remoteusersdb = config["database"]["users_remote"];
+        app.cache.remotelogdb   = config["database"]["log_remote"];  
+        app.cache.remoteprojdb  = config["database"]["proj_remote"];
+        
         // CLEAN SLATE 
         // datastore.deleteLocalDB();
         // return;
 
-        //2) KICK OFF LIVE REMOTE SYNCING - WORKS EVEN IF STARTING IN OFFLINE
-        datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);  //ONE WAY LOCAL TO REMOTE SYNCING
-        datastore.localSyncDB(app.cache.locallogdb,app.cache.remotelogdb);      
+        //2) PUSH ONCE REMOTE AND LOCAL SYNC
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);   //ONE WAY REMOTE TO LOCAL SYNCING
+        ourvoice.syncLocalData();      
 
-        app.log("DEVICE READY, DBs CONNECTED, LOOKING FOR ACTIVE PROJECT NEXT");
+        // app.log("DEVICE READY, DBs CONNECTED, LOOKING FOR ACTIVE PROJECT NEXT");
 
         //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
@@ -132,29 +129,30 @@ var app = {
             var no_history  = false;
 
             if(next == "admin_view"){
-                var pw      = $("#admin_master_pw").val();
-                if(pw  == "disc123"){
-                    $("#admin_master").hide();
-                    $("#admin_master_pw").val("");
+                if($(this).hasClass("uploadbtn")){
+                    $(this).addClass("uploading");
 
-                    app.cache.remoteusersdb.allDocs({}).then(function (res) {
-                        console.log(res["rows"]);
-                        // utils.dump(res["rows"]);
-                    }).catch(function(err){
-                        app.log("ERROR getAll()");
-                        datastore.showError(err);
-                    });
- 
-                    app.cache.localusersdb.allDocs({}).then(function (res) {
-                        console.log(res["rows"]);
-                        // utils.dump(res["rows"]);
-                    }).catch(function(err){
-                        app.log("ERROR getAll()");
-                        datastore.showError(err);
-                    });
+                    ourvoice.syncLocalData(); 
                 }else{
-                    app.showNotif("Wrong Master Password");
-                    $("#admin_master_pw").val("");
+                    var pw      = $("#admin_master_pw").val();
+                    if(pw  == app.cache.projects["project_list"][app.cache.active_project.i]["project_pass"]){
+                        $("#admin_master").hide();
+                        $("#admin_master_pw").val("");
+
+                        app.cache.localusersdb.allDocs({
+                          include_docs: true
+                        }).then(function (res) {
+                            ourvoice.adminView(res["rows"]);
+                            $("#list_data").css("opacity",1);
+                        }).catch(function(err){
+                            app.log("ERROR getAll()");
+                            datastore.showError(err);
+                        });
+                    }else{
+                        app.showNotif("Wrong Master Password");
+                        $("#admin_master_pw").val("");
+                        return false;
+                    }
                 }
                 return false;
             }
@@ -176,23 +174,25 @@ var app = {
                     $("#main").removeClass("loaded"); 
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
+                    
+                    if(confirm("Setup of a new project will erase any data previously saved on this device. Click 'OK' to proceed.")){
+                        ourvoice.resetDevice();
 
-                    ourvoice.resetDevice();
+                        // EMPTY LOCAL DATABASE.... 
+                        datastore.emptyUsersDB();
 
-                    // EMPTY LOCAL DATABASE.... 
-                    datastore.emptyUsersDB();
+                        //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                        app.cache.active_project["i"] = pid_correct;
+                        datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
 
-                    //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
-                    app.cache.active_project["i"] = pid_correct;
-                    datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
-
-                    //LETS RELOAD THE LOCAL DB AT THIS POINT
-                    ourvoice.getAllProjects();
+                        //LETS RELOAD THE LOCAL DB AT THIS POINT
+                        ourvoice.getAllProjects();
+                        app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
+                    }
                 }else{
                     app.showNotif("Wrong ProjectID or Password");
                     return false;
                 }
-                app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
             }else{
                 //ONE TIME DEAL if NOT STEP ZERO
                 $("#main").addClass("loaded");
@@ -210,12 +210,14 @@ var app = {
             if(next == "consent_0"){
                 app.log("Starting consent process for User " + app.cache.user._id);
             }
-
+            
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
+                $(".mi_slideout").addClass("reviewable");
                 ourvoice.startWatch(8000);
             }
 
             if(next == "step_three"){
+                $(".mi_slideout").addClass("reviewable");
                 if(utils.checkConnection()){
                     $("#google_map").show();
                     ourvoice.plotGoogleMap();
@@ -302,8 +304,12 @@ var app = {
         $(".panel").on("click",".listen", function(){
             var url = $(this).attr("href");
             var my_media = new Media(url,
-                 function () {  console.log("playAudio():Audio Success"); }
-                ,function (err) { console.log(err.message); }
+                 function () {  
+                    console.log("playAudio():Audio Success"); 
+                }
+                ,function (err) { 
+                    app.log(err.message); 
+                }
             );
 
             my_media.play();
@@ -396,6 +402,15 @@ var app = {
             return false;
         });
 
+        $("#datastatus").click(function(){
+            app.closeCurrentPanel($("#step_zero"));
+            $("#admin_master").show();
+            $("#list_data").css("opacity",0);
+            $("#main").addClass("loaded");
+            app.transitionToPanel($("#admin_view"));
+            return false;
+        });
+
         $(".help").click(function(){
             app.closeCurrentPanel($(".panel.loaded"));
             app.transitionToPanel($("#help"));
@@ -408,6 +423,8 @@ var app = {
 
         $(".list").click(function(){
             app.closeCurrentPanel($(".panel.loaded"));
+            $("#admin_master").show();
+            $("#list_data").css("opacity",0);
             app.transitionToPanel($("#admin_view"));
         });
 
