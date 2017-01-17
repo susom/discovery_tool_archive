@@ -11,7 +11,7 @@ var consent = {
                 var next_id         = "consent_" + next_i;
 
                 var container       = $("<div>").attr("id", div_id).addClass("panel").addClass("dynamic_consent");
-                var header          = $("<h2>").addClass("consent_title").text(consent_item["title"][language]);
+                var header          = consent_item["title"][language] != "" ? $("<h2>").addClass("consent_title").text(consent_item["title"][language]) : $("<span>");
                 var content         = $("<div>").addClass("consent"); 
                 var bodytext        = consent_item["text"][language].replace(/\r/g,"<br>");
                 bodytext            = bodytext.replace(/\*/g,"&middot;");

@@ -268,7 +268,7 @@ var app = {
                 }
             } 
          
-            console.log("WRITING "+updown+"VOTE TO THE DB");
+            // console.log("WRITING "+updown+"VOTE TO THE DB");
             datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return false;
         });
@@ -388,7 +388,7 @@ var app = {
             var nam = $(this).attr("name");
             app.cache.user.survey.push({"name" : nam , "value" : val});
 
-            console.log("WRITING SURVEY ANSWER TO DB");
+            // console.log("WRITING SURVEY ANSWER TO DB");
             datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return;
         });
@@ -537,7 +537,7 @@ var app = {
             ,"platform" : app.cache.platform
         }
 
-        console.log(msg);
-        // datastore.writeDB(app.cache.locallogdb, log_obj);
+        // console.log(msg);
+        datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };
