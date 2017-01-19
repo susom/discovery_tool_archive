@@ -1228,6 +1228,8 @@ nav .list{
     }
     .loaded .title h1 {
         font-size       : 130%;
+        margin-top:12px;
+        font-weight:normal;
     }
     .title h3{
         display     : none;
@@ -1406,6 +1408,10 @@ nav .list{
     .consent_title{
         margin:20px auto 0;
         padding:0;
+    }
+
+    .consent blockquote{
+        min-height:140px;
     }
 
     /*FIRST PAGE - STEP ONE*/

@@ -537,7 +537,7 @@ var app = {
             ,"platform" : app.cache.platform
         }
 
-        // console.log(msg);
-        datastore.writeDB(app.cache.locallogdb, log_obj);
+        console.log(msg);
+        // datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };
