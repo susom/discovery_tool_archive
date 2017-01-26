@@ -374,7 +374,8 @@ nav .list{
     padding-bottom     : 100px;
 }
 .consent_title{
-    font-size:170%;
+    font-size:160%;
+    letter-spacing:-.5px;
     font-weight:600;
     width:90%;
     margin:20px auto 0;
