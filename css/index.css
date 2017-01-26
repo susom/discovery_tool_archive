@@ -111,9 +111,9 @@ header:after {
 }
 .loaded .logo {
     display         : inline-block;
-    width           : 35px;
+    width           : 36px;
     height          : 36px;
-    margin          : 10px 15px;
+    margin          : 10px 0 10px 15px;
 }
 .title hgroup {
     display         : block;
@@ -139,6 +139,7 @@ header:after {
 .loaded .title h1 {
     font-size       : 130%;
     margin-top      : 0;
+    font-weight:normal;
 }
 .title h3{
     display     : none;
@@ -1228,8 +1229,7 @@ nav .list{
     }
     .loaded .title h1 {
         font-size       : 130%;
-        margin-top:12px;
-        font-weight:normal;
+        margin-top      : 12px;
     }
     .title h3{
         display     : none;

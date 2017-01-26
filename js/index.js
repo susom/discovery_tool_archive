@@ -273,7 +273,7 @@ var app = {
             return false;
         });
 
-        $(".panel").on("click",".trashit", function(){
+        $("#mediacaptured").on("click",".trashit", function(){
             //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
             var thispic_i   = $(this).data("photo_i");
             var panel       = $(this).closest(".panel");
@@ -288,14 +288,19 @@ var app = {
             return false;
         });
 
-        $(".panel").on("click",".previewthumb",function(){
+        $("#mediacaptured").on("click",".previewthumb",function(){
             //OPEN UP PREVIEW PAGE FOR PHOTO
             var thispic_i   = $(this).data("photo_i");
             var fileurl     = $(this).find("img").attr("src");
             ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
 
-            var panel       = $(this).closest(".panel");
+            $("#mediacaptured").removeClass("preview");
+
+            var panel       = $(".panel.loaded");
             var next        = "pic_review";
+            if(panel.attr("id") == next){
+                return;
+            }
 
             app.closeCurrentPanel(panel);
             app.transitionToPanel($("#"+next));

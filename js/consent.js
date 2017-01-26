@@ -42,7 +42,7 @@ var consent = {
             }
 
             //REPOINT THE PROJECT ABOUT TO POINT TO THIS CONSENT
-            $("#project_about a.button").data("next","consent_0");
+            $("#step_zero a.button").data("next","consent_0");
         }
         return;
     }
