@@ -161,7 +161,7 @@ var app = {
                 var pid         = $("#admin_projid").val().toUpperCase();
                 var pid_correct = null;
                 var p_pw        = null;
-                
+
                 for(var i in app.cache.projects["project_list"]){
                     var p = app.cache.projects["project_list"][i];
                     if(pid == p.project_id){
@@ -200,14 +200,16 @@ var app = {
 
             //SPECIAL RULES ENTERING INTO DIFFERNT "PAGES"
             if(next == "project_about"){
+                
+            }
+
+            if(next == "consent_0"){
                 //THIS IS IMPORTANT
                 app.cache.user.project_id    = app.cache.active_project.i;
                 app.cache.user.lang          = $("select[name='language']").val();
                 app.cache.user.user_id       = app.cache.participant_id;
                 app.cache.user._id           = app.cache.next_id; //COLLATED
-            }
-
-            if(next == "consent_0"){
+                
                 app.log("Starting consent process for User " + app.cache.user._id);
             }
             
