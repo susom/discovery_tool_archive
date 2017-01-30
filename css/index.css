@@ -393,7 +393,7 @@ nav .list{
     width: 90%;
     margin :0 auto;
     padding:0; 
-    min-height:360px;
+    min-height:300px;
 }
 
 .consent h3{
@@ -1360,6 +1360,10 @@ nav .list{
         border        : 1px solid #999;
         float         : right;
         border-radius : 3px;
+    }
+
+    #step_two {
+        padding-bottom:100px;
     }
 
     /*USER SPLASH PAGE*/

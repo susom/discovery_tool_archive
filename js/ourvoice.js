@@ -597,6 +597,8 @@ var ourvoice = {
     ,finished : function(){
         app.initCache();
         ourvoice.syncLocalData();
+        $("nav").show();
+        $(".mi_slideout").removeClass("reviewable");
         app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
     }
 
