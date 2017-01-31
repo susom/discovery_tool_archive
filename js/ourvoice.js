@@ -357,7 +357,6 @@ var ourvoice = {
             $("#audio_time").text(date.toISOString().substr(14,5));
         },1000);
 
-        app.log("START RECORDING");
         $("#soundwaves").removeClass("pause");
         $("#ctl_stop").data("photo_i",photo_i).data("recordFileName",recordFileName).removeClass("off");
 
@@ -373,10 +372,6 @@ var ourvoice = {
         var nex_audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
         nex_audio_i++;
         var recordFileName = "audio_"+photo_i+"_"+ nex_audio_i +".wav";
-        if(app.cache.audioObj[recordFileName] != null) {
-            ourvoice.startRecording(photo_i,recordFileName);
-            return;
-        }
 
         if(app.cache.platform == "iOS") {
             //first create file if not exist
@@ -391,22 +386,25 @@ var ourvoice = {
                             // ,constructor,createWriter,file,getMetadata,setMetadata
                             // ,moveTo,copyTo,toInternalURL,toURL,toNativeURL
                             // ,toURI,remove,getParent]
-
                             //PUT THIS ACTUAL FILE INTO CACHE, THEN WHEN STOPPED RECORDING STORE IT 
                             app.cache.currentAudio  = fileEntry; 
                             app.cache.audioObj[recordFileName] = new Media(recordFileName
                                 ,function(){
-                                    console.log("CREATED AUDIO OBJECT, FOR RECORDING");
+                                    //FINISHED RECORDING
                                 }
                                 ,function(err){
+                                    //RECORDING EROR
                                     console.log(err.code +  " : " + err.message);
                                 }
                                 ,function(){
-                                    // The callback that executes to indicate status changes.
+                                    // STATUS CHANGE
                                 }); //of new Media
+
+                            //FILE CREATED, AVAIALBLE TO RECORD
+                            ourvoice.startRecording(photo_i,recordFileName);
                         }
                         ,function(err){
-                            console.log("IOS  ERROR");
+                            console.log("IOS  ERROR CREATING MEDIA OBJECT");
                             console.log(err.code +  " : " + err.message);
                         }); //of getFile
                 }
@@ -414,8 +412,6 @@ var ourvoice = {
                     // console.log("window.requestFileSystem  error()");
                 }
             ); //of requestFileSystem
-
-            ourvoice.startRecording(photo_i,recordFileName);
         }else{
             app.cache.audioObj[recordFileName] = new Media(recordFileName, function(){
                 // console.log("Media created successfully");

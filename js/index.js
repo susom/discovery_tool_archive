@@ -175,20 +175,44 @@ var app = {
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
                     
-                    if(confirm("Setup of a new project will erase any data previously saved on this device. Click 'OK' to proceed.")){
-                        ourvoice.resetDevice();
 
-                        // EMPTY LOCAL DATABASE.... 
-                        datastore.emptyUsersDB();
+                    navigator.notification.confirm(
+                        'Setup of a new project will erase any data previously saved on this device. Click \'Continue\' to proceed.', // message
+                         function(i){
+                            if(i == 1){
+                                //the button label indexs start from 1 = 'Cancel'
+                                return;
+                            }
+                            ourvoice.resetDevice();
 
-                        //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
-                        app.cache.active_project["i"] = pid_correct;
-                        datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
+                            // EMPTY LOCAL DATABASE.... 
+                            datastore.emptyUsersDB();
 
-                        //LETS RELOAD THE LOCAL DB AT THIS POINT
-                        ourvoice.getAllProjects();
-                        app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
-                    }
+                            //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                            app.cache.active_project["i"] = pid_correct;
+                            datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
+
+                            //LETS RELOAD THE LOCAL DB AT THIS POINT
+                            ourvoice.getAllProjects();
+                            app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
+                         },            // callback to invoke with index of button pressed
+                        'Project Setup',           // title
+                        ['Cancel','Continue']     // buttonLabels
+                    );
+                    // if(confirm("Setup of a new project will erase any data previously saved on this device. Click 'OK' to proceed.")){
+                    //     ourvoice.resetDevice();
+
+                    //     // EMPTY LOCAL DATABASE.... 
+                    //     datastore.emptyUsersDB();
+
+                    //     //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                    //     app.cache.active_project["i"] = pid_correct;
+                    //     datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
+
+                    //     //LETS RELOAD THE LOCAL DB AT THIS POINT
+                    //     ourvoice.getAllProjects();
+                    //     app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
+                    // }
                 }else{
                     app.showNotif("Wrong ProjectID or Password");
                     return false;
