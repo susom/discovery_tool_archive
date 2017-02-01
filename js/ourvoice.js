@@ -96,7 +96,7 @@ var ourvoice = {
 
             //Display This Info
             $("#step_zero b.proj_name").text(p["project_name"]);
-            $("#step_zero b.user_id").text(app.cache.participant_id);
+            $("#step_zero b.user_id").text(app.cache.participant_id - 1);
             if(!app.cache.proj_thumbs){
                 $("#pic_review li.good_or_bad").hide();
             }else{

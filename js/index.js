@@ -100,7 +100,7 @@ var app = {
         app.cache.remoteusersdb = config["database"]["users_remote"];
         app.cache.remotelogdb   = config["database"]["log_remote"];  
         app.cache.remoteprojdb  = config["database"]["proj_remote"];
-        
+            
         // CLEAN SLATE 
         // datastore.deleteLocalDB();
         // return;
@@ -108,10 +108,22 @@ var app = {
         //2) PUSH ONCE REMOTE AND LOCAL SYNC
         datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);   //ONE WAY REMOTE TO LOCAL SYNCING
         ourvoice.syncLocalData();      
-
         // app.log("DEVICE READY, DBs CONNECTED, LOOKING FOR ACTIVE PROJECT NEXT");
 
-        //3) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
+        //3) ATTACH THE STYLESHEET FOR THE PAGE!
+        app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
+            var blobURL = URL.createObjectURL(blobOrBuffer);
+            var cssTag  = $("<link>");
+            cssTag.attr("rel" , "stylesheet");
+            cssTag.attr("type", "text/css");
+            cssTag.attr("href", blobURL);
+            $("head").append(cssTag);
+            // console.log("now what?" + blobURL);
+        }).catch(function (err) {
+            console.log(err);
+        });
+
+        //4) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
             app.cache.active_project = doc;
@@ -121,7 +133,7 @@ var app = {
             ourvoice.getAllProjects();
         });
 
-        //4) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
+        //5) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
         $(".button[data-next]").not(".audiorec,.camera").on("click",function(){
             //GET CURRENT PANEL
             var panel       = $(this).closest(".panel");
@@ -199,20 +211,6 @@ var app = {
                         'Project Setup',           // title
                         ['Cancel','Continue']     // buttonLabels
                     );
-                    // if(confirm("Setup of a new project will erase any data previously saved on this device. Click 'OK' to proceed.")){
-                    //     ourvoice.resetDevice();
-
-                    //     // EMPTY LOCAL DATABASE.... 
-                    //     datastore.emptyUsersDB();
-
-                    //     //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
-                    //     app.cache.active_project["i"] = pid_correct;
-                    //     datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
-
-                    //     //LETS RELOAD THE LOCAL DB AT THIS POINT
-                    //     ourvoice.getAllProjects();
-                    //     app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
-                    // }
                 }else{
                     app.showNotif("Wrong ProjectID or Password");
                     return false;
@@ -568,7 +566,7 @@ var app = {
             ,"platform" : app.cache.platform
         }
 
-        console.log(msg);
+        // console.log(msg);
         // datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };

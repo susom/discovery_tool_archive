@@ -1,3 +1,7 @@
+/*SAVE THIS WITH THE REPO, 
+BUT UPDATES MUST BE uploaded as an attachment to couchdb disc_projects -> all_projects
+as index.css  (it overwrites automaticaly)
+*/
 * {
     -webkit-tap-highlight-color : rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
     -webkit-transition          : all .3s;
@@ -12,11 +16,11 @@ html {
 body {
     -webkit-touch-callout    : none;     /* prevent callout to copy image, etc when tap to hold */
     -webkit-text-size-adjust : none;  /* prevent webkit from resizing text to fit */
-    -webkit-user-select      : none;       /* prevent copy paste, to allow, change 'none' to 'text' */
+    -webkit-user-select      : none;       /* prevent copy paste, to allow, change "none" to "text" */
     -webkit-font-smoothing   : antialiased;
     /*text-shadow: rgba(0,0,0,.01) 0 0 1px;*/
 
-    font-family : 'HelveticaNeue-Light', 'HelveticaNeue', Helvetica, Arial, sans-serif;
+    font-family : "HelveticaNeue-Light", "HelveticaNeue", Helvetica, Arial, sans-serif;
     width       : 100%;
     height      : 100%;
     margin      : 0px;
@@ -87,7 +91,7 @@ header:after {
     width           : 47px;
     height          : 47px;
     margin-left     : -24px;
-    background      : url(../img/loading.gif) no-repeat;
+    background      : url(img/loading.gif) no-repeat;
     background-size : contain;
 }
 
@@ -101,7 +105,7 @@ header:after {
     text-align      : left;
 }
 .logo {
-    background      : url(../img/logo.png) no-repeat;
+    background      : url(img/logo.png) no-repeat;
     background-size : contain;
     display         : block;
     vertical-align  : middle;
@@ -216,7 +220,7 @@ nav .list{
 #list_data tbody td i{
     display:inline-block;
     width:25px; height:30px;
-    background:url(../img/icon_thumbs.png) top right no-repeat;
+    background:url(img/icon_thumbs.png) top right no-repeat;
     background-size:200%;
 }
 #list_data tbody td i.uploaded{
@@ -290,12 +294,21 @@ nav .list{
     display:inline-block;
     vertical-align:top;
     width:18px; height:18px;
-    background:url(../img/icon_smilies.png) top right no-repeat;
+    background:url(img/icon_smilies.png) top right no-repeat;
     background-size:200%;
 }
 #datastatus i.synced{
     background-position:top left;
 }
+
+#datastatus b {
+    display:inline-block;
+    vertical-align:top;
+}
+#datastatus b.user_id:before{
+    content:" x ";
+}
+
 #step_zero {
     position           : absolute;
     top                : 320px;
@@ -465,7 +478,7 @@ nav .list{
     min-height      : 100px;
     width           : 50%;
     margin          : 0 auto;
-    background      : url(../img/icon_stop.png) 50% 50% no-repeat;
+    background      : url(img/icon_stop.png) 50% 50% no-repeat;
     background-size : 70%;
     text-align      :center;
     color:#fff;
@@ -485,7 +498,7 @@ nav .list{
     display         : none;
     box-shadow      : none;
     position        : relative;
-    background      : url(../img/icon_photo.png) 100% 20% no-repeat;
+    background      : url(img/icon_photo.png) 100% 20% no-repeat;
     background-size : 20%;
     text-decoration : none;
     text-align      : left ;
@@ -511,17 +524,17 @@ nav .list{
 }
 .done_photos {
     padding         :5px 40px 5px ;
-    background      : url(../img/icon_photo.png) 100% 20% no-repeat;
+    background      : url(img/icon_photo.png) 100% 20% no-repeat;
     background-size : 10%;
     color           : #333;
     text-align      :right;
 }
 
 .button.camera {
-    background:#4dc2ff url(../img/icon_camera.png) 50% 50% no-repeat;
+    background:#4dc2ff url(img/icon_camera.png) 50% 50% no-repeat;
 }
 .button.audio{
-    background:#F19192 url(../img/icon_mic.png) 50% 50% no-repeat;
+    background:#F19192 url(img/icon_mic.png) 50% 50% no-repeat;
 }
 #mediacaptured {
     position      : absolute;
@@ -609,7 +622,7 @@ nav .list{
     
     width               : 25px; 
     height              : 30px;
-    background          : #fff url(../img/icon_thumbs.png) 0 0 no-repeat;
+    background          : #fff url(img/icon_thumbs.png) 0 0 no-repeat;
     
     background-size     : 200%;
     margin              : 0 15px 0 0;
@@ -639,14 +652,14 @@ nav .list{
     top                 : 25px;
     width               : 30px;
     height              : 30px;
-    background          : #4dc2ff url(../img/icon_mic.png) 50% 50% no-repeat;
+    background          : #4dc2ff url(img/icon_mic.png) 50% 50% no-repeat;
     background-size     : 40%;
     line-height         : 180%;
     border-radius       : 3px;
     box-shadow          : 0 0 1px 1px lightgrey;
 }
 .mediaitem .hasAudio{
-    background          : url(../img/icon_listen.png) 50% 50% no-repeat;
+    background          : url(img/icon_listen.png) 50% 50% no-repeat;
     background-size: 80% ;
 }
 
@@ -677,7 +690,7 @@ nav .list{
 }
 .listen {
     display: block;
-    background: url(../img/icon_listen.png) 10px 4px no-repeat;
+    background: url(img/icon_listen.png) 10px 4px no-repeat;
     height: 37px;
     padding: 5px 5px 5px 60px;
     cursor: pointer;
@@ -709,7 +722,7 @@ nav .list{
 #pic_review  #saved_audio a{
     display:inline-block;
     width:30px; height:30px;
-    background:#4dc2ff url(../img/icon_listen_2.png) no-repeat;
+    background:#4dc2ff url(img/icon_listen_2.png) no-repeat;
     background-size:contain;
     border:2px solid #4dc2ff;
     border-radius:5px;
@@ -728,12 +741,12 @@ nav .list{
     border:none;
     box-shadow:none;
     width:34px; height:34px;
-    background:url(../img/icon_stop.png) no-repeat;
+    background:url(img/icon_stop.png) no-repeat;
     background-size:contain;
 }
 
 #pic_review  #saved_audio a.record_another{
-    background:#4dc2ff url(../img/icon_mic.png) 5px 3px no-repeat;
+    background:#4dc2ff url(img/icon_mic.png) 5px 3px no-repeat;
     background-size:10%;
     padding:0 10px 0 25px;
     border-color:#4dc2ff;
@@ -745,7 +758,7 @@ nav .list{
 }
 
 .daction.audio{
-    background:#ff7fe5 url(../img/icon_mic.png) 50% 40% no-repeat;
+    background:#ff7fe5 url(img/icon_mic.png) 50% 40% no-repeat;
     line-height: 450%;
     text-align:left;
     text-indent:15px;
@@ -827,7 +840,7 @@ nav .list{
     /*THUMBS*/
     width:50px;
     height:60px;
-    background:#efefef url(../img/icon_thumbs.png) 4px 3px no-repeat;
+    background:#efefef url(img/icon_thumbs.png) 4px 3px no-repeat;
     opacity:.40;
     transition: opacity 0.1s linear;
 }
@@ -837,7 +850,7 @@ nav .list{
     /*SMILIES*/
     width               : 50px; 
     height              : 50px;
-    background          : #efefef url(../img/icon_smilies.png) bottom left no-repeat;
+    background          : #efefef url(img/icon_smilies.png) bottom left no-repeat;
     background-size:200%;
 }
 .votes .down{
@@ -887,17 +900,17 @@ nav .list{
     margin-bottom      : 15px;
 }
 #soundwaves {
-    background         : #000 url(../img/anim_soundwaves_bw.gif) 0 50% no-repeat;
+    background         : #000 url(img/anim_soundwaves_bw.gif) 0 50% no-repeat;
     background-size    : contain;
-    /*background       : #000 url(../img/anim_soundwaves_green.gif) 0 50% no-repeat;
+    /*background       : #000 url(img/anim_soundwaves_green.gif) 0 50% no-repeat;
     background-size    : cover;*/
     width              : 100%;
     height             : 200px;
     margin-bottom      : 15px;
 }
 #soundwaves.pause{
-    background-image   : url(../img/still_soundwaves_bw.png);
-    /*background-image : url(../img/still_soundwaves_green.png);*/
+    background-image   : url(img/still_soundwaves_bw.png);
+    /*background-image : url(img/still_soundwaves_green.png);*/
 }
 #audio_controls ul {
     list-style         : none;
@@ -914,7 +927,7 @@ nav .list{
     height             : 128px;
     margin             : 0 5px;
     vertical-align     : top;
-    background         : url(../img/icon_stop.png) 50% 50% no-repeat;
+    background         : url(img/icon_stop.png) 50% 50% no-repeat;
     background-size    : contain;
     text-decoration:none;
     color:#fff;
@@ -1185,7 +1198,7 @@ nav .list{
         width           : 47px;
         height          : 47px;
         margin-left     : -24px;
-        background      : url(../img/loading.gif) no-repeat;
+        background      : url(img/loading.gif) no-repeat;
         background-size : contain;
     }
 
@@ -1307,7 +1320,7 @@ nav .list{
     #list_data tbody td i{
         display:inline-block;
         width:25px; height:30px;
-        background:url(../img/icon_thumbs.png) top right no-repeat;
+        background:url(img/icon_thumbs.png) top right no-repeat;
         background-size:200%;
     }
     #list_data tbody td i.uploaded{
@@ -1385,7 +1398,7 @@ nav .list{
         display:inline-block;
         vertical-align:top;
         width:18px; height:18px;
-        background:url(../img/icon_smilies.png) top right no-repeat;
+        background:url(img/icon_smilies.png) top right no-repeat;
         background-size:200%;
     }
     #datastatus i.synced{
