@@ -111,17 +111,17 @@ var app = {
         // app.log("DEVICE READY, DBs CONNECTED, LOOKING FOR ACTIVE PROJECT NEXT");
 
         //3) ATTACH THE STYLESHEET FOR THE PAGE!
-        app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
-            var blobURL = URL.createObjectURL(blobOrBuffer);
-            var cssTag  = $("<link>");
-            cssTag.attr("rel" , "stylesheet");
-            cssTag.attr("type", "text/css");
-            cssTag.attr("href", blobURL);
-            $("head").append(cssTag);
-            // console.log("now what?" + blobURL);
-        }).catch(function (err) {
-            console.log(err);
-        });
+        // app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
+        //     var blobURL = URL.createObjectURL(blobOrBuffer);
+        //     var cssTag  = $("<link>");
+        //     cssTag.attr("rel" , "stylesheet");
+        //     cssTag.attr("type", "text/css");
+        //     cssTag.attr("href", blobURL);
+        //     $("head").append(cssTag);
+            
+        // }).catch(function (err) {
+        //     console.log(err);
+        // });
 
         //4) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
         app.cache.localprojdb.get("active_project").then(function (doc) {

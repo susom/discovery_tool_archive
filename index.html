@@ -39,7 +39,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline';script-src * 'unsafe-inline'; media-src *; img-src * data:; " /> -->
     
     <!-- THIS STYLESHEET WILL NOW BE STORED AS AN ATTACHMENT IN COUCHDB AND INCLUDED via JS -->
-    <!-- <link rel="stylesheet" type="text/css" href="css/index.css" /> -->
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
     <title>Our Voice Discovery Tool</title>
 </head>
 <body>
@@ -110,10 +110,10 @@
                 <span>Project:</span>
                 <b class="proj_name"></b>
             </label>
-            <!-- <label>
+            <label>
                 <span>User Id:</span>
                 <b class="user_id"></b>
-            </label> -->
+            </label>
             <label>
                 <span>Language:</span>
                 <select name="language"></select>
@@ -122,7 +122,7 @@
 
             <a href="#" data-translation-key="letsgo" data-next="step_one" class="button"></a>
             <a href="#" id="resetdevice">Reset Device?</a>
-            <a href="#" id="datastatus">Sync Status: <i></i> <b class="user_id"></b></a>
+            <a href="#" id="datastatus">Sync Status: <i></i><!--  <b class="user_id"></b> --></a>
         </form>
     </div>
     
