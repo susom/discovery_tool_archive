@@ -40,38 +40,48 @@ var ourvoice = {
 
     ,getAllProjects : function(){
         //LOAD UP PROJECTS FROM LOCAL DB
-        app.cache.localprojdb.get("all_projects").then(function (doc) {
-            app.cache.projects = doc;
+        try{
+            // PouchDB.debug.disable();
+            app.cache.localprojdb.get("all_projects").then(function (doc) {
+                app.cache.projects = doc;
+                $("h3.loadfail").remove();
 
-            //THERE SHOULD BE AT LEAST 1 PROJECT
-            if(app.cache.projects["project_list"] < 1){
-                //DELIBERATLEY THROW ERROR, NO PROJECTS IN THE LOCAL DB
-                throw err;
-            } 
+                //CHECK TO SEE IF THERE IS AN "active_project" SET YET
+                if(app.cache.active_project.hasOwnProperty("i")){
+                    //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
+                    ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
+                    app.log("LOADING PROJECT: " + app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] ); 
+                    app.transitionToPanel($("#step_zero"));
+                }else{
+                    //SHOW ADMIN DEVICE SET UP 
+                    ourvoice.adminSetup();
+                    app.cache.history = [];
+                    app.log("ADMIN SETUP REQUIRED, NO ACTIVE PROJECT SET"); 
+                }
+            }).catch(function (err) {
+                // ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE     
+                app.log("NO PROJECTS IN LOCALDB, NOT SYNCING FROM REMOTE","ERROR");      
 
-            $("h3.loadfail").remove();
-
-            //CHECK TO SEE IF THERE IS AN "active_project" SET YET
-            if(app.cache.active_project.hasOwnProperty("i")){
-                //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
-                ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
-                app.log("LOADING PROJECT: " + app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] ); 
-                app.transitionToPanel($("#step_zero"));
-            }else{
-                //SHOW ADMIN DEVICE SET UP 
-                ourvoice.adminSetup();
-                app.cache.history = [];
-                app.log("ADMIN SETUP REQUIRED, NO ACTIVE PROJECT SET"); 
-            }
-        }).catch(function (err) {
-            // ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE     
-            console.log(err);
-            app.log("NO PROJECTS IN LOCALDB, NOT SYNCING FROM REMOTE","ERROR");      
-
-            //IF NO PROJECTS THEN PUT UP THIS LOADING ERROR
-            var cantconnect = $("<h3>").addClass("loadfail").addClass("delete_on_reset").text("Sorry, unable to connect to server.  Please close the app and try later.");
-            $(".title hgroup").append(cantconnect);
-        });
+                //IF NO PROJECTS THEN PUT UP THIS LOADING ERROR
+                var cantconnect = $("<h3>").addClass("loadfail").addClass("delete_on_reset").text("Sorry, unable to connect to server.  Please close the app and try later.");
+                $(".title hgroup").append(cantconnect);
+            });
+        }catch(err){
+            navigator.notification.confirm(
+                'Error during database syncronization.  Click \'Continue\' to try again', // message
+                 function(i){
+                    if(i == 1){
+                        //the button label indexs start from 1 = 'Cancel'
+                        return;
+                    }
+                    app.log("db sync failed, refreshing app to try again");
+                    // document.location = "index.html";
+                    window.location.reload(true);
+                 },            // callback to invoke with index of button pressed
+                'Refresh App',           // title
+                ['Cancel','Continue']     // buttonLabels
+            );
+        }   
     }
 
     ,loadProject : function(project){
@@ -586,8 +596,35 @@ var ourvoice = {
 
     ,syncLocalData: function(){
         $("#datastatus i").removeClass("synced");
-        datastore.localSyncDB(app.cache.localusersdb,app.cache.remoteusersdb);  
-        datastore.localSyncDB(app.cache.locallogdb,app.cache.remotelogdb); 
+        datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
+            if(info.hasOwnProperty("status")){
+                //.onComplete
+                if(info["ok"] && info["status"] == "complete"){
+                    $("#datastatus i").addClass("synced");
+                }else{
+                    $("#datastatus i").removeClass("synced");
+                }
+            }else{
+                //.onChange
+                for(var i in info["docs"]){
+                    var changed_doc = info["docs"][i];
+                    var _id         = changed_doc["_id"];
+                    var _rev        = changed_doc["_rev"];
+                    app.cache.localusersdb.get(_id).then(function (doc) {
+                        doc.uploaded = true;
+                        app.cache.localusersdb.put(doc);
+                        $("i[data-docid='"+_id+"']").addClass("uploaded");
+                        $(".uploadbtn").removeClass("loading");
+                    }).catch(function (werr) {
+                        app.log("ERROR UPDATING USER DATA " + _id);
+                        datastore.showError(werr);
+                    });
+                }
+            }
+        });  
+        datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(){
+            console.log("log synced");
+        }); 
     }
 
     ,finished : function(){

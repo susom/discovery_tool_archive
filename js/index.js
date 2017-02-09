@@ -77,13 +77,13 @@ var app = {
     ,onDevicePause: function() {
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
-        app.log("DEVICE PAUSING");
+        // app.log("DEVICE PAUSING");
     }
 
     ,onDeviceResume: function() {
         //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
         //SO NO DO NOT RELOAD PROJECT
-        app.log("DEVICE RESUMING");
+        // app.log("DEVICE RESUMING");
     }
 
     ,onDeviceReady: function() {
@@ -93,21 +93,35 @@ var app = {
         app.cache.platform      = device.platform;
 
         //1) (RE)OPEN LOCAL AND REMOTE DB
-        app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
-        app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
-        app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
-
         app.cache.remoteusersdb = config["database"]["users_remote"];
         app.cache.remotelogdb   = config["database"]["log_remote"];  
         app.cache.remoteprojdb  = config["database"]["proj_remote"];
-            
+
+        app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
+        app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
+        app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
+
         // CLEAN SLATE 
         // datastore.deleteLocalDB();
         // return;
 
-        //2) PUSH ONCE REMOTE AND LOCAL SYNC
-        datastore.remoteSyncDB(app.cache.localprojdb,app.cache.remoteprojdb);   //ONE WAY REMOTE TO LOCAL SYNCING
-        ourvoice.syncLocalData();      
+        //2) PUSH ONCE 
+        ourvoice.syncLocalData(); //LOCAL DATA TO REMOTE
+        datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
+            //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
+            app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
+
+            //LOOK FOR AN ACTIVE PROJECT, THEN GET ALL PROJECTS
+            app.cache.localprojdb.get("active_project").then(function (doc) {
+                //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
+                app.cache.active_project = doc;
+            }).catch(function (err) {
+                app.log("get active project error : ",err);
+            }).then(function(){
+                //THIS WORKS AS A "FINALLY"
+                ourvoice.getAllProjects();
+            });
+        });
         // app.log("DEVICE READY, DBs CONNECTED, LOOKING FOR ACTIVE PROJECT NEXT");
 
         //3) ATTACH THE STYLESHEET FOR THE PAGE!
@@ -118,20 +132,13 @@ var app = {
         //     cssTag.attr("type", "text/css");
         //     cssTag.attr("href", blobURL);
         //     $("head").append(cssTag);
-            
         // }).catch(function (err) {
         //     console.log(err);
         // });
 
         //4) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
-        app.cache.localprojdb.get("active_project").then(function (doc) {
-            //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
-            app.cache.active_project = doc;
-            throw err;
-        }).catch(function (err) {
-            //EITHER WAY END UP  HERE, USING THIS MORE LIKE A then but also else and error catch
-            ourvoice.getAllProjects();
-        });
+        
+    
 
         //5) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
         $(".button[data-next]").not(".audiorec,.camera").on("click",function(){
@@ -186,8 +193,7 @@ var app = {
                     $("#main").removeClass("loaded"); 
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
-                    
-
+                       
                     navigator.notification.confirm(
                         'Setup of a new project will erase any data previously saved on this device. Click \'Continue\' to proceed.', // message
                          function(i){
@@ -566,7 +572,7 @@ var app = {
             ,"platform" : app.cache.platform
         }
 
-        // console.log(msg);
+        console.log(msg);
         // datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };

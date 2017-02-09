@@ -88,7 +88,7 @@ var datastore = {
         });
     }
 
-    ,localSyncDB : function(localdb_obj,remotedb_str){
+    ,localSyncDB : function(localdb_obj,remotedb_str, _callBack){
         //'complete', 'active', 'paused', 'change', 'denied' and 'error'
         localdb_obj.replicate.to(remotedb_str,{
             // live: true
@@ -98,35 +98,16 @@ var datastore = {
         }).on('active',function(){
             // not very useful
         }).on('complete', function (info) {
-            // console.log("COMPLETE CALLBACK");
             // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","status","end_time"]);
             // console.log("docs_read : "+info["docs_read"]);
             // console.log("docs_written : "+info["docs_written"]);
-            if(info["ok"] && info["status"] == "complete"){
-                $("#datastatus i").addClass("synced");
-            }else{
-                $("#datastatus i").removeClass("synced");
-            }
+            _callBack(info);
         }).on('change',function(info){
             //THIS IS MORE VALUABLE THAN "complete"
             //ACTUAL DETAILS THE CHANGES MADE
             // console.log("CHANGE CALLBACK");
             // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","docs"]);
-            for(var i in info["docs"]){
-                var changed_doc = info["docs"][i];
-                var _id         = changed_doc["_id"];
-                var _rev        = changed_doc["_rev"];
-                app.cache.localusersdb.get(_id).then(function (doc) {
-                    doc.uploaded = true;
-                    app.cache.localusersdb.put(doc);
-                    $("i[data-docid='"+_id+"']").addClass("uploaded");
-                    $(".uploadbtn").removeClass("loading");
-                }).catch(function (werr) {
-                    app.log("ERROR UPDATING USER DATA " + _id);
-                    datastore.showError(werr);
-                });
-            }
-
+            _callBack(info);
         }).catch(function (err) {
             // However, there is one gotcha with live replication: 
             // what if the user goes offline? In those cases, an error will be thrown 
@@ -136,24 +117,23 @@ var datastore = {
         });
     }
 
-    ,remoteSyncDB : function(localdb_obj,remotedb_str){
+    ,remoteSyncDB : function(localdb_obj,remotedb_str, _callBack){
         localdb_obj.replicate.from(remotedb_str,{
             // live: true
         }).on('complete', function (wut) {
-            app.log("REPLICATION (COMPLETE) FROM " + remotedb_str + " DONE");
-            ourvoice.getAllProjects();
+            app.log("REPLICATION (COMPLETE) FROM " + remotedb_str);
+            _callBack();
         }).on('change',function(change){
-            app.log("REPLICATION (CHANGE) FROM " + remotedb_str + " DONE");
-            ourvoice.getAllProjects();
+            app.log("REPLICATION (CHANGE) FROM " + remotedb_str);
+            _callBack();
         }).on('uptodate',function(update){
-            app.log("REPLICATION (UPTODATE) FROM " + remotedb_str + " DONE");
-            ourvoice.getAllProjects();
+            app.log("REPLICATION (UPTODATE) FROM " + remotedb_str);
+            _callBack();
         }).catch(function (err) {
             // However, there is one gotcha with live replication: 
             // what if the user goes offline? In those cases, an error will be thrown 
             // and replication will stop.
             app.log("ERROR ON REPLICATING FROM REMOTE: " + remotedb_str);
-            console.log(remotedb_str);
         });
     }
 
