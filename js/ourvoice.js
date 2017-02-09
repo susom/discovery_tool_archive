@@ -38,6 +38,25 @@ var ourvoice = {
         return;
     }
 
+    ,checkDirtyData: function(){
+        app.cache.localusersdb.allDocs({
+          include_docs: true
+        }).then(function (res) {
+            var rows        = res["rows"];
+            rows.reverse();
+            for(var i in rows){
+                var r_d     = rows[i]["doc"];
+                if(!r_d.hasOwnProperty("uploaded")){
+                  $("#datastatus i").removeClass("synced");
+                  break;  
+                }
+            }
+        }).catch(function(err){
+            app.log("ERROR getAll()");
+            datastore.showError(err);
+        });
+    }
+
     ,getAllProjects : function(){
         //LOAD UP PROJECTS FROM LOCAL DB
         try{
@@ -50,6 +69,7 @@ var ourvoice = {
                 if(app.cache.active_project.hasOwnProperty("i")){
                     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                     ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
+                    ourvoice.checkDirtyData();
                     app.log("LOADING PROJECT: " + app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] ); 
                     app.transitionToPanel($("#step_zero"));
                 }else{
@@ -567,21 +587,29 @@ var ourvoice = {
     }
 
     ,deletePhoto: function(_photo){
-        var deleteit = confirm("Delete this photo?");
-        if(deleteit == true){
-            var photo_i = app.cache.user.photos.indexOf(_photo);
-            app.cache.user.photos[photo_i] = null;
-            $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
-                $(this).remove();
-                var pic_count   = $(".mi_slideout b").text();
-                pic_count       = parseInt(pic_count) - 1;
-                $(".mi_slideout b").text(pic_count);
+        navigator.notification.confirm(
+            'This will delete the photo and any attached audio recordings. Click \'Confirm\' to proceed.', // message
+             function(i){
+                if(i == 1){
+                    //the button label indexs start from 1 = 'Cancel'
+                    return;
+                }
+                var photo_i = app.cache.user.photos.indexOf(_photo);
+                app.cache.user.photos[photo_i] = null;
+                $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
+                    $(this).remove();
+                    var pic_count   = $(".mi_slideout b").text();
+                    pic_count       = parseInt(pic_count) - 1;
+                    $(".mi_slideout b").text(pic_count);
 
-                datastore.writeDB(app.cache.localusersdb , app.cache.user);
-                app.log("DELETED PHOTO");
-                next();
-            });
-        }
+                    datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                    app.log("DELETED PHOTO");
+                    next();
+                });
+             },            // callback to invoke with index of button pressed
+            "Delete this photo?",           // title
+            ['Cancel','Confirm']     // buttonLabels
+        );
         return;
     }
 

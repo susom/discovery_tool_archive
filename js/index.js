@@ -181,6 +181,8 @@ var app = {
                 var pid_correct = null;
                 var p_pw        = null;
 
+                ourvoice.checkDirtyData();
+
                 for(var i in app.cache.projects["project_list"]){
                     var p = app.cache.projects["project_list"][i];
                     if(pid == p.project_id){
@@ -303,7 +305,7 @@ var app = {
             return false;
         });
 
-        $("#mediacaptured").on("click",".trashit", function(){
+        $("#mediacaptured,#pic_review").on("click",".trashit", function(){
             //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
             var thispic_i   = $(this).data("photo_i");
             var panel       = $(this).closest(".panel");
@@ -498,7 +500,9 @@ var app = {
 
         $("#end_session").click(function(){
             //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
-            ourvoice.resetDevice();            
+            ourvoice.resetDevice();   
+            ourvoice.checkDirtyData();
+
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
             app.log("ENDING USER SESSION PLEASE");
