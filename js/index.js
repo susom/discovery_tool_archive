@@ -168,7 +168,7 @@ var app = {
                             datastore.showError(err);
                         });
                     }else{
-                        app.showNotif("Wrong Master Password");
+                        app.showNotif("Oh No!", "Wrong Master Password", function(){});
                         $("#admin_master_pw").val("");
                         return false;
                     }
@@ -193,7 +193,7 @@ var app = {
                     $("#main").removeClass("loaded"); 
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
-                       
+
                     navigator.notification.confirm(
                         'Setup of a new project will erase any data previously saved on this device. Click \'Continue\' to proceed.', // message
                          function(i){
@@ -218,7 +218,7 @@ var app = {
                         ['Cancel','Continue']     // buttonLabels
                     );
                 }else{
-                    app.showNotif("Wrong ProjectID or Password");
+                    app.showNotif("Uh Oh!","Wrong ProjectID or Password", function(){});
                     return false;
                 }
             }else{
@@ -544,12 +544,14 @@ var app = {
         return;
     }
 
-    ,showNotif : function(title,bodytext){
-        $("#notif h3").text(title);
-        if(bodytext){
-            $("#notif p").text(bodytext);
-        }
-        $("#notif").fadeIn("fast");
+    ,showNotif : function(title, bodytext, _callback){
+        navigator.notification.alert(
+             bodytext
+            ,function(){
+               _callback();
+            }
+            ,title
+            ,"Close");
         return;
     }
 

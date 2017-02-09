@@ -67,20 +67,11 @@ var ourvoice = {
                 $(".title hgroup").append(cantconnect);
             });
         }catch(err){
-            navigator.notification.confirm(
-                'Error during database syncronization.  Click \'Continue\' to try again', // message
-                 function(i){
-                    if(i == 1){
-                        //the button label indexs start from 1 = 'Cancel'
-                        return;
-                    }
-                    app.log("db sync failed, refreshing app to try again");
-                    // document.location = "index.html";
-                    window.location.reload(true);
-                 },            // callback to invoke with index of button pressed
-                'Refresh App',           // title
-                ['Cancel','Continue']     // buttonLabels
-            );
+            app.showNotif("This is embaressing", "Error during database syncronization.  Close this alert to try again.", function(){
+                app.log("db sync failed, refreshing app to try again");
+                // document.location = "index.html";
+                window.location.reload(true);
+            });
         }   
     }
 
