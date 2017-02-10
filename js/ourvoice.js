@@ -171,22 +171,19 @@ var ourvoice = {
 
     ,startWatch: function(freq) {
         //SAVE GEO TAGS FOR MAP
-        ourvoice.trackPosition(); //manually do the first one
-        app.cache.positionTrackerId = setInterval(function(){
-            ourvoice.trackPosition();
-        }, freq);
+        ourvoice.watchPosition();
         app.log("STARTING WALK"); 
     }
 
     ,stopWatch: function(){
-        clearInterval(app.cache.positionTrackerId);
+        navigator.geolocation.clearWatch(app.cache.positionTrackerId);
         app.cache.positionTrackerId = null;
         app.log("ENDING WALK"); 
     }
     
-    ,trackPosition: function(){
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
+    ,watchPosition: function(){
+        app.cache.positionTrackerId = navigator.geolocation.watchPosition(
+            function(position){
                 var lastPos = app.cache.user.geotags[app.cache.user.geotags.length - 1];
                 var curdist = app.cache.user.hasOwnProperty("currentDistance") ? app.cache.user.currentDistance : 0;
                 var prvLat  = lastPos > 0 ? lastPos.latitude  : position.coords.latitude;
@@ -204,11 +201,8 @@ var ourvoice = {
                     ,"speed"        : position.coords.speed
                     ,"timestamp"    : position.timestamp
                 };
-                
                 app.cache.user.geotags.push(curpos);
-
-                console.log("WRITING GEOTAG TO DB");
-                datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                // datastore.writeDB(app.cache.localusersdb , app.cache.user);
 
                 //SAVE THE POINTS IN GOOGLE FORMAT
                 if(utils.checkConnection()){
@@ -221,7 +215,8 @@ var ourvoice = {
                 console.log(err);
             }
             ,{
-                enableHighAccuracy: true
+                 enableHighAccuracy: true
+                ,maximumAge: Infinity
             });
     }
 
@@ -259,7 +254,23 @@ var ourvoice = {
 
         var latLngBounds    = new google.maps.LatLngBounds();
         var geopoints       = app.cache.currentWalkMap.length; 
-        for(var i = 0; i < geopoints; i++) {
+        
+        new google.maps.Marker({
+            map: map,
+            position: app.cache.currentWalkMap[0],
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 5,
+                fillColor: "#ffffff",
+                strokeColor: "#0000FF",
+                fillOpacity: 1
+
+            },
+            title: "Starting Point"
+        });
+
+
+        for(var i = 1; i < geopoints; i++) {
           latLngBounds.extend(app.cache.currentWalkMap[i]);
           // Place the marker
           new google.maps.Marker({
@@ -267,10 +278,10 @@ var ourvoice = {
             position: app.cache.currentWalkMap[i],
             icon: {
                 path: google.maps.SymbolPath.CIRCLE,
-                scale: 3,
+                scale: 1,
                 fillColor: "#008800",
                 strokeColor: "#0000FF",
-                fillOpacity: 1
+                fillOpacity: 0.5
 
             },
             title: "Point " + (i + 1)
