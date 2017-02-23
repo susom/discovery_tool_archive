@@ -52,11 +52,31 @@ var ourvoice = {
                 }
             }
         }).catch(function(err){
-            app.log("ERROR getAll()");
+            app.log("ERROR checkDirtyData allDocs()");
             datastore.showError(err);
         });
     }
 
+    ,getActiveProject : function(){
+        app.cache.localprojdb.get("active_project", function(err,resp){
+            if(err){
+                if(err.status == '404'){
+                    ourvoice.getAllProjects();
+                    clearTimeout(app.cache.db_fail_timeout);
+                }
+            }
+        }).then(function (doc) {
+            //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
+            app.cache.active_project = doc;
+        }).catch(function (err) {
+            app.log("get active_project error : ",err);
+        }).then(function(){
+            //THIS WORKS AS A "FINALLY"
+            ourvoice.getAllProjects();
+            clearTimeout(app.cache.db_fail_timeout);
+        });
+    }
+    
     ,getAllProjects : function(){
         //LOAD UP PROJECTS FROM LOCAL DB
         try{
@@ -70,13 +90,11 @@ var ourvoice = {
                     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                     ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
                     ourvoice.checkDirtyData();
-                    app.log("LOADING PROJECT: " + app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] ); 
                     app.transitionToPanel($("#step_zero"));
                 }else{
                     //SHOW ADMIN DEVICE SET UP 
                     ourvoice.adminSetup();
                     app.cache.history = [];
-                    app.log("ADMIN SETUP REQUIRED, NO ACTIVE PROJECT SET"); 
                 }
             }).catch(function (err) {
                 // ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE     
@@ -144,7 +162,7 @@ var ourvoice = {
                 return false;
             });
         }).catch(function(err){
-            app.log("ERROR localusersdb allDocs");
+            app.log("loadProject allDocs", "Error");
             datastore.showError(err);
         });
     }
@@ -158,7 +176,6 @@ var ourvoice = {
         $("#survey fieldset").empty();
         survey.build(project["surveys"], lang);
         consent.build(project["consent"], lang);  
-
         if(project["project_id"] == projid){
             for(var n in trans){
                 var kvpair      = trans[n];
@@ -172,38 +189,46 @@ var ourvoice = {
     ,startWatch: function(freq) {
         //SAVE GEO TAGS FOR MAP
         ourvoice.watchPosition();
-        app.log("STARTING WALK"); 
     }
 
     ,stopWatch: function(){
         navigator.geolocation.clearWatch(app.cache.positionTrackerId);
         app.cache.positionTrackerId = null;
-        app.log("ENDING WALK"); 
     }
     
     ,watchPosition: function(){
         app.cache.positionTrackerId = navigator.geolocation.watchPosition(
             function(position){
-                var lastPos = app.cache.user.geotags[app.cache.user.geotags.length - 1];
-                var curdist = app.cache.user.hasOwnProperty("currentDistance") ? app.cache.user.currentDistance : 0;
-                var prvLat  = lastPos > 0 ? lastPos.latitude  : position.coords.latitude;
-                var prvLong = lastPos > 0 ? lastPos.longitude : position.coords.longitude;
+                var acuracy = position.coords.accuracy;
+
                 var curLat  = position.coords.latitude;
                 var curLong = position.coords.longitude;
-                curdist     = curdist + utils.calculateDistance(prvLat, prvLong, curLat, curLong);
-                app.cache.user.currentDistance = curdist;
 
                 var curpos = {
                      "lat"          : curLat
                     ,"lng"          : curLong
+                    ,"accuracy"     : acuracy
                     ,"altitude"     : position.coords.altitude
                     ,"heading"      : position.coords.heading
                     ,"speed"        : position.coords.speed
                     ,"timestamp"    : position.timestamp
                 };
-                app.cache.user.geotags.push(curpos);
-                // datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                
+                var curdist = app.cache.user.hasOwnProperty("currentDistance") ? app.cache.user.currentDistance : 0;
+                var lastPos = app.cache.user.geotags.length > 0 ? app.cache.user.geotags[app.cache.user.geotags.length - 1] : {"lat" : curLat,"lng" : curLong};
+                var prvLat  = lastPos.lat ;
+                var prvLong = lastPos.lng ;
+ 
+                if(app.cache.user.geotags.length == 0){
+                    app.cache.user.geotags.push(curpos);
+                }
 
+                if(curLat != prvLat && curLong != prvLong){
+                    app.cache.user.geotags.push(curpos); 
+                    curdist     = curdist + utils.calculateDistance(prvLat, prvLong, curLat, curLong);
+                    app.cache.user.currentDistance = curdist;
+                }
+                
                 //SAVE THE POINTS IN GOOGLE FORMAT
                 if(utils.checkConnection()){
                     app.cache.currentWalkMap.push(
@@ -346,6 +371,8 @@ var ourvoice = {
             fileEntry.file(function(file) {
                     app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : file };
                     console.log("SAVING AUDIO AS ATTACHMENT");
+                    
+                    //RECORD AUDIO ATTACHMENT 
                     datastore.writeDB(app.cache.localusersdb , app.cache.user);
                 }
                 ,function(err){
@@ -354,7 +381,6 @@ var ourvoice = {
                 }
             );
 
-            app.log("FINISHED RECORDING");
             app.cache.audioObj[recordFileName].release();
             delete app.cache.audioObj[recordFileName];
         } else {
@@ -476,7 +502,8 @@ var ourvoice = {
                 //PREPARE ATTACHEMENT
                 var attref      = "photo_" + thispic_i + ".jpg";
                 app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
-                app.log("SAVING PHOTO TO DB");
+                
+                //RECORD PHOTO DATAURL
                 datastore.writeDB(app.cache.localusersdb , app.cache.user);
 
                 //SET UP PHOTO PREVIEW PAGE
@@ -494,7 +521,7 @@ var ourvoice = {
                  quality            : 50
                 ,destinationType    : Camera.DestinationType.DATA_URL
                 ,saveToPhotoAlbum   : false
-                ,allowEdit          : true
+                ,allowEdit          : false
             }
         );
         return;
@@ -613,8 +640,8 @@ var ourvoice = {
                     pic_count       = parseInt(pic_count) - 1;
                     $(".mi_slideout b").text(pic_count);
 
+                    //RECORD DELETED PHOTO
                     datastore.writeDB(app.cache.localusersdb , app.cache.user);
-                    app.log("DELETED PHOTO");
                     next();
                 });
              },            // callback to invoke with index of button pressed
@@ -631,6 +658,7 @@ var ourvoice = {
                 //.onComplete
                 if(info["ok"] && info["status"] == "complete"){
                     $("#datastatus i").addClass("synced");
+                    // datastore.emptyUsersDB();
                 }else{
                     $("#datastatus i").removeClass("synced");
                 }
@@ -646,14 +674,17 @@ var ourvoice = {
                         $("i[data-docid='"+_id+"']").addClass("uploaded");
                         $(".uploadbtn").removeClass("loading");
                     }).catch(function (werr) {
-                        app.log("ERROR UPDATING USER DATA " + _id);
+                        app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
                         datastore.showError(werr);
                     });
                 }
             }
         });  
-        datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(){
-            console.log("log synced");
+        datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(info){
+            if(info.hasOwnProperty("status")){
+                datastore.emptyLogsDB();
+                console.log("local logs synced and deleted");
+            }
         }); 
     }
 

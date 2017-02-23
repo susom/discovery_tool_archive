@@ -2,6 +2,7 @@ var utils = {
     checkConnection : function() {
         var networkType = navigator.hasOwnProperty("connection") ? navigator.connection.type : false;
         var online      = navigator.onLine; 
+
         return online;
         // return {
         //      "online"   : online
@@ -10,6 +11,7 @@ var utils = {
     }
 
     ,calculateDistance : function (lat1, lon1, lat2, lon2) {
+      var miles = true;
       var R = 6371; // km
       var dLat = (lat2 - lat1).toRad();
       var dLon = (lon2 - lon1).toRad(); 
@@ -18,6 +20,8 @@ var utils = {
               Math.sin(dLon / 2) * Math.sin(dLon / 2); 
       var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
       var d = R * c;
+
+      if(miles) d /= 1.60934;
       return d;
     }
 

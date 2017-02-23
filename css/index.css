@@ -98,6 +98,9 @@ header:after {
 .loaded header:after{
     display:none;
 }
+.failed header:after{
+    display:none;
+}
 .title {
     text-align      : center;
 }
@@ -1205,6 +1208,10 @@ nav .list{
     .loaded header:after{
         display:none;
     }
+    .failed header:after{
+        display:none;
+    }
+
     .title {
         text-align      : left;
         overflow : hidden;

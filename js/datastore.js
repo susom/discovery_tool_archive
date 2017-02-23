@@ -22,7 +22,7 @@ var datastore = {
         db.get(_id).then(function (doc) {
             assign_to_this = doc;
         }).catch(function (err) {
-            app.log("ERROR getDB(): " + _id);
+            app.log("ERROR getDB(): " + _id, "Error");
             datastore.showError(err);
         });
     }
@@ -40,22 +40,20 @@ var datastore = {
             // ,key : 'id01'
             // ,keys : ['id01','id02']
         }).then(function (res) {
-            app.log(res["rows"]);
+            console.log(res["rows"]);
             // utils.dump(res["rows"]);
         }).catch(function(err){
-            app.log("ERROR getAll()");
-            datastore.showError(err);
+            app.log("ERROR getAll()", "Error");
         });
     }
 
     ,writeDB : function(db,_o){
         db.put(_o).then(function (new_o) {
             var _rev = new_o.rev;
-            app.log("PUTTING old rev : " + _o._rev + " / new rev : " + _rev);
             _o._rev = _rev;
             app.log("JSON OBJECT SUCCESFULLY SAVED : " + _o._id + " , rev : " + _o._rev);
         }).catch(function (err) {
-            app.log("ERROR WRITING TO A DB");
+            app.log("ERROR WRITING TO A DB", "Error");
             datastore.showError(err);
         });
     }
@@ -66,10 +64,9 @@ var datastore = {
              since    : 'now'
             ,live     : true
         }).on('change', function(){
-            app.log("liveDB().on(change)");
+
         }).catch(function (err) {
-            app.log("ERROR liveDB()");
-            datastore.showError(err);
+            app.log("ERROR liveDB()", "Error");
         });
     }
 
@@ -77,14 +74,9 @@ var datastore = {
         localdb_obj.sync(remotedb_str, {
             live: true
         }).on('change', function (change) {
-            app.log("twoWaySyncDB()on(change)");
-            app.log(change);
         }).on('uptodate',function(update){
-            app.log("twoWaySyncDB()on(uptodate)");
-            app.log(update);
         }).catch(function (err) {
             app.log("ERROR twoWaySyncDB():");
-            datastore.showError(err);
         });
     }
 
@@ -112,8 +104,7 @@ var datastore = {
             // However, there is one gotcha with live replication: 
             // what if the user goes offline? In those cases, an error will be thrown 
             // and replication will stop.
-            app.log("ERROR localSyncDB()");
-            datastore.showError(err);
+            app.log("ERROR localSyncDB()", "Error");
         });
     }
 
@@ -121,13 +112,13 @@ var datastore = {
         localdb_obj.replicate.from(remotedb_str,{
             // live: true
         }).on('complete', function (wut) {
-            app.log("REPLICATION (COMPLETE) FROM " + remotedb_str);
+            console.log("REPLICATION (COMPLETE) FROM " + remotedb_str);
             _callBack();
         }).on('change',function(change){
-            app.log("REPLICATION (CHANGE) FROM " + remotedb_str);
+            console.log("REPLICATION (CHANGE) FROM " + remotedb_str);
             _callBack();
         }).on('uptodate',function(update){
-            app.log("REPLICATION (UPTODATE) FROM " + remotedb_str);
+            console.log("REPLICATION (UPTODATE) FROM " + remotedb_str);
             _callBack();
         }).catch(function (err) {
             // However, there is one gotcha with live replication: 
@@ -161,13 +152,23 @@ var datastore = {
     ,deleteLocalDB : function(){
         //DELETE LOCAL USER DB
         datastore.emptyUsersDB();
+        datastore.emptyLogsDB();
 
         //DELETE LOCAL PROJECT DB
         app.cache.localprojdb.destroy().then(function (response) {
-            app.log("DELETEING local proj db");
             app.cache.localprojdb       = datastore.startupDB(config["database"]["proj_local"]);
         }).catch(function (err) {
-            app.log(err);
+            app.log("deleteLocalDB" + err, "Error");
+        });
+        return;
+    }
+
+    ,emptyLogsDB : function(){
+        //DELETE LOCAL DBs
+        app.cache.locallogdb.destroy().then(function (response) {
+            app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]); 
+        }).catch(function (err) {
+            app.log("emptyLogsDB" + err, "Error");
         });
         return;
     }
@@ -175,10 +176,9 @@ var datastore = {
     ,emptyUsersDB : function(){
         //DELETE LOCAL DBs
         app.cache.localusersdb.destroy().then(function (response) {
-            app.log("EMPTYING local users db = DELETING, THEN RESTARTING");
             app.cache.localusersdb    = datastore.startupDB(config["database"]["users_local"]); 
         }).catch(function (err) {
-            app.log(err);
+            app.log("emptyUsersDB" + err, "Error");
         });
         return;
     }

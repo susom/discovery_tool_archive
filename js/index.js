@@ -18,51 +18,43 @@
  */
 var app = {
     // app cache - in memory data store
-    cache : {}
+    cache : {
+        "active_project" : { "_id" : "active_project" }
+    }
 
     // Application Constructor
     ,initialize: function() {
+        this.initCache();
         this.bindEvents();
-        app.initCache();
-
-        app.cache.localusersdb      = null; //ref to local users DB
-        app.cache.localprojdb       = null; //ref to local copy of projects DB
-        app.cache.locallogdb        = null; //ref to local copy of log DB
-
-        app.cache.remoteusersdb     = null; //ref to remote users DB
-        app.cache.remoteprojdb      = null; //ref to remote projects DB
-        app.cache.remotelogdb       = null; //ref to remote log DB
-
-        app.cache.projects          = null; //ref to projects list from local proj DB
-        app.cache.active_project    = { "_id" : "active_project" }; //active project ID
-
-        app.cache.uuid              = null; //DEVICE UNIQUE ID
-        app.cache.platform          = null; //IOS/ANDROID ETC
-        app.cache.testgoodbad       = null;
     }
     
     ,initCache : function(){
-        app.cache.user                 = null;
-        app.cache.user                 = config["default_user"]; //NEED TO USE COLLATE
-        app.cache.user["_attachments"] = {};
-        app.cache.user["photos"]       = [];
-        app.cache.user["geotags"]      = [];
-        app.cache.user["survey"]       = [];
+        app.cache.db_fail_timeout       = null;
+        app.cache.testgoodbad           = null;
+
+        app.cache.user                  = null;
+        app.cache.user                  = config["default_user"]; //NEED TO USE COLLATE
+        app.cache.user["_attachments"]  = {};
+        app.cache.user["photos"]        = [];
+        app.cache.user["geotags"]       = [];
+        app.cache.user["survey"]        = [];
 
         delete app.cache.user._id;
         delete app.cache.user._rev;
 
-        app.cache.positionTrackerId    = null; //ref to setInterval
-        app.cache.curmap               = null; //ref to google map
-        app.cache.currentWalkMap       = [];   //array of geotags for current walk
-        app.cache.history              = ["step_zero"];   //the app usage forward history
+        app.cache.positionTrackerId     = null; //ref to setInterval
+        app.cache.curmap                = null; //ref to google map
+        app.cache.currentWalkMap        = [];   //array of geotags for current walk
+        app.cache.history               = ["step_zero"];   //the app usage forward history
 
-        app.cache.next_id              = null; //NEXT USER ID - POUCH COLLATED
-        app.cache.participant_id       = null; //JUST SIMPLE INTEGER
+        app.cache.next_id               = null; //NEXT USER ID - POUCH COLLATED
+        app.cache.participant_id        = null; //JUST SIMPLE INTEGER
 
-        app.cache.audioObj             = {}; //FOR VOICE RECORDINGS
-        app.cache.audioStatus          = null;
-        app.cache.currentAudio         = null;
+        app.cache.audioObj              = {}; //FOR VOICE RECORDINGS
+        app.cache.audioStatus           = null;
+        app.cache.currentAudio          = null;
+
+        app.log("init app()");
     }
 
     ,bindEvents: function() {
@@ -72,6 +64,7 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         document.addEventListener('pause'  , this.onDevicePause, false);
         document.addEventListener('resume' , this.onDeviceResume, false);
+        app.log("bindEvents()");
     }
 
     ,onDevicePause: function() {
@@ -92,7 +85,7 @@ var app = {
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
 
-        //1) (RE)OPEN LOCAL AND REMOTE DB
+        //1) OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = config["database"]["users_remote"];
         app.cache.remotelogdb   = config["database"]["log_remote"];  
         app.cache.remoteprojdb  = config["database"]["proj_remote"];
@@ -107,22 +100,27 @@ var app = {
 
         //2) PUSH ONCE 
         ourvoice.syncLocalData(); //LOCAL DATA TO REMOTE
-        datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
-            //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
-            app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
+        // return;
+        
+        app.cache.db_fail_timeout = setTimeout(function(){
+            $("#loading_message").text("Could not reach database, try again later");
+            $("#main").addClass("failed");
+        },8000);
 
-            //LOOK FOR AN ACTIVE PROJECT, THEN GET ALL PROJECTS
-            app.cache.localprojdb.get("active_project").then(function (doc) {
-                //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
-                app.cache.active_project = doc;
-            }).catch(function (err) {
-                app.log("get active project error : ",err);
-            }).then(function(){
-                //THIS WORKS AS A "FINALLY"
-                ourvoice.getAllProjects();
+        if(networkState){
+            $("#loading_message").text("Online");
+            datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
+                //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
+                app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
+
+                //LOOK FOR AN ACTIVE PROJECT IF AVAIALABLE, THEN GET ALL PROJECTS
+                ourvoice.getActiveProject();
             });
-        });
-        // app.log("DEVICE READY, DBs CONNECTED, LOOKING FOR ACTIVE PROJECT NEXT");
+        }else{
+            //JESUS CHRIST
+            $("#loading_message").text("Offline");
+            ourvoice.getActiveProject();
+        }
 
         //3) ATTACH THE STYLESHEET FOR THE PAGE!
         // app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
@@ -135,10 +133,6 @@ var app = {
         // }).catch(function (err) {
         //     console.log(err);
         // });
-
-        //4) CHECK IF THERE IS AN ACTIVE PROJECT SET UP YET
-        
-    
 
         //5) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
         $(".button[data-next]").not(".audiorec,.camera").on("click",function(){
@@ -164,8 +158,7 @@ var app = {
                             ourvoice.adminView(res["rows"]);
                             $("#list_data").css("opacity",1);
                         }).catch(function(err){
-                            app.log("ERROR getAll()");
-                            datastore.showError(err);
+                            app.log("error allDocs()" + err);
                         });
                     }else{
                         app.showNotif("Oh No!", "Wrong Master Password", function(){});
@@ -207,8 +200,10 @@ var app = {
 
                             // EMPTY LOCAL DATABASE.... 
                             datastore.emptyUsersDB();
+                            datastore.emptyLogsDB();
 
                             //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                            //RECORD THE ACTIVE PROJECT
                             app.cache.active_project["i"] = pid_correct;
                             datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
 
@@ -246,6 +241,8 @@ var app = {
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
                 $(".mi_slideout").addClass("reviewable");
                 ourvoice.startWatch(8000);
+                app.log("start  walk");
+
             }
 
             if(next == "step_three"){
@@ -261,11 +258,14 @@ var app = {
             if(next == "survey"){
                 ourvoice.stopWatch();
                 $("nav").hide();
+                app.log("start  survey");
             }
 
             if(next == "finish"){
                 no_history = true;
                 ourvoice.finished();
+                app.log("finish with walk/survey");
+
             }
 
             //TRANSITION TO NEXT PANEL
@@ -299,8 +299,10 @@ var app = {
                     app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad-1;
                 }
             } 
-         
-            // console.log("WRITING "+updown+"VOTE TO THE DB");
+            
+            app.log("voting on photo");
+
+            //RECORD THE VOTE
             datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return false;
         });
@@ -315,6 +317,8 @@ var app = {
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#"+next),1);
             }
+
+            app.log("delete photo");
 
             ourvoice.deletePhoto(app.cache.user.photos[thispic_i]);
             return false;
@@ -349,6 +353,8 @@ var app = {
                 }
             );
 
+            app.log("play audio");
+
             my_media.play();
             my_media.release();
             return false;
@@ -363,8 +369,8 @@ var app = {
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
                 ourvoice.takePhoto();
+                app.log("take photo");
             }else{
-                //TODO FIX THIS : WHY DOES THIS TAKE TWO CLICKS?
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i);
                 savehistory = true;
@@ -382,8 +388,10 @@ var app = {
 
             if( $(this).hasClass("hasAudio") ){
                 ourvoice.startPlaying(photo_i);
+                app.log("play audio");
             }else{
                 ourvoice.recordAudio(photo_i);
+                app.log("record audio");
             }
 
             app.closeCurrentPanel(panel);
@@ -425,7 +433,7 @@ var app = {
             var nam = $(this).attr("name");
             app.cache.user.survey.push({"name" : nam , "value" : val});
 
-            // console.log("WRITING SURVEY ANSWER TO DB");
+            //RECORD SURVEY INPUT
             datastore.writeDB(app.cache.localusersdb , app.cache.user);
             return;
         });
@@ -463,6 +471,8 @@ var app = {
             $("#admin_master").show();
             $("#list_data").css("opacity",0);
             app.transitionToPanel($("#admin_view"));
+
+            app.log("Clicking review thumb");
         });
 
         var myElement   = document.getElementById('main');
@@ -481,6 +491,8 @@ var app = {
         //REVIEW PHOTOS SLIDEOUT
         $(".mi_slideout").click(function(){
             $("#mediacaptured").addClass("preview");
+
+            app.log("calling slideout Preview");
             return false;
         });
         $("#mediacaptured .slideclose").click(function(){
@@ -489,10 +501,6 @@ var app = {
 
         //DOCUMENT CLICKS FOR CLOSING POPUPS
         $(document).on("click", function(event){
-            if (!$(event.target).closest('#notif').length) {
-                $("#notif").fadeOut("fast");
-            }
-
             if (!$(event.target).closest('#mediacaptured').length) {
                 $("#mediacaptured").removeClass("preview");
             }
@@ -505,9 +513,10 @@ var app = {
 
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
-            app.log("ENDING USER SESSION PLEASE");
             app.closeCurrentPanel($("#finish"));
             app.transitionToPanel($("#step_zero"),1);
+
+            app.log("ending session");
             return false;
         });
     }
@@ -525,6 +534,8 @@ var app = {
 
         app.closeCurrentPanel($(".panel.loaded"));
         app.transitionToPanel($("#"+tempnext));
+
+        app.log("goBack() to : " + tempnext);
         return false;
     }
 
@@ -556,6 +567,8 @@ var app = {
             }
             ,title
             ,"Close");
+
+        app.log("Showing Notif : " + bodytext);
         return;
     }
 
@@ -579,6 +592,7 @@ var app = {
         }
 
         console.log(msg);
+        //RECORD LOG MESSAGE
         // datastore.writeDB(app.cache.locallogdb, log_obj);
     }
 };
