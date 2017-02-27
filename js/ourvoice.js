@@ -241,7 +241,8 @@ var ourvoice = {
             }
             ,{
                  enableHighAccuracy: true
-                ,maximumAge: Infinity
+                ,maximumAge        : 100
+                ,timeout           : 5000
             });
     }
 
@@ -256,6 +257,12 @@ var ourvoice = {
             curpos.speed        = position.coords.speed;
             curpos.timestamp    = position.timestamp;
             add_to["geotag"]    = curpos;
+        }, function(err){
+            console.log(err);
+        },{ 
+              enableHighAccuracy: true
+             ,maximumAge        : 100
+             ,timeout           : 5000
         });
         return curpos;
     }
@@ -328,7 +335,7 @@ var ourvoice = {
     }
 
     ,startPlaying : function(recordFileName){
-        var audio_file      = app.cache.user._attachments[recordFileName]["data"]["localURL"];        
+        var audio_file = app.cache.user._attachments[recordFileName]["data"]["localURL"];        
         app.cache.audioObj[recordFileName]  = new Media(audio_file, null, function(){ 
             console.log("error loading audio: " + audio_file); 
         });
@@ -342,66 +349,14 @@ var ourvoice = {
         return;
     }
 
-    ,stopRecording : function(photo_i,recordFileName){
-        if (app.cache.audioObj[recordFileName] == null){
-            return;
-        }
-        clearInterval(app.cache.audioTimer);
-        if (app.cache.audioStatus == 'recording') {
-            app.cache.audioObj[recordFileName].stopRecord();
-            console.log("Recording stopped");
-        } else if (app.cache.audioStatus == 'playing') {
-            app.cache.audioObj[recordFileName].stop();            
-            console.log("Play stopped");
-            app.cache.audioObj[recordFileName].release();
-        }else if(app.cache.audioStatus == "stop_release"){
-            app.cache.audioObj[recordFileName].stopRecord();
-            
-            $("#audio_time").text("00:00");
-
-            app.cache.user.photos[photo_i]["audio"]++;
-            $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
-            $("#pic_review .daction.audio").addClass("hasAudio");
-            ourvoice.drawSavedAudio(photo_i,recordFileName);
-
-            //NOW SAVE IT AS AN INLINE ATTACHMENT
-            var fileEntry   = app.cache.currentAudio ; 
-            var audio_i     = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
-            var attref      = "audio_" + photo_i + "_" + audio_i + ".wav";
-            fileEntry.file(function(file) {
-                    app.cache.user._attachments[attref] = { "content_type": "audio/wav" , "data" : file };
-                    console.log("SAVING AUDIO AS ATTACHMENT");
-                    
-                    //RECORD AUDIO ATTACHMENT 
-                    datastore.writeDB(app.cache.localusersdb , app.cache.user);
-                }
-                ,function(err){
-                    console.log(err);
-                    // console.log("ERROR FILE");                
-                }
-            );
-
-            app.cache.audioObj[recordFileName].release();
-            delete app.cache.audioObj[recordFileName];
-        } else {
-            // console.log("Nothing stopped");
-        }
-
-        $("#soundwaves").addClass("pause");
-
-        $("#ctl_stop").addClass("off");
-        $("#ctl_pause").addClass("off");
-        
-        $("#ctl_record").removeClass("off");
-        $("#ctl_play").removeClass("off");
-        app.cache.audioStatus = 'stopped';
-    }
-
     ,startRecording : function(photo_i,recordFileName){
         $("#audio_record").removeClass("playing");
+
+        //THIS STARTS RECORDING ON THE MEDIA OBJECT
         app.cache.audioStatus = "recording";
         app.cache.audioObj[recordFileName].startRecord();
- 
+    
+        //THIS IS FOR THAT FAKE RECORDING TIMER ON THE PAGE
         app.cache.audioTimer = setInterval(function(){
             var curtime = $("#audio_time").text();
             var splits  = curtime.split(":");
@@ -417,25 +372,87 @@ var ourvoice = {
 
         $("#soundwaves").removeClass("pause");
         $("#ctl_stop").data("photo_i",photo_i).data("recordFileName",recordFileName).removeClass("off");
-
         return;
     }
 
-    ,recordAudio: function(photo_i){
-        //ios requires .wav format, .mp3 for android
+    ,stopRecording : function(photo_i,recordFileName){
+        if (app.cache.audioObj[recordFileName] == null){
+            return;
+        }
+
+        //STOP THAT FAKE TIMER
+        clearInterval(app.cache.audioTimer);
+
+        if (app.cache.audioStatus == 'recording') {
+            app.cache.audioObj[recordFileName].stopRecord();
+            console.log("Recording stopped");
+        } else if (app.cache.audioStatus == 'playing') {
+            app.cache.audioObj[recordFileName].stop();            
+            console.log("Play stopped");
+            app.cache.audioObj[recordFileName].release();
+        } else if (app.cache.audioStatus == "stop_release"){
+            //STOPS RECORDING ON MEDIA OBJECT
+            app.cache.audioObj[recordFileName].stopRecord();
+            
+            //RESET FAKE TIMER
+            $("#audio_time").text("00:00");
+
+            //UPDATE THE GUI
+            app.cache.user.photos[photo_i]["audio"]++;
+            $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
+            $("#pic_review .daction.audio").addClass("hasAudio");
+            ourvoice.drawSavedAudio(photo_i,recordFileName);
+
+            //NOW SAVE IT AS AN INLINE ATTACHMENT
+            var audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
+            var andisos = app.cache.platform == "iOS" ? "wav" : "aac";
+
+            //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
+            app.cache.currentAudio.file(function(file) {
+                        app.cache.user._attachments[recordFileName] = { "content_type": "audio/" + andisos , "data" : file };
+                        
+                        //RECORD AUDIO ATTACHMENT 
+                        datastore.writeDB(app.cache.localusersdb , app.cache.user);
+
+                        //CLEAR THE MEDIA OBJECT
+                        app.cache.audioObj[recordFileName].release();
+                        delete app.cache.audioObj[recordFileName];
+                    }
+                    ,function(err){
+                        console.log(err);
+                        // console.log("ERROR FILE");                
+                    }
+                );
+        } else {
+            // console.log("Nothing stopped");
+        }
+
+        $("#soundwaves").addClass("pause");
+
+        $("#ctl_stop").addClass("off");
+        $("#ctl_pause").addClass("off");
+        
+        $("#ctl_record").removeClass("off");
+        $("#ctl_play").removeClass("off");
+        app.cache.audioStatus = 'stopped';
+    }
+
+    ,recordAudio: function(photo_i,_callback){
         //without full path saves to documents/tmp or LocalFileSystem.TEMPORARY
         //Files can be recorded and played back using the documents URI: var myMedia = new Media("documents://beer.mp3")
         //IOS requires the file to be created if it doesnt exist.
+        //ios requires .wav format, .mp3 for android
         
-        var nex_audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
+        var nex_audio_i     = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
         nex_audio_i++;
-        var recordFileName = "audio_"+photo_i+"_"+ nex_audio_i +".wav";
-
+        var andios          = app.cache.platform == "iOS" ? "wav" : "aac";
+        var recordFileName  = "audio_"+photo_i+"_"+ nex_audio_i +"."+andios;
         if(app.cache.platform == "iOS") {
-            //first create file if not exist
+            //first create file if not exist //IOS DIFFERENCE
             window.requestFileSystem(LocalFileSystem.TEMPORARY, 0
                 ,function(fileSystem){
-                    fileSystem.root.getFile(recordFileName, {
+                    fileSystem.root.getFile(recordFileName
+                        ,{
                             create    : true,
                             exclusive : false
                         }
@@ -471,19 +488,42 @@ var ourvoice = {
                 }
             ); //of requestFileSystem
         }else{
-            app.cache.audioObj[recordFileName] = new Media(recordFileName, function(){
-                // console.log("Media created successfully");
-            }, function(err){
-                //ANDROID ERROR
-                console.log(err.code +  " : " + err.message);
-            }, null); 
+            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
+                dir.getFile(recordFileName
+                    ,{
+                        create:true
+                    }
+                    ,function(fileEntry) {
+                        app.cache.currentAudio  = fileEntry; 
+                        app.cache.audioObj[recordFileName] = new Media(recordFileName
+                            ,function(){
+                                //FINISHED RECORDING
+                            }
+                            ,function(err){
+                                //RECORDING EROR
+                                console.log(err.code +  " : " + err.message);
+                            }
+                            ,function(){
+                                // STATUS CHANGE
+                            }); //of new Media
+                        
+                        //FILE CREATED, AVAIALBLE TO RECORD
+                        ourvoice.startRecording(photo_i,recordFileName);
+                    }
+                    ,function(){
+                         console.log("crap file not found or created");
+                    }
+                );
+            });
+        }
 
-            ourvoice.startRecording(photo_i,recordFileName);
+        if(typeof _callback == 'function'){
+            _callback();
         }
         return;
     }
 
-    ,takePhoto: function(){
+    ,takePhoto: function(_callback){
         // take pic
         // save pic filename + geotag location
         navigator.camera.getPicture( 
@@ -513,6 +553,8 @@ var ourvoice = {
                 setTimeout(function(){
                     ourvoice.addMediaItem(app.cache.user.photos[thispic_i], fileurl);
                 },500);
+
+                _callback();
             }
             ,function(err){
                 console.log(err);
@@ -561,8 +603,9 @@ var ourvoice = {
         $("#saved_audio .saved").remove();
         var audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
         for(var i = audio_i; i > 0; i--){
-            var offset   = i;
-            var playlink = $("<a>").addClass("saved").attr("rel","audio_"+photo_i+"_"+i+".wav").attr("href","#").text(offset);
+            var offset      = i;
+            var andisos     = app.cache.platform == "iOS" ? "wav" : "aac";
+            var playlink    = $("<a>").addClass("saved").attr("rel","audio_"+photo_i+"_"+i+"."+andisos).attr("href","#").text(offset);
             playlink.click(function(){
                 if($(this).hasClass("playing")){
                     $(this).removeClass("playing");
@@ -583,7 +626,7 @@ var ourvoice = {
         var tmstmp      = "";
         if(utils.checkConnection()){
             var geotag      = _photo["geotag"];
-            var time        = utils.readableTime(geotag.timestamp);
+            var time        = !geotag ? "n/a" : utils.readableTime(geotag.timestamp);
             tmstmp          = "@ " + time;
         }
         //NOW ADD THIS TO THE VIEW #mediacaptured

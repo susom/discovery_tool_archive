@@ -108,7 +108,7 @@ var app = {
         },8000);
 
         if(networkState){
-            $("#loading_message").text("Online");
+            // $("#loading_message").text("Online");
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
@@ -118,7 +118,7 @@ var app = {
             });
         }else{
             //JESUS CHRIST
-            $("#loading_message").text("Offline");
+            // $("#loading_message").text("Offline");
             ourvoice.getActiveProject();
         }
 
@@ -242,7 +242,8 @@ var app = {
                 $(".mi_slideout").addClass("reviewable");
                 ourvoice.startWatch(8000);
                 app.log("start  walk");
-
+            }else if($(this).hasClass("continuewalk")){
+                $("#recent_pic").attr("src","");
             }
 
             if(next == "step_three"){
@@ -368,16 +369,20 @@ var app = {
             var savehistory = false;
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
-                ourvoice.takePhoto();
+                ourvoice.takePhoto(function(){
+                    app.closeCurrentPanel(panel);
+                    app.transitionToPanel($("#"+next),savehistory);
+                });
                 app.log("take photo");
+            
             }else{
                 var photo_i = $(this).data("photo_i");
-                ourvoice.recordAudio(photo_i);
+                ourvoice.recordAudio(photo_i,function(){
+                    app.closeCurrentPanel(panel);
+                    app.transitionToPanel($("#"+next),savehistory);
+                });
                 savehistory = true;
             }
-
-            app.closeCurrentPanel(panel);
-            app.transitionToPanel($("#"+next),savehistory);
             return false;
         });
 
