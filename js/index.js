@@ -84,6 +84,7 @@ var app = {
         var networkState        = utils.checkConnection();
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
+        app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "mp3";
 
         //1) OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = config["database"]["users_remote"];
@@ -258,6 +259,10 @@ var app = {
 
             if(next == "survey"){
                 ourvoice.stopWatch();
+
+                //FREE UP THE MEMORY FOR THE MEDIA OBJECTS
+                ourvoice.clearAllAudio();
+
                 $("nav").hide();
                 app.log("start  survey");
             }

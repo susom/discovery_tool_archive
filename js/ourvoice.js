@@ -335,10 +335,6 @@ var ourvoice = {
     }
 
     ,startPlaying : function(recordFileName){
-        var audio_file = app.cache.user._attachments[recordFileName]["data"]["localURL"];        
-        app.cache.audioObj[recordFileName]  = new Media(audio_file, null, function(){ 
-            console.log("error loading audio: " + audio_file); 
-        });
         app.cache.audioObj[recordFileName].play();
         return;
     }
@@ -405,18 +401,14 @@ var ourvoice = {
 
             //NOW SAVE IT AS AN INLINE ATTACHMENT
             var audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
-            var andisos = app.cache.platform == "iOS" ? "wav" : "aac";
 
             //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
             app.cache.currentAudio.file(function(file) {
-                        app.cache.user._attachments[recordFileName] = { "content_type": "audio/" + andisos , "data" : file };
-                        
+                console.log("last thing, we need to make sure this is saved properly to couch");
+                        app.cache.user._attachments[recordFileName] = { "content_type": "audio/" + app.cache.audioformat , "data" : file };
+
                         //RECORD AUDIO ATTACHMENT 
                         datastore.writeDB(app.cache.localusersdb , app.cache.user);
-
-                        //CLEAR THE MEDIA OBJECT
-                        app.cache.audioObj[recordFileName].release();
-                        delete app.cache.audioObj[recordFileName];
                     }
                     ,function(err){
                         console.log(err);
@@ -445,8 +437,7 @@ var ourvoice = {
         
         var nex_audio_i     = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
         nex_audio_i++;
-        var andios          = app.cache.platform == "iOS" ? "wav" : "aac";
-        var recordFileName  = "audio_"+photo_i+"_"+ nex_audio_i +"."+andios;
+        var recordFileName  = "audio_"+photo_i+"_"+ nex_audio_i +"."+app.cache.audioformat;
         if(app.cache.platform == "iOS") {
             //first create file if not exist //IOS DIFFERENCE
             window.requestFileSystem(LocalFileSystem.TEMPORARY, 0
@@ -494,7 +485,12 @@ var ourvoice = {
                         create:true
                     }
                     ,function(fileEntry) {
+                        //THIS WILL STORE THE HANDLE TO THE ACTUAL FILE THAT the MEDIA OBJECT PLUGIN IS SAVING TO
+                        //THIS WORKS
                         app.cache.currentAudio  = fileEntry; 
+
+                        //THIS WILL BE THE MEDIA OBJECT THAT HAS THE PROPER METHODS FOR AUDIO RECORDIONG
+                        //THIS SORT OF DOESNT BELONG HERE, TODO: REFACTOR THIS TO THE startrecording() function
                         app.cache.audioObj[recordFileName] = new Media(recordFileName
                             ,function(){
                                 //FINISHED RECORDING
@@ -519,6 +515,15 @@ var ourvoice = {
 
         if(typeof _callback == 'function'){
             _callback();
+        }
+        return;
+    }
+
+    ,clearAllAudio : function(){
+        //CLEAN UP / RELEASE ALL THESE MEDIA OBJECTS FROM MEMORY
+        for(var m in app.cache.audioObj){
+            app.cache.audioObj[m].release();
+            delete app.cache.audioObj[m];
         }
         return;
     }
@@ -604,8 +609,7 @@ var ourvoice = {
         var audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
         for(var i = audio_i; i > 0; i--){
             var offset      = i;
-            var andisos     = app.cache.platform == "iOS" ? "wav" : "aac";
-            var playlink    = $("<a>").addClass("saved").attr("rel","audio_"+photo_i+"_"+i+"."+andisos).attr("href","#").text(offset);
+            var playlink    = $("<a>").addClass("saved").attr("rel","audio_"+photo_i+"_"+i+"."+app.cache.audioformat).attr("href","#").text(offset);
             playlink.click(function(){
                 if($(this).hasClass("playing")){
                     $(this).removeClass("playing");
