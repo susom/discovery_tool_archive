@@ -1,0 +1,168 @@
+/*SAVE THIS WITH THE REPO, 
+BUT UPDATES MUST BE uploaded as an attachment to couchdb disc_projects -> all_projects
+as index.css  (it overwrites automaticaly)
+*/
+* {
+    -webkit-tap-highlight-color : rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+    -webkit-transition          : all .3s;
+    transition                  : all .3s;
+}
+
+html {
+    width  : 100%;
+    height : 100%;
+}
+
+body {
+    -webkit-touch-callout    : none;     /* prevent callout to copy image, etc when tap to hold */
+    -webkit-text-size-adjust : none;  /* prevent webkit from resizing text to fit */
+    -webkit-user-select      : none;       /* prevent copy paste, to allow, change "none" to "text" */
+    -webkit-font-smoothing   : antialiased;
+    /*text-shadow: rgba(0,0,0,.01) 0 0 1px;*/
+
+    font-family : "HelveticaNeue-Light", "HelveticaNeue", Helvetica, Arial, sans-serif;
+    width       : 100%;
+    height      : 100%;
+    margin      : 0px;
+    padding     : 0px;
+    background  : #fff;
+    font-size   : 100%;
+    color       : #333;
+}
+
+#main { 
+    position:relative;
+    min-width  : 100%;
+    min-height : 100%;
+    height     : 100%;
+    overflow-x : hidden;
+}
+
+/*HEADER AREA AT TOP*/
+header {
+    display     : block;
+    position    : relative;
+    height      : 100%;
+    background  : #fff; /*#475464;*/
+    overflow    : hidden;
+    padding-top : 100px;
+}
+.failed header:after{
+    display:none;
+}
+.title {
+    text-align      : center;
+}
+.logo {
+    background      : url(../img/logo.png) no-repeat;
+    background-size : contain;
+    display         : block;
+    vertical-align  : middle;
+    width           : 98px;
+    height          : 98px;
+    margin          : 0 auto 10px;
+}
+.title h1 {
+    color           : #333;
+    margin          : 40px 0 0;
+    padding         : 0;
+    font-weight     : bold;
+    font-size       : 160%;
+    line-height     : 120%;
+}
+
+/*CANT REFRENCE IMAGES WHEN CALLED FROM DYNAMIC CSS?*/
+header:after {
+    background      : url(../img/loading.gif) no-repeat;
+}
+
+#list_data tbody td i{
+    background:url(../img/icon_thumbs.png) top right no-repeat;
+}
+
+#datastatus i {
+    background:url(../img/icon_thumbs.png) top right no-repeat;
+}
+
+.walk_actions .endwalk {
+    background      : url(../img/icon_stop.png) 50% 50% no-repeat;
+}
+
+.mi_slideout {
+    background      : url(../img/icon_photo.png) 100% 20% no-repeat;
+}
+
+.done_photos {
+    background      : url(../img/icon_photo.png) 100% 20% no-repeat;
+}
+
+.button.camera {
+    background:#4dc2ff url(../img/icon_camera.png) 50% 50% no-repeat !important;
+}
+.button.audio{
+    background:#F19192 url(../img/icon_mic.png) 50% 50% no-repeat !important;
+}
+
+.mediaitem .votes a{
+    background          : #fff url(../img/icon_thumbs.png) 0 0 no-repeat;
+}
+.mediaitem .audiorec{
+    background          : #4dc2ff url(../img/icon_mic.png) 50% 50% no-repeat;
+}
+.mediaitem .hasAudio{
+    background          : url(../img/icon_listen.png) 50% 50% no-repeat;
+}
+
+.listen {
+    background: url(../img/icon_listen.png) 10px 4px no-repeat;
+}
+
+#pic_review  #saved_audio a{
+    background:#4dc2ff url(../img/icon_listen_2.png) no-repeat;
+}
+
+#pic_review  #saved_audio a.playing{
+    background:url(../img/icon_stop.png) no-repeat;
+}
+
+#pic_review  #saved_audio a.record_another{
+    background:#4dc2ff url(../img/icon_mic.png) 5px 3px no-repeat;
+}
+
+.daction.audio{
+    background:#4dc2ff url(../img/icon_mic.png) 50% 40% no-repeat;
+}
+
+.votes a{
+    background:#efefef url(../img/icon_thumbs.png) 4px 3px no-repeat;
+}
+.votes.smilies a{
+    background          : #efefef url(../img/icon_smilies.png) bottom left no-repeat;
+}
+
+#soundwaves {
+    background         : #000 url(../img/anim_soundwaves_bw.gif) 0 50% no-repeat;
+}
+#soundwaves.pause{
+    background-image   : url(../img/still_soundwaves_bw.png);
+}
+
+#audio_controls li a{
+    background         : url(../img/icon_stop.png) 50% 50% no-repeat;
+}
+
+/* Landscape layout (with min-width) */
+@media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {
+   
+    header:after {
+        background : url(../img/loading.gif) no-repeat;
+    }
+
+    #list_data tbody td i{
+        background:url(../img/icon_thumbs.png) top right no-repeat;
+    }
+    
+    #datastatus i {
+        background:url(../img/icon_thumbs.png) top right no-repeat;
+    }
+}

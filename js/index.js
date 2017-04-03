@@ -53,7 +53,7 @@ var app = {
         app.cache.audioObj              = {}; //FOR VOICE RECORDINGS
         app.cache.audioStatus           = null;
         app.cache.currentAudio          = null;
-
+        app.cache.playbackTimers        = {};
         app.log("init app()");
     }
 
@@ -113,7 +113,17 @@ var app = {
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
-
+                app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
+                    var blobURL = URL.createObjectURL(blobOrBuffer);
+                    var cssTag  = $("<link>");
+                    cssTag.attr("rel" , "stylesheet");
+                    cssTag.attr("type", "text/css");
+                    cssTag.attr("href", blobURL);
+                    $("head").append(cssTag);
+                }).catch(function (err) {
+                    console.log(err);
+                });
+                
                 //LOOK FOR AN ACTIVE PROJECT IF AVAIALABLE, THEN GET ALL PROJECTS
                 ourvoice.getActiveProject();
             });
@@ -122,18 +132,6 @@ var app = {
             // $("#loading_message").text("Offline");
             ourvoice.getActiveProject();
         }
-
-        //3) ATTACH THE STYLESHEET FOR THE PAGE!
-        // app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
-        //     var blobURL = URL.createObjectURL(blobOrBuffer);
-        //     var cssTag  = $("<link>");
-        //     cssTag.attr("rel" , "stylesheet");
-        //     cssTag.attr("type", "text/css");
-        //     cssTag.attr("href", blobURL);
-        //     $("head").append(cssTag);
-        // }).catch(function (err) {
-        //     console.log(err);
-        // });
 
         //5) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
         $(".button[data-next]").not(".audiorec,.camera").on("click",function(){
@@ -191,7 +189,7 @@ var app = {
                     $("#admin_projid").val(null);
 
                     navigator.notification.confirm(
-                        'Setup of a new project will erase any data previously saved on this device. Click \'Continue\' to proceed.', // message
+                        'Setup of a new project will erase any Discovery Tool data previously saved on this device. Click \'Continue\' to proceed.', // message
                          function(i){
                             if(i == 1){
                                 //the button label indexs start from 1 = 'Cancel'
@@ -225,9 +223,7 @@ var app = {
             }
 
             //SPECIAL RULES ENTERING INTO DIFFERNT "PAGES"
-            if(next == "project_about"){
-                
-            }
+            if(next == "project_about"){}
 
             if(next == "consent_0"){
                 //THIS IS IMPORTANT
@@ -264,7 +260,7 @@ var app = {
                 ourvoice.clearAllAudio();
 
                 $("nav").hide();
-                app.log("start  survey");
+                app.log("start survey");
             }
 
             if(next == "finish"){

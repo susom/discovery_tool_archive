@@ -479,32 +479,48 @@ var ourvoice = {
                 }
             ); //of requestFileSystem
         }else{
-            window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
-                dir.getFile(recordFileName
-                    ,{
-                        create:true
-                    }
-                    ,function(fileEntry) {
-                        //THIS WILL STORE THE HANDLE TO THE ACTUAL FILE THAT the MEDIA OBJECT PLUGIN IS SAVING TO
-                        //THIS WORKS
-                        app.cache.currentAudio  = fileEntry; 
+            //cordova.file.dataDirectory
+            //cordova.file.cacheDirectory
+            //cordova.file.applicationDirectory
+            //cordova.file.applicationStorageDirectory
+            //cordova.file.externalApplicationStorageDirectory
+            //cordova.file.externalDataDirectory
+            //cordova.file.externalCacheDirectory
+            //cordova.file.externalRootDirectory
+            console.log("ANDROID")
 
-                        //THIS WILL BE THE MEDIA OBJECT THAT HAS THE PROPER METHODS FOR AUDIO RECORDIONG
-                        //THIS SORT OF DOESNT BELONG HERE, TODO: REFACTOR THIS TO THE startrecording() function
-                        app.cache.audioObj[recordFileName] = new Media(recordFileName
-                            ,function(){
-                                //FINISHED RECORDING
-                            }
-                            ,function(err){
-                                //RECORDING EROR
-                                console.log(err.code +  " : " + err.message);
-                            }
-                            ,function(){
-                                // STATUS CHANGE
-                            }); //of new Media
-                        
-                        //FILE CREATED, AVAIALBLE TO RECORD
-                        ourvoice.startRecording(photo_i,recordFileName);
+            window.resolveLocalFileSystemURL(cordova.file.dataDirectory, function(dir) {
+                dir.getFile(recordFileName ,{ create:true }
+                    ,function(fileEntry) {
+                        app.cache.currentAudio  = fileEntry; 
+                        // app.cache.currentAudio.file(function(file) {
+                        //         var cdvpath     = file["localURL"];
+                        //         console.log(file);
+                              
+                                //THIS WILL BE THE MEDIA OBJECT THAT HAS THE PROPER METHODS FOR AUDIO RECORDIONG
+                                //THIS SORT OF DOESNT BELONG HERE, TODO: REFACTOR THIS TO THE startrecording() function
+                                app.cache.audioObj[recordFileName] = new Media(recordFileName
+                                    ,function(){
+                                        //FINISHED RECORDING
+                                    }
+                                    ,function(err){
+                                        //RECORDING EROR
+                                        console.log(err.code +  " : " + err.message);
+                                    }
+                                    ,function(){
+                                        // STATUS CHANGE
+                                    }); //of new Media
+                                
+                                console.log(app.cache.audioObj[recordFileName]);
+
+                                //FILE CREATED, AVAIALBLE TO RECORD
+                                ourvoice.startRecording(photo_i,recordFileName);
+                        //     }
+                        //     ,function(err){
+                        //         console.log(err);
+                        //         // console.log("ERROR FILE");                
+                        //     }
+                        // );
                     }
                     ,function(){
                          console.log("crap file not found or created");
@@ -608,15 +624,27 @@ var ourvoice = {
         $("#saved_audio .saved").remove();
         var audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
         for(var i = audio_i; i > 0; i--){
-            var offset      = i;
-            var playlink    = $("<a>").addClass("saved").attr("rel","audio_"+photo_i+"_"+i+"."+app.cache.audioformat).attr("href","#").text(offset);
+            var offset          = i;
+            var recordFileName  = "audio_"+photo_i+"_"+i+"."+app.cache.audioformat;
+            var duration        = Math.ceil(app.cache.audioObj[recordFileName]["_duration"]) * 1000;
+            var playlink        = $("<a>").addClass("saved").attr("rel",recordFileName).attr("duration",duration).attr("href","#").text(offset);
+           
             playlink.click(function(){
+                var recordFilename = $(this).attr("rel");
+                
                 if($(this).hasClass("playing")){
                     $(this).removeClass("playing");
-                    ourvoice.stopPlaying($(this).attr("rel"));
+                    ourvoice.stopPlaying(recordFilename);
+
+                    clearTimeout(app.cache.playbackTimers[recordFileName] );
+                    app.cache.playbackTimers[recordFileName] = null;
                 }else{
                     $(this).addClass("playing");
-                    ourvoice.startPlaying($(this).attr("rel"));
+                    ourvoice.startPlaying(recordFilename);
+
+                    app.cache.playbackTimers[recordFileName] = setTimeout(function(){
+                         $(this).removeClass("playing");
+                    }, duration);
                 }
                 return false;
             });
@@ -681,6 +709,14 @@ var ourvoice = {
                 }
                 var photo_i = app.cache.user.photos.indexOf(_photo);
                 app.cache.user.photos[photo_i] = null;
+                delete app.cache.user._attachments["photo_"+photo_i+".jpg"];
+                
+                for(var filekey in app.cache.user._attachments){
+                    if(filekey.indexOf("audio_"+photo_i+"_") > -1){
+                        delete app.cache.user._attachments[filekey];
+                    }
+                }
+
                 $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
                     $(this).remove();
                     var pic_count   = $(".mi_slideout b").text();
