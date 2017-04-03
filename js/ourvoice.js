@@ -628,22 +628,22 @@ var ourvoice = {
             var recordFileName  = "audio_"+photo_i+"_"+i+"."+app.cache.audioformat;
             var duration        = Math.ceil(app.cache.audioObj[recordFileName]["_duration"]) * 1000;
             var playlink        = $("<a>").addClass("saved").attr("rel",recordFileName).attr("duration",duration).attr("href","#").text(offset);
-           
+            console.log(duration);
             playlink.click(function(){
-                var recordFilename = $(this).attr("rel");
-                
+                var _this           = $(this);
+                var recordFilename  = _this.attr("rel");
                 if($(this).hasClass("playing")){
-                    $(this).removeClass("playing");
+                    _this.removeClass("playing");
                     ourvoice.stopPlaying(recordFilename);
 
                     clearTimeout(app.cache.playbackTimers[recordFileName] );
                     app.cache.playbackTimers[recordFileName] = null;
                 }else{
-                    $(this).addClass("playing");
+                    _this.addClass("playing");
                     ourvoice.startPlaying(recordFilename);
 
                     app.cache.playbackTimers[recordFileName] = setTimeout(function(){
-                         $(this).removeClass("playing");
+                         _this.removeClass("playing");
                     }, duration);
                 }
                 return false;
