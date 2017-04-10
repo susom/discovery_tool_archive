@@ -53,7 +53,7 @@ var app = {
         app.cache.audioObj              = {}; //FOR VOICE RECORDINGS
         app.cache.audioStatus           = null;
         app.cache.currentAudio          = null;
-        app.cache.playbackTimers        = {};
+        app.cache.playbackTimer         = null;
         app.log("init app()");
     }
 
@@ -84,7 +84,7 @@ var app = {
         var networkState        = utils.checkConnection();
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
-        app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "mp3";
+        app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "wav";
 
         //1) OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = config["database"]["users_remote"];
@@ -113,6 +113,7 @@ var app = {
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
+
                 app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
                     var blobURL = URL.createObjectURL(blobOrBuffer);
                     var cssTag  = $("<link>");
@@ -257,7 +258,7 @@ var app = {
                 ourvoice.stopWatch();
 
                 //FREE UP THE MEMORY FOR THE MEDIA OBJECTS
-                ourvoice.clearAllAudio();
+                // ourvoice.clearAllAudio();
 
                 $("nav").hide();
                 app.log("start survey");

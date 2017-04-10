@@ -4,11 +4,9 @@
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
     <content src="index.html" />
-    
     <gap:splash gap:platform="ios" height="1334" src="Splash/Default-667h@2x.png" width="750" />
     <gap:splash gap:platform="ios" height="2208" src="Splash/Default-Portrait-736h@3x.png" width="1242" />
     <gap:splash gap:platform="ios" height="1242" src="Splash/Default-Landscape-736h@3x.png" width="2208" />
-    
     <preference name="DisallowOverscroll" value="true" />
     <preference name="android-minSdkVersion" value="14" />
     <preference name="phonegap-version" value="cli-6.3.0" />
@@ -16,10 +14,9 @@
     <preference name="StatusBarOverlaysWebView" value="false" />
     <preference name="StatusBarBackgroundColor" value="#A7A7A7" />
     <preference name="StatusBarStyle" value="default" />
-    
     <platform name="android">
         <allow-intent href="market:*" />
-
+        <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
         <icon density="ldpi" src="www/res/icon/android/drawable-ldpi-icon.png" />
         <icon density="mdpi" src="www/res/icon/android/drawable-mdpi-icon.png" />
         <icon density="hdpi" src="www/res/icon/android/drawable-hdpi-icon.png" />
@@ -50,10 +47,8 @@
                 </dict>
             </array>
         </config-file>
-
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
-
         <icon height="57" platform="ios" src="www/res/icon/ios/icon.png" width="57" />
         <icon height="114" platform="ios" src="www/res/icon/ios/icon@2x.png" width="114" />
         <icon height="40" platform="ios" src="www/res/icon/ios/icon-40.png" width="40" />
@@ -81,20 +76,14 @@
         <splash height="960" platform="ios" src="www/res/screen/ios/Default@2x~iphone.png" width="640" />
         <splash height="480" platform="ios" src="www/res/screen/ios/Default~iphone.png" width="320" />
     </platform>
-
     <access origin="*" />
-    
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
-    
-    <plugin name="cordova-plugin-camera" spec="~2.1.1">
-        <variable name="CAMERA_USAGE_DESCRIPTION" value="The Discovery Tool app requires use of the camera for taking photos of neighborhood features" />
-        <variable name="PHOTOLIBRARY_USAGE_DESCRIPTION" value="This app does not require use of the device Photo Library" />
-    </plugin>
+    <plugin name="cordova-plugin-camera" spec="~2.1.1" />
     <plugin name="cordova-plugin-media-capture" spec="~1.2.0" />
     <plugin name="cordova-plugin-console" spec="~1.0.2" />
     <plugin name="cordova-plugin-device" spec="~1.1.1" />
