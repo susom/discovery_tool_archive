@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.stanford.discoverytool.ourvoice" version="1.0.9" versionCode="10009" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="edu.stanford.discoverytool.ourvoice" version="1.0.33" versionCode="10033" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>The Discovery Tool</name>
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
@@ -44,6 +44,8 @@
                     <true />
                     <key>UIViewControllerBasedStatusBarAppearance</key>
                     <false />
+                    <key>NSPhotoLibraryUsageDescription</key>
+                    <value>The Discovery Tool does no require usage of the Photo Library</value>
                 </dict>
             </array>
         </config-file>

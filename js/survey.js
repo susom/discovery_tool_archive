@@ -103,7 +103,7 @@ var survey = {
                 next_q.removeClass("off").addClass("active");
             }else{
                 var panel = $(this).closest(".panel");
-                app.initCache();
+
                 ourvoice.finished();
                 
                 //TRANSITION TO NEXT PANEL

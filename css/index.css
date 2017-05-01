@@ -111,6 +111,8 @@ nav .list{
     display         : block;
 }
 
+
+
 /* Portrait layout (default)  - PANEL IS THE UNIT OF EVERY SCREEN*/
 .panel {
     position  : relative;
@@ -131,12 +133,45 @@ nav .list{
     width:100%;
     text-align:center;
 }
+#list_data td {
+    font-size:108%;
+}
+#list_data th{
+    height:30px;
+    line-height:200%;
+}
+#list_data .pics{
+    width:30px;
+    text-indent:-5000px;
+    background-size:60%;
+
+}
+#list_data .audio{
+    width:30px;
+    text-indent:-5000px;
+    background-size:40%;
+}
+
+#list_data .uploaded .resync{
+    display:inline-block;
+}
+#list_data .resync{
+    text-indent:-5000px;
+    background-size:65%;
+    display:none;
+    width:30px;
+    height:30px;
+    vertical-align:top;
+    margin:3px 0;
+}
 #list_data tbody td i{
+    vertical-align:top;
+    margin:3px 0;
     display:inline-block;
     width:25px; height:30px;
-    /*background:url(../img/icon_thumbs.png) top right no-repeat;*/
     background-size:200%;
 }
+
 #list_data tbody td i.uploaded{
     background-position:top left;
 }
@@ -293,6 +328,39 @@ nav .list{
 
     -webkit-tap-highlight-color: red;
 }
+
+.uploadbtn span{
+    display:none;
+}
+.uploadbtn.uploading span{
+    display:inline-block;
+    position:relative;
+    z-index:0;
+}
+.uploadbtn.uploading:before{
+    position:absolute;
+    content:"";
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    opacity:.5;
+    z-index:3;
+}
+
+
+
+
+
+copyright{
+    position:fixed;
+    bottom:10px;
+    left:50%;
+    width:280px;
+    text-align:Center;
+    margin-left:-140px;
+    font-weight:normal !important;
+    font-size:88%;
+} 
 
 /*CONSENT FLOW ABOUT*/
 .consent {
@@ -866,6 +934,7 @@ nav .list{
 #finish h3 {
     font-weight:normal;
     line-height:initial;
+    font-size:108%;
 }
 #finish .instructions li {
     width:auto;
@@ -878,6 +947,82 @@ nav .list{
     font-style: normal;
     font-size: 110%;
 }
+
+
+#walk_summ {
+    padding: 0 10px 10px;
+    border-radius:5px;
+    box-shadow:0 0 3px #333;
+}
+#walk_summ h4 {
+    margin:0; padding:0;
+    color:#333;
+    font-weight:normal;
+}
+#walk_summ {
+    text-align:center;
+}
+
+#walk_summ dl {
+    text-align:center;
+    font-size:77%;
+    border:1px solid #333;
+    display:inline-block;
+    margin:0; padding:0;
+    border-radius:90px;
+    width:90px;
+    height:90px;
+}
+#walk_summ dt{
+    display:none;
+}
+
+#walk_summ dd{
+    display:inline-block;
+    vertical-align:top;
+    width:100%;
+    height:100%;
+    margin:0; padding:0;
+}
+#walk_summ span{
+    display:none;
+}
+#walk_summ b {
+    display:block;
+    width:100%;
+    height:100%;
+    line-height:580%;
+    font-weight:normal;
+}
+
+#walk_summ p{
+    padding:10px 5px;
+    font-size:77%;
+    font-style:italic;
+    text-align:center;
+    margin-top:5px;
+    line-height:130%;
+}
+
+.btn.finish{
+    font-size:85%;
+    padding:5px 10px;
+    display         : block;
+    border-radius   : 5px;
+    color           : #000;
+    font-size       : 140%;
+    font-weight     : bold; 
+    text-decoration : none;
+    background      : #ECF16D;
+    margin          : 20px auto 0;
+    padding         : 15px 0;
+    text-align      : center;
+    position        : relative;
+    box-shadow: 0 0 1px 1px #888;
+}
+
+
+
 
 .delete_on_reset {
 
@@ -899,6 +1044,27 @@ nav .list{
     background:#ccc;
     box-shadow:0 0 1px 1px #888;
 }
+
+
+
+
+
+
+
+
+
+#finish h3 {
+    
+    font-weight:normal;
+    line-height:initial;
+}
+
+nowrap{
+    white-space: nowrap;
+}
+
+
+
 
 /*BIGGER TOUCH FRIENDLY RADIOS/CHECKBOXES*/
 #walk_survey fieldset {
@@ -1235,16 +1401,6 @@ nav .list{
         width:100%;
         text-align:center;
     }
-    #list_data tbody td i{
-        display:inline-block;
-        width:25px; height:30px;
-        /*background:url(../img/icon_thumbs.png) top right no-repeat;*/
-        background-size:200%;
-    }
-    #list_data tbody td i.uploaded{
-        background-position:top left;
-    }
-
     #admin_master label{
         margin:0 auto;
         text-align:center;
@@ -1318,7 +1474,6 @@ nav .list{
         width:13px; height:15px;
         /*background:url(../img/icon_thumbs.png) top right no-repeat;*/
         background-size:200%;
-        border:1px solid red;
     }
     #datastatus i.synced{
         background-position:top left;

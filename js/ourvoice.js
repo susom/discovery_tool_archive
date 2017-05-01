@@ -9,28 +9,42 @@ var ourvoice = {
     ,adminView: function(rows){
         rows.reverse();
         $("#list_data tbody").empty();
+        var numwalks = rows.length;
         for(var i in rows){
             var r_d     = rows[i]["doc"];
             var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
             var r_id    = r_d["_id"];
-            var r_rev   = r_d["_rev"];
-            var temp    = r_id.split("_");
+            var truncid = r_id.substr(r_id.length - 4);
 
-            var r_proj  = temp[0];
-            var r_uid   = temp[2];
-            var r_ts    = temp[3];
+            var picount = 0;
+            for(var p in r_d["photos"]){
+                var pic = r_d["photos"][p];
+                if(pic["audio"]){
+                    picount += parseInt(pic["audio"]);
+                }
+            }
 
             var tr      = $("<tr>")
-            var bb      = $("<td>").text(r_proj);
-            var ii      = $("<td>").text(r_uid);
+            var walknum = $("<td>").text(numwalks - parseInt(i));
+            truncid     = $("<td>").text(truncid);
+            var pics    = $("<td>").text(r_d["photos"].length);
+            var audio   = $("<td>").text(picount);
             var thumbs  = $("<i>").attr("data-docid",r_id);
+            var reset   = $("<td>");
+            reset.append($("<a>").addClass("resync").attr("data-docid",r_id).text('reset'));
+
             if(synced){
-                thumbs.addClass("uploaded")
+                tr.addClass("uploaded");
+                thumbs.addClass("uploaded");
             }
             var up = $("<td>").append(thumbs);
-            tr.append(bb);
-            tr.append(ii);
+
+            tr.append(walknum);
+            tr.append(truncid);
+            tr.append(pics);
+            tr.append(audio);
             tr.append(up);
+            tr.append(reset);
 
             $("#list_data tbody").append(tr);
         }
@@ -89,7 +103,9 @@ var ourvoice = {
                 if(app.cache.active_project.hasOwnProperty("i")){
                     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                     ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
+                    
                     ourvoice.checkDirtyData();
+                     // $("#main").addClass("loaded");
                     app.transitionToPanel($("#step_zero"));
                 }else{
                     //SHOW ADMIN DEVICE SET UP 
@@ -186,12 +202,18 @@ var ourvoice = {
         }
     }
 
-    ,startWatch: function(freq) {
+    ,startWatch: function(freq) {        
+        //NO SLEEP DURING WALK
+        window.plugins.insomnia.keepAwake();
+
         //SAVE GEO TAGS FOR MAP
         ourvoice.watchPosition();
     }
 
     ,stopWatch: function(){
+        //ALLOW SLEEP
+        window.plugins.insomnia.allowSleepAgain();
+
         navigator.geolocation.clearWatch(app.cache.positionTrackerId);
         app.cache.positionTrackerId = null;
     }
@@ -733,14 +755,22 @@ var ourvoice = {
 
     ,syncLocalData: function(){
         $("#datastatus i").removeClass("synced");
+        window.plugins.insomnia.keepAwake();
+
         datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
             if(info.hasOwnProperty("status")){
                 //.onComplete
                 if(info["ok"] && info["status"] == "complete"){
                     $("#datastatus i").addClass("synced");
-
+                   
+                   setTimeout(function(){
+                        $(".uploading").removeClass("uploading");
+                   },1500);
+                    
                     ourvoice.clearAllAudio();
                     // datastore.emptyUsersDB();
+
+                    window.plugins.insomnia.allowSleepAgain();
                 }else{
                     $("#datastatus i").removeClass("synced");
                 }
@@ -752,16 +782,20 @@ var ourvoice = {
                     var _rev        = changed_doc["_rev"];
                     app.cache.localusersdb.get(_id).then(function (doc) {
                         doc.uploaded = true;
+
                         app.cache.localusersdb.put(doc);
+
+                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
                         $("i[data-docid='"+_id+"']").addClass("uploaded");
-                        $(".uploadbtn").removeClass("loading");
                     }).catch(function (werr) {
                         app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
                         datastore.showError(werr);
                     });
                 }
             }
+
         });  
+
         datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(info){
             if(info.hasOwnProperty("status")){
                 datastore.emptyLogsDB();
@@ -771,11 +805,25 @@ var ourvoice = {
     }
 
     ,finished : function(){
-        app.initCache();
+        var dist_walked     = Math.round(parseFloat(app.cache.user["currentDistance"]) * 10) / 10;
+        var photos_took     = app.cache.user["photos"].length;
+        var audios_recorded = 0;
+        for(var i in app.cache.user["photos"]){
+            var photo = app.cache.user["photos"][i];
+            if(photo["audio"]){
+                audios_recorded += parseInt(photo["audio"]);
+            }
+        }
+        $("#dist_walked b").text(dist_walked + " mi.");
+        $("#photos_took b").text(photos_took);
+        $("#audios_recorded b").text(audios_recorded);
+        
         ourvoice.syncLocalData();
+
         $("nav").show();
         $(".mi_slideout").removeClass("reviewable");
         app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
+        app.initCache();
     }
 
     ,resetDevice : function(){

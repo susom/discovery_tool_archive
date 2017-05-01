@@ -56,7 +56,7 @@
 
     <div id="admin_view" class="panel">
         <div class="consent">
-            <h2>Current upload status of Data on this device</h2>
+            <h2>Current upload status of data on this device</h2>
             <div id="admin_master">
                 <label><div>Project Password:</div> <input type="password" id="admin_master_pw"/></label>
                 <a href="#" data-next="admin_view" class="button adminbtn">View Data Upload Status</a>
@@ -65,14 +65,17 @@
                 <table border="1" cellspacing="0">
                     <thead>
                     <tr>
-                        <th>Project Id</th>
-                        <th>User #</th>
-                        <th>Upload Status</th>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th class='pics'>Pics</th>
+                        <th class='audio'>Audio</th>
+                        <th>Status</th>
+                        <th>Reset</th>
                     </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
-                <a href="#" data-next="admin_view" class="button uploadbtn">Upload Data to Server</a>
+                <a href="#" data-next="admin_view" class="button uploadbtn">Upload<span>ing</span> Data</a>
             </div>
         </div>
     </div>
@@ -105,10 +108,10 @@
                 <span>Project:</span>
                 <b class="proj_name"></b>
             </label>
-            <label>
+            <!-- <label>
                 <span>User Id:</span>
                 <b class="user_id"></b>
-            </label>
+            </label> -->
             <label>
                 <span>Language:</span>
                 <select name="language"></select>
@@ -117,7 +120,9 @@
 
             <a href="#" data-translation-key="letsgo" data-next="step_one" class="button"></a>
             <a href="#" id="resetdevice">Reset Device?</a>
-            <a href="#" id="datastatus">Sync Status: <i></i><!--  <b class="user_id"></b> --></a>
+            <a href="#" id="datastatus">Sync Status: <i class="synced"></i><!--  <b class="user_id"></b> --></a>
+
+            <copyright>© Stanford University 2017</copyright>
         </form>
     </div>
     
@@ -233,9 +238,25 @@
     <div id="finish" class="panel">
         <div class="instructions">
             <ol>
+                <li id="walk_summ">
+                    <h4 data-translation-key="nice_work">Nice Work!</h4>  
+                    <dl class="pics">
+                        <dt data-translation-key="you_took">You took:</dt>
+                        <dd id='photos_took'><b>2</b> <span data-translation-key="photos">photos</span></dd>
+                    </dl>
+                    <dl class="audios">
+                        <dt data-translation-key="you_made">You made:</dt>
+                        <dd id='audios_recorded'><b>3</b> <span data-translation-key="recordings">recordings</span></dd>
+                    </dl>
+                    <dl class="walk">
+                        <dt data-translation-key="you_walked">You walked:</dt>
+                        <dd id='dist_walked'><b>0.1 mi</b> <span data-translation-key="miles">miles</span></dd>
+                    </dl>
+                    <p data-translation-key="please_sync">Please be sure to click the blue 'Sync Data' button on the start page the next time you are connected to wifi.</p>                      
+                </li>
                 <li><h3 data-translation-key="thank_you_participant"></h3></li>
                 <li class="consent">
-                    <a href="#" id="end_session" data-next="step_zero" data-translation-key="finish_return"></a>
+                    <a href="#" id="end_session" data-next="step_zero" data-translation-key="finish_return" class="btn finish"></a>
                 </li>
             </ol>
         </div>
@@ -259,7 +280,7 @@
     </div>
 </div>
 
-<!-- <script src="http://10.34.246.82:8080/target/target-script-min.js#anonymous"></script> -->
+<!-- <script src="http://10.34.250.8:8080/target/target-script-min.js#anonymous"></script> -->
 <!-- <script src="http://192.168.86.102:8080/target/target-script-min.js#anonymous"></script> -->
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/jquery.min.js"></script>

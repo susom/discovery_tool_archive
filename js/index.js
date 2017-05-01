@@ -54,6 +54,8 @@ var app = {
         app.cache.audioStatus           = null;
         app.cache.currentAudio          = null;
         app.cache.playbackTimer         = null;
+
+        app.cache.user.device           = null;
         app.log("init app()");
     }
 
@@ -84,7 +86,7 @@ var app = {
         var networkState        = utils.checkConnection();
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
-        app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "wav";
+        app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "amr";
 
         //1) OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = config["database"]["users_remote"];
@@ -97,10 +99,10 @@ var app = {
 
         // CLEAN SLATE 
         // datastore.deleteLocalDB();
-        // return;
+        // return;    
 
-        //2) PUSH ONCE 
-        ourvoice.syncLocalData(); //LOCAL DATA TO REMOTE
+        //2) PUSH ONCE // ONNLY DO THIS MANUALLY FROM NOW ON
+        // ourvoice.syncLocalData(); //LOCAL DATA TO REMOTE 
         // return;
         
         app.cache.db_fail_timeout = setTimeout(function(){
@@ -113,7 +115,6 @@ var app = {
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
-
                 app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
                     var blobURL = URL.createObjectURL(blobOrBuffer);
                     var cssTag  = $("<link>");
@@ -129,13 +130,12 @@ var app = {
                 ourvoice.getActiveProject();
             });
         }else{
-            //JESUS CHRIST
             // $("#loading_message").text("Offline");
             ourvoice.getActiveProject();
         }
 
         //5) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
-        $(".button[data-next]").not(".audiorec,.camera").on("click",function(){
+        $(".button[data-next]").not(".audiorec,.camera,.finish").on("click",function(){
             //GET CURRENT PANEL
             var panel       = $(this).closest(".panel");
             var next        = $(this).data("next");
@@ -143,10 +143,20 @@ var app = {
 
             if(next == "admin_view"){
                 if($(this).hasClass("uploadbtn")){
-                    $(this).addClass("uploading");
+                    if(!$(this).hasClass("uploading")){
+                        //UPLOAD BUTTON
+                        $(this).addClass("uploading");
+                        app.showNotif("Uploading Data", "Please be patient and leave this app open. Uploading all the photos and audio files can take up to 30 minutes.",function(){});
+                        ourvoice.syncLocalData(); 
 
-                    ourvoice.syncLocalData(); 
+                        // var bail = $(this);
+                        // setTimeout(function(){
+                        //     bail.removeClass("uploading");
+                        //     app.showNotif("Something went wrong", "Please try again later when on wifi");
+                        // },15000);
+                    }
                 }else{
+                    //OR VIEW THE DATA
                     var pw      = $("#admin_master_pw").val();
                     if(pw  == app.cache.projects["project_list"][app.cache.active_project.i]["project_pass"]){
                         $("#admin_master").hide();
@@ -215,7 +225,7 @@ var app = {
                         ['Cancel','Continue']     // buttonLabels
                     );
                 }else{
-                    app.showNotif("Uh Oh!","Wrong ProjectID or Password", function(){});
+                    app.showNotif("Please Try Again","Wrong ProjectID or Password", function(){});
                     return false;
                 }
             }else{
@@ -232,7 +242,14 @@ var app = {
                 app.cache.user.lang          = $("select[name='language']").val();
                 app.cache.user.user_id       = app.cache.participant_id;
                 app.cache.user._id           = app.cache.next_id; //COLLATED
-                
+                app.cache.user.device        = {
+                      "cordova"         : device.cordova
+                     ,"manufacturer"    : device.manufacturer
+                     ,"model"           : device.model
+                     ,"platform"        : device.platform
+                     ,"version"         : device.version
+                };
+
                 app.log("Starting consent process for User " + app.cache.user._id);
             }
             
@@ -262,13 +279,6 @@ var app = {
 
                 $("nav").hide();
                 app.log("start survey");
-            }
-
-            if(next == "finish"){
-                no_history = true;
-                ourvoice.finished();
-                app.log("finish with walk/survey");
-
             }
 
             //TRANSITION TO NEXT PANEL
@@ -463,6 +473,37 @@ var app = {
             return false;
         });
 
+        $("#list_data").on("click","a.resync", function(){
+            var doc_id  = $(this).data("docid");
+
+            //DIRTY THIS DATA BY REMOVING THE FLAG HAHA!
+            app.cache.localusersdb.get(doc_id).then(function (doc) {
+                // handle doc
+                delete doc["uploaded"];  //IF IT HAS BEEN UPLOADED PREVIOULSY IT WIL HAVE THIS
+                
+                //THIS IS HOW WE DIRTY IT
+                if(doc.hasOwnProperty("upload_try")){
+                    doc["upload_try"] = parseInt(doc["upload_try"]) + 1;
+                }else{
+                    doc["upload_try"] = 2;
+                }
+               
+                app.cache.localusersdb.put(doc).then(function (new_o) {
+                    app.log("TRY A RESYNC ON RECORD " + doc_id);
+                }).catch(function (err) {
+                    app.log("ERROR WRITING TO A DB", "Error");
+                    datastore.showError(err);
+                });
+            }).catch(function (err) {
+              console.log(err);
+            });
+
+            $("#datastatus i").removeClass("synced");
+            $(this).closest("tr").removeClass("uploaded");
+            $("i[data-docid='"+doc_id+"']").removeClass("uploaded");
+            return false;
+        });
+
         $(".help").click(function(){
             app.closeCurrentPanel($(".panel.loaded"));
             app.transitionToPanel($("#help"));
@@ -502,6 +543,7 @@ var app = {
             app.log("calling slideout Preview");
             return false;
         });
+
         $("#mediacaptured .slideclose").click(function(){
             $("#mediacaptured").removeClass("preview");
         });
@@ -517,6 +559,11 @@ var app = {
             //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
             ourvoice.resetDevice();   
             ourvoice.checkDirtyData();
+
+            //PULL PROJECT DATA AGAIN
+            datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
+                //MAY NOT BE ONLINE SO DONT MAKE ANYTHING DEPENDENT ON THIS
+            });
 
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 

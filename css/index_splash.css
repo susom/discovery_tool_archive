@@ -151,6 +151,11 @@ header:after {
     background         : url(../img/icon_stop.png) 50% 50% no-repeat;
 }
 
+.button.uploading {
+    background:url(../img/loading.gif) 10% 50% no-repeat;
+    background-size : 8%;
+}
+
 /* Landscape layout (with min-width) */
 @media screen and (min-aspect-ratio: 1/1) and (min-width:400px) {
    
@@ -165,4 +170,56 @@ header:after {
     #datastatus i {
         background:url(../img/icon_thumbs.png) top right no-repeat;
     }
+}
+
+
+
+
+
+#list_data .pics{
+    background:url(../img/icon_camera.png) 50% no-repeat;
+}
+#list_data .audio{
+    background:url(../img/icon_mic.png) 50% no-repeat;
+}
+#list_data .resync{
+    background:url(../img/icon_reset.png) 50% no-repeat;
+}
+
+
+.walk {
+    background:#91AA3A url(../img/icon_walk.png) 50% 20% no-repeat;
+    background-size:20%;
+}
+.pics {
+    background:#ddaa75 url(../img/icon_camera.png) 50% 20% no-repeat;
+    background-size:30%;
+}
+.audios {
+    background:#ec99a5 url(../img/icon_mic.png) 50% 20% no-repeat;
+    background-size:20%;
+}
+
+
+#step_zero .button{
+    margin-top:50px;
+}
+
+
+
+.btn.finish{
+    font-size:85%;
+    padding:5px 10px;
+    display         : block;
+    border-radius   : 5px;
+    color           : #000;
+    font-size       : 140%;
+    font-weight     : bold; 
+    text-decoration : none;
+    background      : #ECF16D;
+    margin          : 20px auto 0;
+    padding         : 15px 0;
+    text-align      : center;
+    position        : relative;
+    box-shadow: 0 0 1px 1px #888;
 }
