@@ -464,12 +464,15 @@ var ourvoice = {
         
         var nex_audio_i     = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
         nex_audio_i++;
-        var recordFileName  = "audio_"+photo_i+"_"+ nex_audio_i +"."+app.cache.audioformat;
+
+        var some_timestamp  = Date.now();
+        var recordFileName  = "audio_"+photo_i+"_"+ nex_audio_i + "."+app.cache.audioformat;
+        var actualFileName  = "audio_"+photo_i+"_"+ nex_audio_i + "_" + some_timestamp + "."+app.cache.audioformat;
         if(app.cache.platform == "iOS") {
             //first create file if not exist //IOS DIFFERENCE
             window.requestFileSystem(LocalFileSystem.TEMPORARY, 0
                 ,function(fileSystem){
-                    fileSystem.root.getFile(recordFileName
+                    fileSystem.root.getFile(actualFileName
                         ,{
                             create    : true,
                             exclusive : false
@@ -481,7 +484,7 @@ var ourvoice = {
                             // ,toURI,remove,getParent]
                             //PUT THIS ACTUAL FILE INTO CACHE, THEN WHEN STOPPED RECORDING STORE IT 
                             app.cache.currentAudio  = fileEntry; 
-                            app.cache.audioObj[recordFileName] = new Media(recordFileName
+                            app.cache.audioObj[recordFileName] = new Media(actualFileName
                                 ,function(){
                                     //FINISHED RECORDING
                                 }
@@ -506,14 +509,14 @@ var ourvoice = {
                 }
             ); //of requestFileSystem
         }else{
-            app.cache.audioObj[recordFileName] = new Media( recordFileName
+            app.cache.audioObj[recordFileName] = new Media( actualFileName
                 ,function(){
                     //FINISHED RECORDING
                     // console.log("MEDIA FINISHED RECORDING, NOW USE FILE SYSTEM TO GET THE FILE?");
                     // console.log(this);
 
                     window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
-                        dir.getFile(recordFileName, {} 
+                        dir.getFile(actualFileName, {} 
                             ,function(fileEntry) {
 
                                 fileEntry.file(function(file) {

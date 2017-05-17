@@ -100,7 +100,7 @@ header:after {
     background:#4dc2ff url(../img/icon_camera.png) 50% 50% no-repeat !important;
 }
 .button.audio{
-    background:#F19192 url(../img/icon_mic.png) 50% 50% no-repeat !important;
+    background:#4dc2ff url(../img/icon_mic.png) 50% 50% no-repeat !important;
 }
 
 .mediaitem .votes a{
@@ -196,7 +196,7 @@ header:after {
     background-size:30%;
 }
 .audios {
-    background:#ec99a5 url(../img/icon_mic.png) 50% 20% no-repeat;
+    background:#4dc2ff url(../img/icon_mic.png) 50% 20% no-repeat;
     background-size:20%;
 }
 

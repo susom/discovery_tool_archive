@@ -114,17 +114,17 @@ var app = {
             // $("#loading_message").text("Online");
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
-                app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
-                app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
-                    var blobURL = URL.createObjectURL(blobOrBuffer);
-                    var cssTag  = $("<link>");
-                    cssTag.attr("rel" , "stylesheet");
-                    cssTag.attr("type", "text/css");
-                    cssTag.attr("href", blobURL);
-                    $("head").append(cssTag);
-                }).catch(function (err) {
-                    console.log(err);
-                });
+                // app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
+                // app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
+                //     var blobURL = URL.createObjectURL(blobOrBuffer);
+                //     var cssTag  = $("<link>");
+                //     cssTag.attr("rel" , "stylesheet");
+                //     cssTag.attr("type", "text/css");
+                //     cssTag.attr("href", blobURL);
+                //     $("head").append(cssTag);
+                // }).catch(function (err) {
+                //     console.log(err);
+                // });
                 
                 //LOOK FOR AN ACTIVE PROJECT IF AVAIALABLE, THEN GET ALL PROJECTS
                 ourvoice.getActiveProject();
@@ -608,6 +608,7 @@ var app = {
         }
         panel.show().delay(250).queue(function(next){
             $(this).addClass("loaded");
+            $("nav").removeClass().addClass(panel.attr("id"));
             next();
         });
         return;

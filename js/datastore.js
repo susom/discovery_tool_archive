@@ -125,6 +125,7 @@ var datastore = {
             // what if the user goes offline? In those cases, an error will be thrown 
             // and replication will stop.
             app.log("ERROR ON REPLICATING FROM REMOTE: " + remotedb_str);
+            app.log(err);
         });
     }
 
