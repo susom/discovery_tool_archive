@@ -83,7 +83,9 @@ var ourvoice = {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
             app.cache.active_project = doc;
         }).catch(function (err) {
-            app.log("get active_project error : ",err);
+            console.log(err);
+            app.log("get active_project error : ");
+            app.log(err);
         }).then(function(){
             //THIS WORKS AS A "FINALLY"
             ourvoice.getAllProjects();

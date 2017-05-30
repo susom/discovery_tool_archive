@@ -87,19 +87,19 @@ var app = {
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
         app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "amr";
-
+        
         //1) OPEN LOCAL AND REMOTE DB
         app.cache.remoteusersdb = config["database"]["users_remote"];
         app.cache.remotelogdb   = config["database"]["log_remote"];  
         app.cache.remoteprojdb  = config["database"]["proj_remote"];
-
+        
         app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
         app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
-
+        
         // CLEAN SLATE 
         // datastore.deleteLocalDB();
-        // return;    
+        // return;  
 
         //2) PUSH ONCE // ONNLY DO THIS MANUALLY FROM NOW ON
         // ourvoice.syncLocalData(); //LOCAL DATA TO REMOTE 
@@ -108,13 +108,14 @@ var app = {
         app.cache.db_fail_timeout = setTimeout(function(){
             $("#loading_message").text("Could not reach database, try again later");
             $("#main").addClass("failed");
-        },8000);
+        },12000);
 
         if(networkState){
             // $("#loading_message").text("Online");
+
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
-                // app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
+                app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
                 // app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
                 //     var blobURL = URL.createObjectURL(blobOrBuffer);
                 //     var cssTag  = $("<link>");
@@ -191,6 +192,7 @@ var app = {
                     if(pid == p.project_id){
                         p_pw        = app.cache.projects["project_list"][i]["project_pass"]; 
                         pid_correct = i;
+                        break;
                     }
                 }
 
@@ -198,7 +200,6 @@ var app = {
                     $("#main").removeClass("loaded"); 
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
-
                     navigator.notification.confirm(
                         'Setup of a new project will erase any Discovery Tool data previously saved on this device. Click \'Continue\' to proceed.', // message
                          function(i){

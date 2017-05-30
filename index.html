@@ -35,8 +35,8 @@
         * Enable eval(): add 'unsafe-eval' to default-src
     * Create your own at http://cspisawesome.com
     -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *" />
-    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline';script-src * 'unsafe-inline'; media-src *; img-src * data:; " /> -->
+    <!-- THIS NEEDS TO BE ACTIVE FOR ANDROID BUT COMMENTED OUT FOR IOS -->
+    <meta http-equiv="Content-Security-Policy" content="default-src *; style-src * 'unsafe-inline';script-src * 'unsafe-inline'; media-src *; img-src * data:; " />
     
     <!-- THIS STYLESHEET WILL NOW BE STORED AS AN ATTACHMENT IN COUCHDB AND INCLUDED via JS -->
     <link rel="stylesheet" type="text/css" href="css/index_splash.css" />
@@ -283,7 +283,7 @@
 </div>
 
 <!-- <script src="http://10.34.240.88:8080/target/target-script-min.js#anonymous"></script> -->
-<!-- <script src="http://192.168.86.104:8080/target/target-script-min.js#anonymous"></script> -->
+<!-- <script src="http://192.168.86.107:8080/target/target-script-min.js#anonymous"></script> -->
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/blob-util.min.js"></script>

@@ -4,6 +4,7 @@ var datastore = {
     ,startupDB: function(dbname){
         var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default', auto_compaction: true});
         if (!db.adapter) {
+            console.log("no adapter");
           db = new PouchDB(dbname);
         }
         return db;
@@ -124,6 +125,12 @@ var datastore = {
             // However, there is one gotcha with live replication: 
             // what if the user goes offline? In those cases, an error will be thrown 
             // and replication will stop.
+            
+            datastore.deleteLocalDB();
+            setTimeout(function(){
+                datastore.remoteSyncDB(localdb_obj, remotedb_str, _callBack);
+            },3000);
+
             app.log("ERROR ON REPLICATING FROM REMOTE: " + remotedb_str);
             app.log(err);
         });

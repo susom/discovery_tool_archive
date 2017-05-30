@@ -2,7 +2,6 @@ var utils = {
     checkConnection : function() {
         var networkType = navigator.hasOwnProperty("connection") ? navigator.connection.type : false;
         var online      = navigator.onLine; 
-
         return online;
         // return {
         //      "online"   : online
