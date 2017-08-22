@@ -71,6 +71,23 @@ var ourvoice = {
         });
     }
 
+    ,newUserSession : function(){
+        var session_count                           = app.cache.user.length;
+        app.cache.current_session                   = session_count;
+        app.cache.user[app.cache.current_session]   = {
+                                                         "_id"                  : null
+                                                        ,"_attachments"         : {}
+                                                        ,"project_id"           : null
+                                                        ,"user_id"              : null
+                                                        ,"lang"                 : null
+                                                        ,"photos"               : []
+                                                        ,"geotags"              : []
+                                                        ,"survey"               : []
+                                                        ,"device"               : null
+                                                    };
+        app.initCache();
+    }
+
     ,getActiveProject : function(){
         app.cache.localprojdb.get("active_project", function(err,resp){
             if(err){
@@ -193,7 +210,9 @@ var ourvoice = {
         //OK JUST REDO THE SURVEY EVERYTIME
         $("#survey fieldset").empty();
         survey.build(project["surveys"], lang);
-        consent.build(project["consent"], lang);  
+        consent.build(project["consent"], lang); 
+
+        $("body").removeClass().addClass(lang); 
         if(project["project_id"] == projid){
             for(var n in trans){
                 var kvpair      = trans[n];
@@ -238,19 +257,19 @@ var ourvoice = {
                     ,"timestamp"    : position.timestamp
                 };
                 
-                var curdist = app.cache.user.hasOwnProperty("currentDistance") ? app.cache.user.currentDistance : 0;
-                var lastPos = app.cache.user.geotags.length > 0 ? app.cache.user.geotags[app.cache.user.geotags.length - 1] : {"lat" : curLat,"lng" : curLong};
+                var curdist = app.cache.user[app.cache.current_session].hasOwnProperty("currentDistance") ? app.cache.user[app.cache.current_session].currentDistance : 0;
+                var lastPos = app.cache.user[app.cache.current_session].geotags.length > 0 ? app.cache.user[app.cache.current_session].geotags[app.cache.user[app.cache.current_session].geotags.length - 1] : {"lat" : curLat,"lng" : curLong};
                 var prvLat  = lastPos.lat ;
                 var prvLong = lastPos.lng ;
  
-                if(app.cache.user.geotags.length == 0){
-                    app.cache.user.geotags.push(curpos);
+                if(app.cache.user[app.cache.current_session].geotags.length == 0){
+                    app.cache.user[app.cache.current_session].geotags.push(curpos);
                 }
 
                 if(curLat != prvLat && curLong != prvLong){
-                    app.cache.user.geotags.push(curpos); 
+                    app.cache.user[app.cache.current_session].geotags.push(curpos); 
                     curdist     = curdist + utils.calculateDistance(prvLat, prvLong, curLat, curLong);
-                    app.cache.user.currentDistance = curdist;
+                    app.cache.user[app.cache.current_session].currentDistance = curdist;
                 }
                 
                 //SAVE THE POINTS IN GOOGLE FORMAT
@@ -355,7 +374,7 @@ var ourvoice = {
 
         // Fit the bounds of the generated points
         map.fitBounds(latLngBounds);
-        $("#distance").text(app.cache.user.currentDistance);
+        $("#distance").text(app.cache.user[app.cache.current_session].currentDistance);
     }
 
     ,startPlaying : function(recordFileName){
@@ -417,7 +436,7 @@ var ourvoice = {
             $("#audio_time").text("00:00");
 
             //UPDATE THE GUI
-            app.cache.user.photos[photo_i]["audio"]++;
+            app.cache.user[app.cache.current_session].photos[photo_i]["audio"]++;
             $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
             $("#pic_review .daction.audio").addClass("hasAudio");
             
@@ -425,16 +444,16 @@ var ourvoice = {
             ourvoice.drawSavedAudio(photo_i,recordFileName);
 
             //NOW SAVE IT AS AN INLINE ATTACHMENT
-            var audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
+            var audio_i = !app.cache.user[app.cache.current_session].photos[photo_i]["audio"] ? 0 : app.cache.user[app.cache.current_session].photos[photo_i]["audio"];
 
             if(app.cache.platform == "iOS"){
                 //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
                 app.cache.currentAudio.file(function(file) {
                     console.log("last thing, we need to make sure this is saved properly to couch");
-                            app.cache.user._attachments[recordFileName] = { "content_type": "audio/" + app.cache.audioformat , "data" : file };
+                            app.cache.user[app.cache.current_session]._attachments[recordFileName] = { "content_type": "audio/" + app.cache.audioformat , "data" : file };
 
                             //RECORD AUDIO ATTACHMENT 
-                            datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                            datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
                         }
                         ,function(err){
                             console.log(err);
@@ -464,7 +483,7 @@ var ourvoice = {
         //IOS requires the file to be created if it doesnt exist.
         //ios requires .wav format, .mp3 for android
         
-        var nex_audio_i     = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
+        var nex_audio_i     = !app.cache.user[app.cache.current_session].photos[photo_i]["audio"] ? 0 : app.cache.user[app.cache.current_session].photos[photo_i]["audio"];
         nex_audio_i++;
 
         var some_timestamp  = Date.now();
@@ -527,10 +546,10 @@ var ourvoice = {
 
                                         //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
                                         // console.log("last thing, we need to make sure this is saved properly to couch");
-                                        app.cache.user._attachments[recordFileName] = { "content_type": file.type , "data" : file };
+                                        app.cache.user[app.cache.current_session]._attachments[recordFileName] = { "content_type": file.type , "data" : file };
 
                                         //RECORD AUDIO ATTACHMENT 
-                                        datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                                        datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
                                     }
                                     ,function(err){ console.log(err); }
                                 );
@@ -560,7 +579,7 @@ var ourvoice = {
 
     ,drawSavedAudio : function(photo_i,recordFileName){
         $("#saved_audio .saved").remove();
-        var audio_i = !app.cache.user.photos[photo_i]["audio"] ? 0 : app.cache.user.photos[photo_i]["audio"];
+        var audio_i = !app.cache.user[app.cache.current_session].photos[photo_i]["audio"] ? 0 : app.cache.user[app.cache.current_session].photos[photo_i]["audio"];
         for(var i = audio_i; i > 0; i--){
             var offset          = i;
             var recordFileName  = "audio_"+photo_i+"_"+i+"."+app.cache.audioformat;
@@ -607,29 +626,29 @@ var ourvoice = {
         navigator.camera.getPicture( 
             function(imageData){
                 var fileurl = "data:image/jpeg;base64," + imageData;
-                app.cache.user.photos.push({
+                app.cache.user[app.cache.current_session].photos.push({
                          "audio"    : false
                         ,"geotag"   : null 
                         ,"goodbad"  : null
                     });
 
                 //make sure the audio gets the proper photo to save to
-                var thispic_i   = app.cache.user.photos.length - 1;
-                var geotag      = ourvoice.tagLocation(app.cache.user.photos[thispic_i]);
+                var thispic_i   = app.cache.user[app.cache.current_session].photos.length - 1;
+                var geotag      = ourvoice.tagLocation(app.cache.user[app.cache.current_session].photos[thispic_i]);
 
                 //PREPARE ATTACHEMENT
                 var attref      = "photo_" + thispic_i + ".jpg";
-                app.cache.user._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
+                app.cache.user[app.cache.current_session]._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
                 
                 //RECORD PHOTO DATAURL
-                datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
 
                 //SET UP PHOTO PREVIEW PAGE
-                ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
+                ourvoice.previewPhoto(app.cache.user[app.cache.current_session].photos[thispic_i], fileurl);
 
                 //ADD LIST ITEM TO REVIEW PAGE
                 setTimeout(function(){
-                    ourvoice.addMediaItem(app.cache.user.photos[thispic_i], fileurl);
+                    ourvoice.addMediaItem(app.cache.user[app.cache.current_session].photos[thispic_i], fileurl);
                 },500);
 
                 _callback();
@@ -648,7 +667,7 @@ var ourvoice = {
     }
 
     ,previewPhoto: function(_photo,fileurl){
-        var photo_i = app.cache.user.photos.indexOf(_photo);
+        var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
         var goodbad = _photo["goodbad"];
 
         $("#pic_review a.vote").removeClass("on").removeClass("off");
@@ -678,7 +697,7 @@ var ourvoice = {
     }
 
     ,addMediaItem:function(_photo,fileurl){
-        var photo_i     = app.cache.user.photos.indexOf(_photo);
+        var photo_i     = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
         var tmstmp      = "";
         if(utils.checkConnection()){
             var geotag      = _photo["geotag"];
@@ -731,13 +750,13 @@ var ourvoice = {
                     //the button label indexs start from 1 = 'Cancel'
                     return;
                 }
-                var photo_i = app.cache.user.photos.indexOf(_photo);
-                app.cache.user.photos[photo_i] = null;
-                delete app.cache.user._attachments["photo_"+photo_i+".jpg"];
+                var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
+                app.cache.user[app.cache.current_session].photos[photo_i] = null;
+                delete app.cache.user[app.cache.current_session]._attachments["photo_"+photo_i+".jpg"];
                 
-                for(var filekey in app.cache.user._attachments){
+                for(var filekey in app.cache.user[app.cache.current_session]._attachments){
                     if(filekey.indexOf("audio_"+photo_i+"_") > -1){
-                        delete app.cache.user._attachments[filekey];
+                        delete app.cache.user[app.cache.current_session]._attachments[filekey];
                     }
                 }
 
@@ -748,7 +767,7 @@ var ourvoice = {
                     $(".mi_slideout b").text(pic_count);
 
                     //RECORD DELETED PHOTO
-                    datastore.writeDB(app.cache.localusersdb , app.cache.user);
+                    datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
                     next();
                 });
              },            // callback to invoke with index of button pressed
@@ -810,11 +829,13 @@ var ourvoice = {
     }
 
     ,finished : function(){
-        var dist_walked     = Math.round(parseFloat(app.cache.user["currentDistance"]) * 10) / 10;
-        var photos_took     = app.cache.user["photos"].length;
+        //THIS COMES FROM LAST SURVEY PAGE
+        
+        var dist_walked     = Math.round(parseFloat(app.cache.user[app.cache.current_session]["currentDistance"]) * 10) / 10;
+        var photos_took     = app.cache.user[app.cache.current_session]["photos"].length;
         var audios_recorded = 0;
-        for(var i in app.cache.user["photos"]){
-            var photo = app.cache.user["photos"][i];
+        for(var i in app.cache.user[app.cache.current_session]["photos"]){
+            var photo = app.cache.user[app.cache.current_session]["photos"][i];
             if(photo["audio"]){
                 audios_recorded += parseInt(photo["audio"]);
             }
@@ -827,8 +848,8 @@ var ourvoice = {
 
         $("nav").show();
         $(".mi_slideout").removeClass("reviewable");
-        app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");
-        app.initCache();
+
+        app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");        
     }
 
     ,resetDevice : function(){
@@ -836,8 +857,124 @@ var ourvoice = {
         $(".mi_slideout b").text(0);
         $(".nomedia").show();
         $(".delete_on_reset").remove();
-        app.initCache();
+
         app.log("RESETING DEVICE STATE");
         return;
+    }
+
+    ,androidInternalMemory : function(){    
+        var ts = Date.now();
+        var actualFileName = ts+"_where_is_my_file.amr";
+        var actualFileName = "cdvfile://localhost/sdcard/"+ts+"_where_is_my_file.amr";
+        var recordFileName = actualFileName;
+        console.log(actualFileName);
+        console.log(cordova.file.externalRootDirectory);
+        
+        app.cache.audioObj[recordFileName] = new Media( actualFileName
+            ,function(){
+                //FINISHED RECORDING
+                console.log("MEDIA FINISHED RECORDING, NOW USE FILE SYSTEM TO GET THE FILE?");
+                console.log(app.cache.audioObj[recordFileName]);
+                
+                app.cache.audioObj[recordFileName].play();
+                app.cache.audioObj[recordFileName].release();
+
+                console.log("did it play?");
+                
+                function gotFS(fileSystem) {
+                    var reader = fileSystem.root.createReader();
+                    reader.readEntries(gotList, function(err){
+                        console.log(err);
+                    });    
+                }
+
+                function gotList(entries) {
+                    var i;
+                    for (i=0; i<entries.length; i++) {
+                       console.log(entries[i].fullPath);
+                    }
+                }
+                window.requestFileSystem(cordova.file.externalRootDirectory, 0, gotFS, function(err){
+                    console.log(err);
+                });
+                // //GET DIRECTORY
+                // window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
+                //     console.log(dir);
+                //     //GET FILE WITHIN DIR
+                //     dir.getFile(actualFileName, {} 
+                //         ,function(fileEntry) {
+                //             fileEntry.file(function(file) {
+                //                     var cdvpath = file["localURL"];
+                //                     console.log("cordova.file.externalRootDirectory");
+                //                     console.log(file);
+                //                 }
+                //                 ,function(err){ console.log(err); }
+                //             );
+                //         }
+                //         ,function(){ 
+                //             console.log("cordova.file.externalRootDirectory file not found or created"); 
+                //         }
+                //     );
+                // });
+               
+
+            }
+            ,function(err){
+                //RECORDING EROR
+                console.log(err.code +  " : " + err.message);
+            }
+            ,function(info){
+                // STATUS CHANGE
+                console.log(info);
+                console.log("media status change");
+        }); //of new Media
+
+
+        console.log("recording");
+        app.cache.audioObj[recordFileName].startRecord();
+
+        setTimeout(function(){
+            console.log("stop recording");
+            app.cache.audioObj[recordFileName].stopRecord();
+         },5000);
+
+
+
+        return;
+
+        // window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(dir) {
+        //     console.log(dir);
+        //     dir.root.getFile(actualFileName, { create: true, exclusive: false } 
+        //         ,function(fileEntry) {
+        //             fileEntry.file(function(file) {
+        //                     var cdvpath = file["localURL"];
+        //                     console.log("LocalFileSystem.PERSISTENT");
+        //                     console.log(file);
+        //                 }
+        //                 ,function(err){ console.log(err); }
+        //             );
+        //         }
+        //         ,function(){ 
+        //             console.log("LocalFileSystem.PERSISTENT file not found or created"); 
+        //         }
+        //     );
+        // });
+
+        // window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
+        //     dir.getFile(actualFileName, {} 
+        //         ,function(fileEntry) {
+        //             fileEntry.file(function(file) {
+        //                     var cdvpath = file["localURL"];
+        //                     console.log("cordova.file.externalRootDirectory");
+        //                     console.log(file);
+        //                 }
+        //                 ,function(err){ console.log(err); }
+        //             );
+        //         }
+        //         ,function(){ 
+        //             console.log("cordova.file.externalRootDirectory file not found or created"); 
+        //         }
+        //     );
+        // });
     }
 };

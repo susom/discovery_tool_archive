@@ -24,7 +24,9 @@ var app = {
 
     // Application Constructor
     ,initialize: function() {
-        this.initCache();
+        app.cache.user                  = [];
+        app.cache.current_session       = 0;
+
         this.bindEvents();
     }
     
@@ -32,16 +34,7 @@ var app = {
         app.cache.db_fail_timeout       = null;
         app.cache.testgoodbad           = null;
 
-        app.cache.user                  = null;
-        app.cache.user                  = config["default_user"]; //NEED TO USE COLLATE
-        app.cache.user["_attachments"]  = {};
-        app.cache.user["photos"]        = [];
-        app.cache.user["geotags"]       = [];
-        app.cache.user["survey"]        = [];
-
-        delete app.cache.user._id;
-        delete app.cache.user._rev;
-
+        app.cache.online                = false;
         app.cache.positionTrackerId     = null; //ref to setInterval
         app.cache.curmap                = null; //ref to google map
         app.cache.currentWalkMap        = [];   //array of geotags for current walk
@@ -54,9 +47,6 @@ var app = {
         app.cache.audioStatus           = null;
         app.cache.currentAudio          = null;
         app.cache.playbackTimer         = null;
-
-        app.cache.user.device           = null;
-        app.log("init app()");
     }
 
     ,bindEvents: function() {
@@ -66,24 +56,31 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         document.addEventListener('pause'  , this.onDevicePause, false);
         document.addEventListener('resume' , this.onDeviceResume, false);
-        app.log("bindEvents()");
     }
 
     ,onDevicePause: function() {
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
         // app.log("DEVICE PAUSING");
+   
+        console.log("phone paused");
     }
 
     ,onDeviceResume: function() {
         //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
         //SO NO DO NOT RELOAD PROJECT
-        // app.log("DEVICE RESUMING");
+        // app.log("DEVICE RESUMING");  
     }
 
     ,onDeviceReady: function() {
-        //0 CHECK NETWORK STATE, AND GET UUID
-        var networkState        = utils.checkConnection();
+        //FIRST APP LOAD, SO SET UP NEW USER SESSION
+        //sets up app.cache.current_session for use throughout the session
+        ourvoice.newUserSession();
+
+        //START PINGING ONLINE STATE, AND FILL IN OTHER GLOBAL VARIABLES
+        app.cache.online        = navigator.onLine;
+        utils.pingNetwork();
+
         app.cache.uuid          = device.uuid;
         app.cache.platform      = device.platform;
         app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "amr";
@@ -92,16 +89,24 @@ var app = {
         app.cache.remoteusersdb = config["database"]["users_remote"];
         app.cache.remotelogdb   = config["database"]["log_remote"];  
         app.cache.remoteprojdb  = config["database"]["proj_remote"];
-        
+
         app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
         app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
         app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
-        
+            
+        //FIGURE OUT ANDROID CACHE LOCATION ONCE AND FOR ALL
+        // ourvoice.androidInternalMemory();
+        // return;
+
         // CLEAN SLATE 
+        //this SQL PLUGIN IS BORKED or NEVER WORKED
+        // console.log("kill me now please");
+        // console.log("This damn sqlite plugin is working ? " + !!window.sqlitePlugin);
+
         // datastore.deleteLocalDB();
         // return;  
 
-        //2) PUSH ONCE // ONNLY DO THIS MANUALLY FROM NOW ON
+        //2) PUSH ONCE 
         // ourvoice.syncLocalData(); //LOCAL DATA TO REMOTE 
         // return;
         
@@ -110,9 +115,8 @@ var app = {
             $("#main").addClass("failed");
         },12000);
 
-        if(networkState){
+        if(app.cache.online){
             // $("#loading_message").text("Online");
-
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
@@ -150,33 +154,35 @@ var app = {
                         app.showNotif("Uploading Data", "Please be patient and leave this app open. Uploading all the photos and audio files can take up to 30 minutes.",function(){});
                         ourvoice.syncLocalData(); 
 
-                        // var bail = $(this);
-                        // setTimeout(function(){
-                        //     bail.removeClass("uploading");
-                        //     app.showNotif("Something went wrong", "Please try again later when on wifi");
-                        // },15000);
-                    }
-                }else{
-                    //OR VIEW THE DATA
-                    var pw      = $("#admin_master_pw").val();
-                    if(pw  == app.cache.projects["project_list"][app.cache.active_project.i]["project_pass"]){
-                        $("#admin_master").hide();
-                        $("#admin_master_pw").val("");
-
-                        app.cache.localusersdb.allDocs({
-                          include_docs: true
-                        }).then(function (res) {
-                            ourvoice.adminView(res["rows"]);
-                            $("#list_data").css("opacity",1);
-                        }).catch(function(err){
-                            app.log("error allDocs()" + err);
-                        });
-                    }else{
-                        app.showNotif("Oh No!", "Wrong Master Password", function(){});
-                        $("#admin_master_pw").val("");
-                        return false;
+                        var bail = $(this);
+                        setTimeout(function(){
+                            bail.removeClass("uploading");
+                            app.showNotif("Something went wrong", "Please try again later when on wifi");
+                        },15000);
                     }
                 }
+                // else{
+                //     //OR VIEW THE DATA
+                //     // var pw      = $("#admin_master_pw").val();
+                //     // if(pw  == app.cache.projects["project_list"][app.cache.active_project.i]["project_pass"]){
+                //         // $("#admin_master").hide();
+                //         // $("#admin_master_pw").val("");
+
+                //     app.cache.localusersdb.allDocs({
+                //       include_docs: true
+                //     }).then(function (res) {
+                //         ourvoice.adminView(res["rows"]);
+                //         $("#list_data").css("opacity",1);
+                //     }).catch(function(err){
+                //         app.log("error allDocs()" + err);
+                //     });
+                //     // }
+                //     // else{
+                //     //     app.showNotif("Oh No!", "Wrong Master Password", function(){});
+                //     //     $("#admin_master_pw").val("");
+                //     //     return false;
+                //     // }
+                // }
                 return false;
             }
 
@@ -239,11 +245,11 @@ var app = {
 
             if(next == "consent_0"){
                 //THIS IS IMPORTANT
-                app.cache.user.project_id    = app.cache.active_project.i;
-                app.cache.user.lang          = $("select[name='language']").val();
-                app.cache.user.user_id       = app.cache.participant_id;
-                app.cache.user._id           = app.cache.next_id; //COLLATED
-                app.cache.user.device        = {
+                app.cache.user[app.cache.current_session].project_id    = app.cache.active_project.i;
+                app.cache.user[app.cache.current_session].lang          = $("select[name='language']").val();
+                app.cache.user[app.cache.current_session].user_id       = app.cache.participant_id;
+                app.cache.user[app.cache.current_session]._id           = app.cache.next_id; //COLLATED
+                app.cache.user[app.cache.current_session].device        = {
                       "cordova"         : device.cordova
                      ,"manufacturer"    : device.manufacturer
                      ,"model"           : device.model
@@ -251,7 +257,7 @@ var app = {
                      ,"version"         : device.version
                 };
 
-                app.log("Starting consent process for User " + app.cache.user._id);
+                app.log("Starting consent process for User " + app.cache.user[app.cache.current_session]._id);
             }
             
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
@@ -293,31 +299,39 @@ var app = {
             var curPhoto    = $(this).data("photo_i");
             
             // ONLY REMOVE IF MUTUALLY EXCLUSIVE
-            // $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
+            $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "'],.vote.meh[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
             
             var updown = "up";
             // 0/null = no votes, 1 = bad vote, 2 = good vote, 3 = both votes WTF
             if($(this).hasClass("up")){
                 $("a.up[rel='" + curPhoto + "']").toggleClass("on");
                 if($("a.up[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad+2;
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+2;
                 }else{
-                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad-2;
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-2;
+                }
+            }else if($(this).hasClass("meh")){
+                updown = "meh";
+                $("a.meh[rel='" + curPhoto + "']").toggleClass("on");
+                if($("a.meh[rel='" + curPhoto + "']").hasClass("on")){
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+3;
+                }else{
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-3;
                 }
             }else{
                 updown = "down";
                 $("a.down[rel='" + curPhoto + "']").toggleClass("on");
                 if($("a.down[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad+1;
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+1;
                 }else{
-                    app.cache.user.photos[curPhoto].goodbad = app.cache.user.photos[curPhoto].goodbad-1;
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-1;
                 }
             } 
             
             app.log("voting on photo");
 
             //RECORD THE VOTE
-            datastore.writeDB(app.cache.localusersdb , app.cache.user);
+            datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
             return false;
         });
 
@@ -334,7 +348,7 @@ var app = {
 
             app.log("delete photo");
 
-            ourvoice.deletePhoto(app.cache.user.photos[thispic_i]);
+            ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
             return false;
         });
 
@@ -342,7 +356,7 @@ var app = {
             //OPEN UP PREVIEW PAGE FOR PHOTO
             var thispic_i   = $(this).data("photo_i");
             var fileurl     = $(this).find("img").attr("src");
-            ourvoice.previewPhoto(app.cache.user.photos[thispic_i], fileurl);
+            ourvoice.previewPhoto(app.cache.user[app.cache.current_session].photos[thispic_i], fileurl);
 
             $("#mediacaptured").removeClass("preview");
 
@@ -449,10 +463,10 @@ var app = {
             //STORE SURVEY ANSWERS
             var val = $(this).val();
             var nam = $(this).attr("name");
-            app.cache.user.survey.push({"name" : nam , "value" : val});
+            app.cache.user[app.cache.current_session].survey.push({"name" : nam , "value" : val});
 
             //RECORD SURVEY INPUT
-            datastore.writeDB(app.cache.localusersdb , app.cache.user);
+            datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
             return;
         });
 
@@ -467,9 +481,18 @@ var app = {
 
         $("#datastatus").click(function(){
             app.closeCurrentPanel($("#step_zero"));
-            $("#admin_master").show();
-            $("#list_data").css("opacity",0);
             $("#main").addClass("loaded");
+
+            //SHOW THE DATA ON LOCAL DEVICE
+            app.cache.localusersdb.allDocs({
+              include_docs: true
+            }).then(function (res) {
+                ourvoice.adminView(res["rows"]);
+                $("#list_data").css("opacity",1);
+            }).catch(function(err){
+                app.log("error allDocs()" + err);
+            });
+
             app.transitionToPanel($("#admin_view"));
             return false;
         });
@@ -571,6 +594,7 @@ var app = {
             app.closeCurrentPanel($("#finish"));
             app.transitionToPanel($("#step_zero"),1);
 
+            ourvoice.newUserSession();
             app.log("ending session");
             return false;
         });
@@ -643,7 +667,7 @@ var app = {
             ,"type"     : msg_type
             ,"timestamp": timestamp
             ,"msg"      : msg
-            ,"user_id"  : app.cache.user.user_id
+            ,"user_id"  : app.cache.user[app.cache.current_session].user_id
             ,"platform" : app.cache.platform
         }
 

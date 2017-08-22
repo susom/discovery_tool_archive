@@ -9,6 +9,12 @@ var utils = {
         // };
     }
 
+    ,pingNetwork  : function(){
+      var ping_int = setInterval(function(){
+        app.cache.online = navigator.onLine; 
+      }, 10000);
+    }
+
     ,calculateDistance : function (lat1, lon1, lat2, lon2) {
       var miles = true;
       var R = 6371; // km

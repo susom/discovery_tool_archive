@@ -38,6 +38,11 @@ header:after {
     margin          : 10px 0 10px 15px;
 }
 
+body.iw{
+    text-align:right;
+    direction:rtl;
+}
+
 .title hgroup {
     display         : block;
     vertical-align  : middle;
@@ -837,7 +842,7 @@ copyright{
     width               : 50px; 
     height              : 50px;
     /*background          : #efefef url(../img/icon_smilies.png) bottom left no-repeat;*/
-    background-size:200%;
+    background-size:300%;
 }
 .votes .down{
     /*THUMBS*/
@@ -847,6 +852,16 @@ copyright{
     /*SMILIES*/
     background-position:bottom right;
 }
+.votes .meh{
+    /*THUMBS*/
+    background-position:-49px 3px;    
+}
+.votes.smilies .meh{
+    /*SMILIES*/
+    background-position:-56px -56px;
+}
+
+
 
 .votes a.on {
     /*THUMBS*/
@@ -855,6 +870,10 @@ copyright{
 .votes.smilies .on{
     /*SMILIES*/
     background-position:top left;
+}
+.votes.smilies .meh.on{
+    /*SMILIES*/
+    background-position:-56px 0;
 }
 .votes.smilies .down.on{
     /*SMILIES*/
@@ -1399,7 +1418,8 @@ nowrap{
 
     /*ADMIN SPLASH - SETUP PAGE*/
     #list_data {
-        opacity:0;
+        opacity:1;
+        border:1px solid red;
     }
     #list_data table {
         margin-top:20px;

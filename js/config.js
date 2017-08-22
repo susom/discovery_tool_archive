@@ -9,16 +9,4 @@ var config = {
         ,"log_local"       : "disc_log"
         ,"log_remote"      : "https://disc_user_general:rQaKibbDx7rP@ourvoice-cdb.med.stanford.edu/disc_log"
     }
-
-    ,default_user : {
-        // myDoc._id            = pouchCollate.toIndexableString([a,b,c]);
-         "_id"                  : null
-        ,"project_id"           : null
-        ,"user_id"              : null
-        ,"lang"                 : null
-        ,"photos"               : []
-        ,"geotags"              : []
-        ,"survey"               : []
-        ,"_attachments"         : {}
-    }
 };

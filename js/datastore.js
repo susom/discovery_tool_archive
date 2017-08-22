@@ -2,7 +2,7 @@ var datastore = {
     db : null
 
     ,startupDB: function(dbname){
-        var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default', auto_compaction: true});
+        var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default', auto_compaction: true, adapter: 'cordova-sqlite'});
         if (!db.adapter) {
             console.log("no adapter");
           db = new PouchDB(dbname);
