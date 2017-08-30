@@ -750,10 +750,16 @@ var ourvoice = {
                     //the button label indexs start from 1 = 'Cancel'
                     return;
                 }
+
+                //"delete" doesnt delete, rather replaces with undefined, leaving length to the array
+                //use indexOf and array.splice() instead
                 var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
-                app.cache.user[app.cache.current_session].photos[photo_i] = null;
+                if(photo_i > -1){
+                    app.cache.user[app.cache.current_session].photos.splice(photo_i,1);
+                }
+
+                //BUT OK TO USE ON _attachements array?  ok
                 delete app.cache.user[app.cache.current_session]._attachments["photo_"+photo_i+".jpg"];
-                
                 for(var filekey in app.cache.user[app.cache.current_session]._attachments){
                     if(filekey.indexOf("audio_"+photo_i+"_") > -1){
                         delete app.cache.user[app.cache.current_session]._attachments[filekey];

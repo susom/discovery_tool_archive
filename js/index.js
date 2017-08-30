@@ -161,28 +161,6 @@ var app = {
                         },15000);
                     }
                 }
-                // else{
-                //     //OR VIEW THE DATA
-                //     // var pw      = $("#admin_master_pw").val();
-                //     // if(pw  == app.cache.projects["project_list"][app.cache.active_project.i]["project_pass"]){
-                //         // $("#admin_master").hide();
-                //         // $("#admin_master_pw").val("");
-
-                //     app.cache.localusersdb.allDocs({
-                //       include_docs: true
-                //     }).then(function (res) {
-                //         ourvoice.adminView(res["rows"]);
-                //         $("#list_data").css("opacity",1);
-                //     }).catch(function(err){
-                //         app.log("error allDocs()" + err);
-                //     });
-                //     // }
-                //     // else{
-                //     //     app.showNotif("Oh No!", "Wrong Master Password", function(){});
-                //     //     $("#admin_master_pw").val("");
-                //     //     return false;
-                //     // }
-                // }
                 return false;
             }
 
