@@ -41,10 +41,6 @@
     <meta http-equiv="Content-Security-Policy" content="default-src * gap://ready file:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src * 'unsafe-inline' 'unsafe-eval'">
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src * gap: file:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src * 'unsafe-inline' 'unsafe-eval'"> -->
     
-
-
-
-
     <!-- THIS STYLESHEET WILL NOW BE STORED AS AN ATTACHMENT IN COUCHDB AND INCLUDED via JS -->
     <link rel="stylesheet" type="text/css" href="css/index_splash.css" />
     <link rel="stylesheet" type="text/css" href="css/index.css" />
@@ -61,14 +57,11 @@
             </hgroup>
         </div>
     </header>
-
+    
+    <!-- SUMMARY OF USER DATA ON THE PHONE -->
     <div id="admin_view" class="panel">
         <div class="consent">
             <h2 data-translation-key="current_upload">Current upload status of data on this device</h2>
-<!--             <div id="admin_master">
-                <label><div data-translation-key="proj_pw">Project Password:</div> <input type="password" id="admin_master_pw"/></label>
-                <a href="#" data-next="admin_view" class="button adminbtn" data-translation-key="view_status">View Data Upload Status</a>
-            </div> -->
             <div id="list_data">
                 <table border="1" cellspacing="0">
                     <thead>
@@ -117,17 +110,14 @@
                 <span data-translation-key="project">Project</span>:
                 <b class="proj_name"></b>
             </label>
-            <!-- <label>
-                <span>User Id:</span>
-                <b class="user_id"></b>
-            </label> -->
             <label>
                 <span data-translation-key="language">Language:</span>
                 <select name="language"></select>
             </label>
             <input type="hidden" name="user_id" value="1"/>
 
-            <a href="#" data-translation-key="letsgo" data-next="step_one" class="button"></a>
+            <!-- this .button converts to consent_0 if there are any consent forms -->
+            <a href="#" data-translation-key="letsgo" id='letsgo' data-next="step_one" class="button"></a>
             <a href="#" id="resetdevice" data-translation-key="reset_device">Reset Device?</a>
             <a href="#" id="datastatus"><span data-translation-key="sync_status">Sync Status</span>: <i class="synced"></i><!--  <b class="user_id"></b> --></a>
 
@@ -211,7 +201,6 @@
                 <h4 data-translation-key="good_or_bad"></h4>
                 <div class="votes">
                     <a href="#" class="vote up" rel="1">vote up</a>
-                    <a href="#" class="vote meh" rel="1">vote meh</a>
                     <a href="#" class="vote down" rel="1">vote down</a>
                 </div>
             </li>
@@ -290,8 +279,8 @@
     </div>
 </div>
 
-<script src="http://10.34.251.69:8080/target/target-script-min.js#anonymous"></script>
-<!-- <script src="http://192.168.86.100:8080/target/target-script-min.js#anonymous"></script> -->
+<!-- <script src="http://10.34.252.123:8080/target/target-script-min.js#anonymous"></script> -->
+<!-- <script src="http://192.168.86.108:8080/target/target-script-min.js#anonymous"></script> -->
 <script type="text/javascript" src="cordova.js"></script>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/blob-util.min.js"></script>

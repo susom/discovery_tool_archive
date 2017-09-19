@@ -623,6 +623,8 @@ var ourvoice = {
     ,takePhoto: function(_callback){
         // take pic
         // save pic filename + geotag location
+        
+        console.log("taking a photo, but if i dont click 'done with photo' bad shit happens");
         navigator.camera.getPicture( 
             function(imageData){
                 var fileurl = "data:image/jpeg;base64," + imageData;
@@ -852,15 +854,16 @@ var ourvoice = {
         
         ourvoice.syncLocalData();
 
-        $("nav").show();
         $(".mi_slideout").removeClass("reviewable");
 
         app.log("PARTICIPANT FINISHED AND USER OBJECT SAVED");        
     }
 
     ,resetDevice : function(){
+        //refreshes UI
         $(".loaded").removeClass("loaded");
         $(".mi_slideout b").text(0);
+        $(".mi_slideout").removeClass("reviewable");
         $(".nomedia").show();
         $(".delete_on_reset").remove();
 

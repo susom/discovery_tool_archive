@@ -77,7 +77,18 @@ body.iw{
 }
 
 /*BACK/HELP NAV FIXED TO THE BOTTOM*/
-nav.finish  {
+nav.step_zero,
+nav.finish,
+nav.survey  {
+    display:none !important;
+}
+
+nav.step_two .back,
+nav.step_three .back,
+nav.step_four .back,
+nav.pic_review .back,
+nav.audio_record .back,
+nav.survey .back{
     display:none;
 }
 
@@ -107,6 +118,8 @@ nav .help{
 nav .back{
     float           : left;
 }
+
+
 nav .list{
     display         : none;
     float           : right;
@@ -1391,6 +1404,9 @@ nowrap{
     nav .back{
         float           : left;
     }
+
+    
+
     nav .list{
         display         : none;
         float           : right;

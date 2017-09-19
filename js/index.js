@@ -139,6 +139,12 @@ var app = {
             ourvoice.getActiveProject();
         }
 
+        $("#letsgo").on("click",function(){
+            //SPECIAL EXTRA ACTIONS TO DO ON 'start a walk' button on first page
+            // console.log("lets start a new session everytime someone clicks 'start a walk'");
+            // ourvoice.resetDevice(); 
+        });
+
         //5) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
         $(".button[data-next]").not(".audiorec,.camera,.finish").on("click",function(){
             //GET CURRENT PANEL
@@ -165,6 +171,8 @@ var app = {
             }
 
             if(next == "step_zero"){
+                $("#main").removeClass("loaded");
+
                 var pid         = $("#admin_projid").val().toUpperCase();
                 var pid_correct = null;
                 var p_pw        = null;
@@ -222,6 +230,8 @@ var app = {
             if(next == "project_about"){}
 
             if(next == "consent_0"){
+                //START NEW SESSION HERE? OR AT START WALK?
+
                 //THIS IS IMPORTANT
                 app.cache.user[app.cache.current_session].project_id    = app.cache.active_project.i;
                 app.cache.user[app.cache.current_session].lang          = $("select[name='language']").val();
@@ -241,6 +251,9 @@ var app = {
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
                 $(".mi_slideout").addClass("reviewable");
                 ourvoice.startWatch(8000);
+                
+                app.cache.history = [];
+                
                 app.log("start  walk");
             }else if($(this).hasClass("continuewalk")){
                 $("#recent_pic").attr("src","");
@@ -262,7 +275,6 @@ var app = {
                 //FREE UP THE MEMORY FOR THE MEDIA OBJECTS
                 // ourvoice.clearAllAudio();
 
-                $("nav").hide();
                 app.log("start survey");
             }
 
@@ -277,7 +289,7 @@ var app = {
             var curPhoto    = $(this).data("photo_i");
             
             // ONLY REMOVE IF MUTUALLY EXCLUSIVE
-            $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "'],.vote.meh[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
+            // $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "'],.vote.meh[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
             
             var updown = "up";
             // 0/null = no votes, 1 = bad vote, 2 = good vote, 3 = both votes WTF
@@ -379,7 +391,6 @@ var app = {
                     app.transitionToPanel($("#"+next),savehistory);
                 });
                 app.log("take photo");
-            
             }else{
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i,function(){
@@ -525,19 +536,6 @@ var app = {
             app.log("Clicking review thumb");
         });
 
-        var myElement   = document.getElementById('main');
-        var hammertime  = new Hammer(myElement);
-        // hammertime.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
-        hammertime.on('swipeleft', function(ev) {
-            //swipe left go to forward?
-            console.log("swiped left");
-        });
-        hammertime.on('swiperight',function(){
-            //swipe right to go back
-            console.log("swiped right");
-            // app.goBack()
-        });
-
         //REVIEW PHOTOS SLIDEOUT
         $(".mi_slideout").click(function(){
             $("#mediacaptured").addClass("preview");
@@ -570,11 +568,24 @@ var app = {
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
             app.closeCurrentPanel($("#finish"));
-            app.transitionToPanel($("#step_zero"),1);
+            app.transitionToPanel($("#step_zero"),true);
 
             ourvoice.newUserSession();
             app.log("ending session");
             return false;
+        });
+
+        var myElement   = document.getElementById('main');
+        var hammertime  = new Hammer(myElement);
+        // hammertime.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+        hammertime.on('swipeleft', function(ev) {
+            //swipe left go to forward?
+            console.log("swiped left");
+        });
+        hammertime.on('swiperight',function(){
+            //swipe right to go back
+            console.log("swiped right");
+            // app.goBack()
         });
     }
 
