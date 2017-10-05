@@ -624,7 +624,6 @@ var ourvoice = {
         // take pic
         // save pic filename + geotag location
         
-        console.log("taking a photo, but if i dont click 'done with photo' bad shit happens");
         navigator.camera.getPicture( 
             function(imageData){
                 var fileurl = "data:image/jpeg;base64," + imageData;
@@ -657,11 +656,15 @@ var ourvoice = {
             }
             ,function(err){
                 console.log(err);
+                //on error or cancel go back to take pic page
+                var panel = $("#loading");
+                app.closeCurrentPanel(panel);
+                app.transitionToPanel($("#step_two"),false);
             }
             ,{ 
                  quality            : 50
                 ,destinationType    : Camera.DestinationType.DATA_URL
-                ,saveToPhotoAlbum   : false
+                ,saveToPhotoAlbum   : app.cache.saveToAlbum
                 ,allowEdit          : false
             }
         );
@@ -869,121 +872,5 @@ var ourvoice = {
 
         app.log("RESETING DEVICE STATE");
         return;
-    }
-
-    ,androidInternalMemory : function(){    
-        var ts = Date.now();
-        var actualFileName = ts+"_where_is_my_file.amr";
-        var actualFileName = "cdvfile://localhost/sdcard/"+ts+"_where_is_my_file.amr";
-        var recordFileName = actualFileName;
-        console.log(actualFileName);
-        console.log(cordova.file.externalRootDirectory);
-        
-        app.cache.audioObj[recordFileName] = new Media( actualFileName
-            ,function(){
-                //FINISHED RECORDING
-                console.log("MEDIA FINISHED RECORDING, NOW USE FILE SYSTEM TO GET THE FILE?");
-                console.log(app.cache.audioObj[recordFileName]);
-                
-                app.cache.audioObj[recordFileName].play();
-                app.cache.audioObj[recordFileName].release();
-
-                console.log("did it play?");
-                
-                function gotFS(fileSystem) {
-                    var reader = fileSystem.root.createReader();
-                    reader.readEntries(gotList, function(err){
-                        console.log(err);
-                    });    
-                }
-
-                function gotList(entries) {
-                    var i;
-                    for (i=0; i<entries.length; i++) {
-                       console.log(entries[i].fullPath);
-                    }
-                }
-                window.requestFileSystem(cordova.file.externalRootDirectory, 0, gotFS, function(err){
-                    console.log(err);
-                });
-                // //GET DIRECTORY
-                // window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
-                //     console.log(dir);
-                //     //GET FILE WITHIN DIR
-                //     dir.getFile(actualFileName, {} 
-                //         ,function(fileEntry) {
-                //             fileEntry.file(function(file) {
-                //                     var cdvpath = file["localURL"];
-                //                     console.log("cordova.file.externalRootDirectory");
-                //                     console.log(file);
-                //                 }
-                //                 ,function(err){ console.log(err); }
-                //             );
-                //         }
-                //         ,function(){ 
-                //             console.log("cordova.file.externalRootDirectory file not found or created"); 
-                //         }
-                //     );
-                // });
-               
-
-            }
-            ,function(err){
-                //RECORDING EROR
-                console.log(err.code +  " : " + err.message);
-            }
-            ,function(info){
-                // STATUS CHANGE
-                console.log(info);
-                console.log("media status change");
-        }); //of new Media
-
-
-        console.log("recording");
-        app.cache.audioObj[recordFileName].startRecord();
-
-        setTimeout(function(){
-            console.log("stop recording");
-            app.cache.audioObj[recordFileName].stopRecord();
-         },5000);
-
-
-
-        return;
-
-        // window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(dir) {
-        //     console.log(dir);
-        //     dir.root.getFile(actualFileName, { create: true, exclusive: false } 
-        //         ,function(fileEntry) {
-        //             fileEntry.file(function(file) {
-        //                     var cdvpath = file["localURL"];
-        //                     console.log("LocalFileSystem.PERSISTENT");
-        //                     console.log(file);
-        //                 }
-        //                 ,function(err){ console.log(err); }
-        //             );
-        //         }
-        //         ,function(){ 
-        //             console.log("LocalFileSystem.PERSISTENT file not found or created"); 
-        //         }
-        //     );
-        // });
-
-        // window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
-        //     dir.getFile(actualFileName, {} 
-        //         ,function(fileEntry) {
-        //             fileEntry.file(function(file) {
-        //                     var cdvpath = file["localURL"];
-        //                     console.log("cordova.file.externalRootDirectory");
-        //                     console.log(file);
-        //                 }
-        //                 ,function(err){ console.log(err); }
-        //             );
-        //         }
-        //         ,function(){ 
-        //             console.log("cordova.file.externalRootDirectory file not found or created"); 
-        //         }
-        //     );
-        // });
     }
 };

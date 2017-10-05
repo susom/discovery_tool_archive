@@ -47,6 +47,8 @@ var app = {
         app.cache.audioStatus           = null;
         app.cache.currentAudio          = null;
         app.cache.playbackTimer         = null;
+
+        app.cache.saveToAlbum           = true;
     }
 
     ,bindEvents: function() {
@@ -163,7 +165,7 @@ var app = {
                         var bail = $(this);
                         setTimeout(function(){
                             bail.removeClass("uploading");
-                            app.showNotif("Something went wrong", "Please try again later when on wifi");
+                            // app.showNotif("Something went wrong", "Please try again later when on wifi");
                         },15000);
                     }
                 }
@@ -387,9 +389,14 @@ var app = {
             if($(this).hasClass("camera")){
                 //GET CURRENT PANEL
                 ourvoice.takePhoto(function(){
+                    //on success go to pic review
+                    var panel = $("#loading");
                     app.closeCurrentPanel(panel);
                     app.transitionToPanel($("#"+next),savehistory);
                 });
+                app.transitionToPanel($("#loading"),savehistory);
+                app.closeCurrentPanel(panel);
+
                 app.log("take photo");
             }else{
                 var photo_i = $(this).data("photo_i");

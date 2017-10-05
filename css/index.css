@@ -963,6 +963,13 @@ copyright{
     transform: translate(-50%,-50%);
 }
 
+/*loading*/
+#loading {
+    height:100%;
+    background: url(../img/loading.gif) 50% 30% no-repeat;
+    background-size:47px 47px; 
+}
+
 /*FINAL PAGE*/
 #finish {
     font-size:170%;
