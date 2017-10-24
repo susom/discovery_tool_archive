@@ -76,7 +76,6 @@ var ourvoice = {
         app.cache.current_session                   = session_count;
         app.cache.user[app.cache.current_session]   = {
                                                          "_id"                  : null
-                                                        ,"_attachments"         : {}
                                                         ,"project_id"           : null
                                                         ,"user_id"              : null
                                                         ,"lang"                 : null
@@ -84,6 +83,11 @@ var ourvoice = {
                                                         ,"geotags"              : []
                                                         ,"survey"               : []
                                                         ,"device"               : null
+                                                    };
+
+        app.cache.attachment                        = {
+                                                         "_id"                  : null
+                                                        ,"project_id"           : null
                                                     };
         app.initCache();
     }
@@ -440,7 +444,6 @@ var ourvoice = {
             $(".mediaitem .audiorec[rel='"+photo_i+"']").addClass("hasAudio");
             $("#pic_review .daction.audio").addClass("hasAudio");
             
-            console.log(app.cache.audioObj[recordFileName]);
             ourvoice.drawSavedAudio(photo_i,recordFileName);
 
             //NOW SAVE IT AS AN INLINE ATTACHMENT
@@ -449,17 +452,21 @@ var ourvoice = {
             if(app.cache.platform == "iOS"){
                 //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
                 app.cache.currentAudio.file(function(file) {
-                    console.log("last thing, we need to make sure this is saved properly to couch");
-                            app.cache.user[app.cache.current_session]._attachments[recordFileName] = { "content_type": "audio/" + app.cache.audioformat , "data" : file };
-
-                            //RECORD AUDIO ATTACHMENT 
-                            datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
-                        }
-                        ,function(err){
-                            console.log(err);
-                            // console.log("ERROR FILE");                
-                        }
-                    );
+                        //RECORD AUDIO ATTACHMENT 
+                        //TODO instead of carrying an image all over, just put it directly to the pouchDB asap and forget it
+                        var attach_rev = app.cache.attachment.hasOwnProperty("_rev") ? app.cache.attachment["_rev"] : null;
+                        datastore.addAttachment( app.cache.localattachmentsdb
+                                                ,app.cache.attachment["_id"]
+                                                ,attach_rev
+                                                ,recordFileName
+                                                ,file
+                                                ,"audio/" + app.cache.audioformat );
+                    }
+                    ,function(err){
+                        console.log(err);
+                        // console.log("ERROR FILE");                
+                    }
+                );
             }else{
                 //ANDROID IS HANDLED IN THE MEDIA OBJECT COMPLETE CALLBACK
             }
@@ -542,14 +549,16 @@ var ourvoice = {
 
                                 fileEntry.file(function(file) {
                                         var cdvpath = file["localURL"];
-                                        // console.log("file",file);
 
                                         //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
-                                        // console.log("last thing, we need to make sure this is saved properly to couch");
-                                        app.cache.user[app.cache.current_session]._attachments[recordFileName] = { "content_type": file.type , "data" : file };
-
                                         //RECORD AUDIO ATTACHMENT 
-                                        datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
+                                        var attach_rev = app.cache.attachment.hasOwnProperty("_rev") ? app.cache.attachment["_rev"] : null;
+                                        datastore.addAttachment( app.cache.localattachmentsdb
+                                                                ,app.cache.attachment["_id"]
+                                                                ,attach_rev
+                                                                ,recordFileName
+                                                                ,file
+                                                                ,"audio/" + app.cache.audioformat );
                                     }
                                     ,function(err){ console.log(err); }
                                 );
@@ -639,11 +648,19 @@ var ourvoice = {
 
                 //PREPARE ATTACHEMENT
                 var attref      = "photo_" + thispic_i + ".jpg";
-                app.cache.user[app.cache.current_session]._attachments[attref] = { "content_type": "image/jpeg" , "data" : imageData };
-                
+
                 //RECORD PHOTO DATAURL
                 datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
 
+                //TODO
+                var attach_rev = app.cache.attachment.hasOwnProperty("_rev") ? app.cache.attachment["_rev"] : null;
+                datastore.addAttachment( app.cache.localattachmentsdb
+                                        ,app.cache.attachment["_id"]
+                                        ,attach_rev
+                                        ,attref
+                                        ,imageData
+                                        ,"image/jpeg" );
+    
                 //SET UP PHOTO PREVIEW PAGE
                 ourvoice.previewPhoto(app.cache.user[app.cache.current_session].photos[thispic_i], fileurl);
 
@@ -763,11 +780,12 @@ var ourvoice = {
                     app.cache.user[app.cache.current_session].photos.splice(photo_i,1);
                 }
 
-                //BUT OK TO USE ON _attachements array?  ok
-                delete app.cache.user[app.cache.current_session]._attachments["photo_"+photo_i+".jpg"];
+                //TODO WHEN WORKS REMOVE ABOVE
+                // delete app.cache.attachments[app.cache.current_session]._attachments["photo_"+photo_i+".jpg"];
+
                 for(var filekey in app.cache.user[app.cache.current_session]._attachments){
                     if(filekey.indexOf("audio_"+photo_i+"_") > -1){
-                        delete app.cache.user[app.cache.current_session]._attachments[filekey];
+                        // delete app.cache.attachments[app.cache.current_session]._attachments[filekey];
                     }
                 }
 
@@ -779,6 +797,9 @@ var ourvoice = {
 
                     //RECORD DELETED PHOTO
                     datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
+
+                    //TODO REMOVE ABOVE WHEN WORKS, THEN REMOVETHIS SOMEHOW
+                    datastore.writeDB(app.cache.localattachmentsdb , app.cache.attachments[app.cache.current_session]);
                     next();
                 });
              },            // callback to invoke with index of button pressed
@@ -788,60 +809,8 @@ var ourvoice = {
         return;
     }
 
-    ,syncLocalData: function(){
-        $("#datastatus i").removeClass("synced");
-        window.plugins.insomnia.keepAwake();
-
-        datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
-            if(info.hasOwnProperty("status")){
-                //.onComplete
-                if(info["ok"] && info["status"] == "complete"){
-                    $("#datastatus i").addClass("synced");
-                   
-                   setTimeout(function(){
-                        $(".uploading").removeClass("uploading");
-                   },1500);
-                    
-                    ourvoice.clearAllAudio();
-                    // datastore.emptyUsersDB();
-
-                    window.plugins.insomnia.allowSleepAgain();
-                }else{
-                    $("#datastatus i").removeClass("synced");
-                }
-            }else{
-                //.onChange
-                for(var i in info["docs"]){
-                    var changed_doc = info["docs"][i];
-                    var _id         = changed_doc["_id"];
-                    var _rev        = changed_doc["_rev"];
-                    app.cache.localusersdb.get(_id).then(function (doc) {
-                        doc.uploaded = true;
-
-                        app.cache.localusersdb.put(doc);
-
-                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
-                        $("i[data-docid='"+_id+"']").addClass("uploaded");
-                    }).catch(function (werr) {
-                        app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
-                        datastore.showError(werr);
-                    });
-                }
-            }
-
-        });  
-
-        datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(info){
-            if(info.hasOwnProperty("status")){
-                datastore.emptyLogsDB();
-                console.log("local logs synced and deleted");
-            }
-        }); 
-    }
-
     ,finished : function(){
         //THIS COMES FROM LAST SURVEY PAGE
-        
         var dist_walked     = Math.round(parseFloat(app.cache.user[app.cache.current_session]["currentDistance"]) * 10) / 10;
         var photos_took     = app.cache.user[app.cache.current_session]["photos"].length;
         var audios_recorded = 0;
@@ -871,6 +840,104 @@ var ourvoice = {
         $(".delete_on_reset").remove();
 
         app.log("RESETING DEVICE STATE");
+        return;
+    }
+
+    ,syncLocalData: function(){
+        $("#datastatus i").removeClass("synced");
+        window.plugins.insomnia.keepAwake();
+
+        datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
+            if(info.hasOwnProperty("status")){
+                //.onComplete
+                if(info["ok"] && info["status"] == "complete"){
+                    $("#datastatus i").addClass("synced");
+                   
+                    // setTimeout(function(){
+                    //      $(".uploading").removeClass("uploading");
+                    // },1500);
+
+                    // ourvoice.clearAllAudio();
+                    // datastore.deleteDB(app.cache.localusersdb,function(){});
+                    console.log("user uploaded")
+                    window.plugins.insomnia.allowSleepAgain();
+                }else{
+                    $("#datastatus i").removeClass("synced");
+                }
+            }else{
+                //.onChange
+                for(var i in info["docs"]){
+                    var changed_doc = info["docs"][i];
+                    var _id         = changed_doc["_id"];
+                    var _rev        = changed_doc["_rev"];
+                    app.cache.localusersdb.get(_id).then(function (doc) {
+                        doc.uploaded = true;
+
+                        app.cache.localusersdb.put(doc);
+
+                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
+                        $("i[data-docid='"+_id+"']").addClass("uploaded");
+                    }).catch(function (werr) {
+                        app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
+                        datastore.showError(werr);
+                    });
+                }
+            }
+        }); 
+
+        datastore.localSyncDB(app.cache.localattachmentsdb, app.cache.remoteattachmentsdb, function(info){
+            if(info.hasOwnProperty("status")){
+                //.onComplete
+                if(info["ok"] && info["status"] == "complete"){
+                    $("#datastatus i").addClass("synced_attachments");
+                   
+                    setTimeout(function(){
+                        $(".uploading").removeClass("uploading_attachments");
+                    },1500);
+                    
+                    ourvoice.clearAllAudio();
+                    // datastore.deleteDB(app.cache.localattachmentsdb,function(){});
+                    console.log("attachments uploaded to log?");
+                    window.plugins.insomnia.allowSleepAgain();
+                }else{
+                    $("#datastatus i").removeClass("synced");
+                }
+            }else{
+                //.onChange
+                for(var i in info["docs"]){
+                    var changed_doc = info["docs"][i];
+                    var _id         = changed_doc["_id"];
+                    var _rev        = changed_doc["_rev"];
+                    app.cache.localattachmentsdb.get(_id).then(function (doc) {
+                        doc.uploaded = true;
+                        app.cache.localattachmentsdb.put(doc);
+
+                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded_attachments");
+                        $("i[data-docid='"+_id+"']").addClass("uploaded_attachments");
+                    }).catch(function (werr) {
+                        app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
+                        datastore.showError(werr);
+                    });
+                }
+            }
+        });  
+
+        datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(info){
+            if(info.hasOwnProperty("status")){
+                datastore.deleteDB(app.cache.locallogdb,function(){
+
+                });
+                console.log("local logs synced and deleted");
+            }
+        }); 
+    }
+
+    ,deleteLocalDB : function(){
+        //DELETE LOCAL USER DB
+        datastore.deleteDB(app.cache.localprojdb, function(){});
+        datastore.deleteDB(app.cache.localusersdb, function(){});
+        datastore.deleteDB(app.cache.localattachmentsdb, function(){});
+        datastore.deleteDB(app.cache.locallogdb, function(){});
         return;
     }
 };

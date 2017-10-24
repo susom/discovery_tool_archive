@@ -19,20 +19,20 @@
 var app = {
     // app cache - in memory data store
     cache : {
-        "active_project" : { "_id" : "active_project" }
+         "active_project" : { "_id" : "active_project" }
+        ,"user" : []
+        ,"current_session" : 0
+        ,"attachment" : {}
+        ,"reset_dbs"  : 0
     }
 
     // Application Constructor
     ,initialize: function() {
-        app.cache.user                  = [];
-        app.cache.current_session       = 0;
-
         this.bindEvents();
     }
     
     ,initCache : function(){
         app.cache.db_fail_timeout       = null;
-        app.cache.testgoodbad           = null;
 
         app.cache.online                = false;
         app.cache.positionTrackerId     = null; //ref to setInterval
@@ -43,80 +43,63 @@ var app = {
         app.cache.next_id               = null; //NEXT USER ID - POUCH COLLATED
         app.cache.participant_id        = null; //JUST SIMPLE INTEGER
 
-        app.cache.audioObj              = {}; //FOR VOICE RECORDINGS
+        app.cache.audioObj              = {};   //FOR VOICE RECORDINGS
         app.cache.audioStatus           = null;
         app.cache.currentAudio          = null;
         app.cache.playbackTimer         = null;
 
-        app.cache.saveToAlbum           = true;
+        app.cache.saveToAlbum           = false;
     }
 
     ,bindEvents: function() {
         // The scope of 'this' is the event. 
         // In order to call the 'receivedEvent' we call this.receivedEvent
         // Bind any events that are required on startup. "deviceready" is a must "pause" and "resume" seem useful
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-        document.addEventListener('pause'  , this.onDevicePause, false);
-        document.addEventListener('resume' , this.onDeviceResume, false);
-    }
-
-    ,onDevicePause: function() {
-        //IF THEY PAUSE WHAT SHOULD HAPPEN?
-        //KEEP USER INFO IN THE APP/LOCAL
-        // app.log("DEVICE PAUSING");
-   
-        console.log("phone paused");
-    }
-
-    ,onDeviceResume: function() {
-        //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
-        //SO NO DO NOT RELOAD PROJECT
-        // app.log("DEVICE RESUMING");  
+        document.addEventListener('deviceready' , this.onDeviceReady,   false);
+        document.addEventListener('pause'       , this.onDevicePause,   false);
+        document.addEventListener('resume'      , this.onDeviceResume,  false);
     }
 
     ,onDeviceReady: function() {
         //FIRST APP LOAD, SO SET UP NEW USER SESSION
+        window.plugins.insomnia.keepAwake();
+
         //sets up app.cache.current_session for use throughout the session
         ourvoice.newUserSession();
 
-        //START PINGING ONLINE STATE, AND FILL IN OTHER GLOBAL VARIABLES
-        app.cache.online        = navigator.onLine;
+        // //START PINGING ONLINE STATE, AND FILL IN OTHER GLOBAL VARIABLES
+        app.cache.online                = navigator.onLine;
         utils.pingNetwork();
 
-        app.cache.uuid          = device.uuid;
-        app.cache.platform      = device.platform;
-        app.cache.audioformat   = app.cache.platform == "iOS" ? "wav" : "amr";
+        app.cache.uuid                  = device.uuid;
+        app.cache.platform              = device.platform;
+        app.cache.audioformat           = app.cache.platform == "iOS" ? "wav" : "amr";
         
-        //1) OPEN LOCAL AND REMOTE DB
-        app.cache.remoteusersdb = config["database"]["users_remote"];
-        app.cache.remotelogdb   = config["database"]["log_remote"];  
-        app.cache.remoteprojdb  = config["database"]["proj_remote"];
+        //OPEN LOCAL AND REMOTE DB
+        app.cache.remoteprojdb          = config["database"]["proj_remote"];
+        app.cache.remoteusersdb         = config["database"]["users_remote"];
+        app.cache.remoteattachmentsdb   = config["database"]["attachments_remote"];
+        app.cache.remotelogdb           = config["database"]["log_remote"];  
 
-        app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]);
-        app.cache.localusersdb  = datastore.startupDB(config["database"]["users_local"]); 
-        app.cache.localprojdb   = datastore.startupDB(config["database"]["proj_local"]);
-            
-        //FIGURE OUT ANDROID CACHE LOCATION ONCE AND FOR ALL
-        // ourvoice.androidInternalMemory();
-        // return;
+        app.cache.localprojdb           = datastore.startupDB(config["database"]["proj_local"]);
+        app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
+        app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
+        app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
+
+        // this SQL PLUGIN IS BORKED or NEVER WORKED or WORKS BUT GIVES A FALSE ERRor?!!
+        // console.log(app.cache.localattachmentsdb.adapter);
 
         // CLEAN SLATE 
-        //this SQL PLUGIN IS BORKED or NEVER WORKED
-        // console.log("kill me now please");
-        // console.log("This damn sqlite plugin is working ? " + !!window.sqlitePlugin);
-
-        // datastore.deleteLocalDB();
-        // return;  
-
-        //2) PUSH ONCE 
-        // ourvoice.syncLocalData(); //LOCAL DATA TO REMOTE 
-        // return;
+        // localStorage.clear();
+        // ourvoice.deleteLocalDB();
         
+        //Once DB loads, it will cleartimeout (if less than 12 seconds that is)
         app.cache.db_fail_timeout = setTimeout(function(){
             $("#loading_message").text("Could not reach database, try again later");
             $("#main").addClass("failed");
         },12000);
 
+        //iff app online then goahead and try to pull an updated (if exists) copy of project data
         if(app.cache.online){
             // $("#loading_message").text("Online");
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
@@ -137,17 +120,10 @@ var app = {
                 ourvoice.getActiveProject();
             });
         }else{
-            // $("#loading_message").text("Offline");
             ourvoice.getActiveProject();
         }
 
-        $("#letsgo").on("click",function(){
-            //SPECIAL EXTRA ACTIONS TO DO ON 'start a walk' button on first page
-            // console.log("lets start a new session everytime someone clicks 'start a walk'");
-            // ourvoice.resetDevice(); 
-        });
-
-        //5) ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
+        //ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
         $(".button[data-next]").not(".audiorec,.camera,.finish").on("click",function(){
             //GET CURRENT PANEL
             var panel       = $(this).closest(".panel");
@@ -163,10 +139,10 @@ var app = {
                         ourvoice.syncLocalData(); 
 
                         var bail = $(this);
-                        setTimeout(function(){
-                            bail.removeClass("uploading");
-                            // app.showNotif("Something went wrong", "Please try again later when on wifi");
-                        },15000);
+                        // setTimeout(function(){
+                        //     bail.removeClass("uploading");
+                        //     app.showNotif("Something went wrong", "Please try again later when on wifi");
+                        // },15000);
                     }
                 }
                 return false;
@@ -203,9 +179,19 @@ var app = {
                             }
                             ourvoice.resetDevice();
 
-                            // EMPTY LOCAL DATABASE.... 
-                            datastore.emptyUsersDB();
-                            datastore.emptyLogsDB();
+                            // EMPTY LOCAL DATABASE....
+                            datastore.deleteDB(app.cache.localusersdb, function(){
+                                app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
+                            });
+                            
+                            datastore.deleteDB(app.cache.localattachmentsdb, function(){
+                                app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
+                            });
+
+                            datastore.deleteDB(app.cache.locallogdb, function(){
+                                app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
+
+                            });
 
                             //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
                             //RECORD THE ACTIVE PROJECT
@@ -220,6 +206,7 @@ var app = {
                         ['Cancel','Continue']     // buttonLabels
                     );
                 }else{
+                    $("#main").addClass("loaded");
                     app.showNotif("Please Try Again","Wrong ProjectID or Password", function(){});
                     return false;
                 }
@@ -232,8 +219,6 @@ var app = {
             if(next == "project_about"){}
 
             if(next == "consent_0"){
-                //START NEW SESSION HERE? OR AT START WALK?
-
                 //THIS IS IMPORTANT
                 app.cache.user[app.cache.current_session].project_id    = app.cache.active_project.i;
                 app.cache.user[app.cache.current_session].lang          = $("select[name='language']").val();
@@ -247,15 +232,17 @@ var app = {
                      ,"version"         : device.version
                 };
 
+                //TODO
+                app.cache.attachment._id        = app.cache.next_id;
+                app.cache.attachment.project_id = app.cache.active_project.i;
+
                 app.log("Starting consent process for User " + app.cache.user[app.cache.current_session]._id);
             }
             
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
                 $(".mi_slideout").addClass("reviewable");
-                ourvoice.startWatch(8000);
-                
+                ourvoice.startWatch(8000);   
                 app.cache.history = [];
-                
                 app.log("start  walk");
             }else if($(this).hasClass("continuewalk")){
                 $("#recent_pic").attr("src","");
@@ -288,7 +275,7 @@ var app = {
 
         $(".panel").on("click",".votes .vote", function(){
             //VOTE GOOD AND/OR BAD
-            var curPhoto    = $(this).data("photo_i");
+            var curPhoto = $(this).data("photo_i");
             
             // ONLY REMOVE IF MUTUALLY EXCLUSIVE
             // $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "'],.vote.meh[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
@@ -337,7 +324,6 @@ var app = {
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#"+next),1);
             }
-
             app.log("delete photo");
 
             ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
@@ -546,13 +532,12 @@ var app = {
         //REVIEW PHOTOS SLIDEOUT
         $(".mi_slideout").click(function(){
             $("#mediacaptured").addClass("preview");
-
-            app.log("calling slideout Preview");
             return false;
         });
 
         $("#mediacaptured .slideclose").click(function(){
             $("#mediacaptured").removeClass("preview");
+            return false;
         });
 
         //DOCUMENT CLICKS FOR CLOSING POPUPS
@@ -582,18 +567,53 @@ var app = {
             return false;
         });
 
-        var myElement   = document.getElementById('main');
-        var hammertime  = new Hammer(myElement);
-        // hammertime.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
-        hammertime.on('swipeleft', function(ev) {
-            //swipe left go to forward?
-            console.log("swiped left");
+        $("copyright").click(function(){
+            // click on the copyright 5 x to reset all 3 local databases
+            app.cache.reset_dbs++;
+
+            if(app.cache.reset_dbs == 5){
+                app.cache.reset_dbs = 0;
+
+                datastore.deleteDB(app.cache.localusersdb, function(){
+                    app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
+                });
+                
+                datastore.deleteDB(app.cache.localattachmentsdb, function(){
+                    app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
+                });
+
+                datastore.deleteDB(app.cache.locallogdb, function(){
+                    app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
+                });
+                
+                app.showNotif("Databases Reset","", function(){});
+            }
         });
-        hammertime.on('swiperight',function(){
-            //swipe right to go back
-            console.log("swiped right");
-            // app.goBack()
-        });
+
+        // var myElement   = document.getElementById('main');
+        // var hammertime  = new Hammer(myElement);
+        // // hammertime.get('swipe').set({ direction: Hammer.DIRECTION_ALL });
+        // hammertime.on('swipeleft', function(ev) {
+        //     //swipe left go to forward?
+        //     console.log("swiped left");
+        // });
+        // hammertime.on('swiperight',function(){
+        //     //swipe right to go back
+        //     console.log("swiped right");
+        //     // app.goBack()
+        // });
+    }
+
+    ,onDevicePause: function() {
+        //IF THEY PAUSE WHAT SHOULD HAPPEN?
+        //KEEP USER INFO IN THE APP/LOCAL
+        // app.log("DEVICE PAUSING");
+    }
+
+    ,onDeviceResume: function() {
+        //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
+        //SO NO DO NOT RELOAD PROJECT
+        // app.log("DEVICE RESUMING");  
     }
 
     ,goBack : function(){
@@ -610,7 +630,6 @@ var app = {
         app.closeCurrentPanel($(".panel.loaded"));
         app.transitionToPanel($("#"+tempnext));
 
-        app.log("goBack() to : " + tempnext);
         return false;
     }
 
@@ -644,31 +663,31 @@ var app = {
             ,title
             ,"Close");
 
-        app.log("Showing Notif : " + bodytext);
+        // app.log("Showing Notif : " + bodytext);
         return;
     }
 
     ,log : function(msg,type){
-        var msg_type    = !type ? "INFO" : type;
-        var timestamp   = Date.now();
-        var proj_id     = app.cache.active_project.hasOwnProperty("i") ? app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] : "GENERAL";
-        var msg_id      = datastore.pouchCollate([
-             proj_id
-            ,msg_type
-            ,app.cache.uuid
-            ,timestamp
-        ]);
-        var log_obj     = {
-             "_id"      : msg_id
-            ,"type"     : msg_type
-            ,"timestamp": timestamp
-            ,"msg"      : msg
-            ,"user_id"  : app.cache.user[app.cache.current_session].user_id
-            ,"platform" : app.cache.platform
-        }
+        // var msg_type    = !type ? "INFO" : type;
+        // var timestamp   = Date.now();
+        // var proj_id     = app.cache.active_project.hasOwnProperty("i") ? app.cache.projects["project_list"][app.cache.active_project.i]["project_id"] : "GENERAL";
+        // var msg_id      = datastore.pouchCollate([
+        //      proj_id
+        //     ,msg_type
+        //     ,app.cache.uuid
+        //     ,timestamp
+        // ]);
+        // var log_obj     = {
+        //      "_id"      : msg_id
+        //     ,"type"     : msg_type
+        //     ,"timestamp": timestamp
+        //     ,"msg"      : msg
+        //     ,"user_id"  : app.cache.user[app.cache.current_session].user_id
+        //     ,"platform" : app.cache.platform
+        // }
 
-        console.log(msg);
         //RECORD LOG MESSAGE
         // datastore.writeDB(app.cache.locallogdb, log_obj);
+        console.log(msg);
     }
 };

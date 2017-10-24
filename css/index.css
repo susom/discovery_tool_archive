@@ -268,7 +268,7 @@ nav .list{
     /*background:url(../img/icon_thumbs.png) top right no-repeat;*/
     background-size:200%;
 }
-#datastatus i.synced{
+#datastatus i.synced.synced_attachments{
     background-position:top left;
 }
 
@@ -1442,7 +1442,6 @@ nowrap{
     /*ADMIN SPLASH - SETUP PAGE*/
     #list_data {
         opacity:1;
-        border:1px solid red;
     }
     #list_data table {
         margin-top:20px;

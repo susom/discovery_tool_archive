@@ -2,9 +2,9 @@ var datastore = {
     db : null
 
     ,startupDB: function(dbname){
+        
         var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default', auto_compaction: true, adapter: 'cordova-sqlite'});
         if (!db.adapter) {
-            console.log("no adapter");
           db = new PouchDB(dbname);
         }
         return db;
@@ -50,8 +50,11 @@ var datastore = {
 
     ,writeDB : function(db,_o){
         db.put(_o).then(function (new_o) {
-            var _rev = new_o.rev;
-            _o._rev = _rev;
+            var _rev    = new_o.rev;
+            _o._rev     = _rev;
+            if(_o.hasOwnProperty("_attachments")){
+                app.cache.attachment["_rev"] = _rev;
+            }
             app.log("JSON OBJECT SUCCESFULLY SAVED : " + _o._id + " , rev : " + _o._rev);
         }).catch(function (err) {
             app.log("ERROR WRITING TO A DB", "Error");
@@ -100,7 +103,7 @@ var datastore = {
             //ACTUAL DETAILS THE CHANGES MADE
             // console.log("CHANGE CALLBACK");
             // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","docs"]);
-            _callBack(info);
+            // _callBack(info);
         }).catch(function (err) {
             // However, there is one gotcha with live replication: 
             // what if the user goes offline? In those cases, an error will be thrown 
@@ -126,18 +129,25 @@ var datastore = {
             // what if the user goes offline? In those cases, an error will be thrown 
             // and replication will stop.
             
-            datastore.deleteLocalDB();
-            setTimeout(function(){
-                datastore.remoteSyncDB(localdb_obj, remotedb_str, _callBack);
-            },3000);
+            // ourvoice.deleteLocalDB();
+            // setTimeout(function(){
+            //     datastore.remoteSyncDB(localdb_obj, remotedb_str, _callBack);
+            // },3000);
 
             app.log("ERROR ON REPLICATING FROM REMOTE: " + remotedb_str);
             app.log(err);
         });
     }
 
-    ,addAttachment : function(_o, media){
-        // URL.createObjectURL();  converts base64 image into imgsrc
+    ,addAttachment : function(db, _id, _rev, attachmentId , attachment, content_type){
+        db.putAttachment(_id, attachmentId, _rev, attachment, content_type).then(function(result) {
+          // handle result
+          app.cache.attachment["_rev"] = result.rev;
+          console.log(rev);
+          console.log("attachment "+attachmentId+" attached to " + _id + " with rev : " + result.rev);
+        }).catch(function (err) {
+          console.log(err);
+        });
     }
 
     ,showError : function(e){
@@ -153,42 +163,24 @@ var datastore = {
         return component_array.join("_");
     }
 
-    ,pouchDeCollate : function(_id){
-        return window.pouchCollate.parseIndexableString(_id);
-    }
+    // ,pouchDeCollate : function(_id){
+    //     return window.pouchCollate.parseIndexableString(_id);
+    // }
 
-    ,deleteLocalDB : function(){
-        //DELETE LOCAL USER DB
-        datastore.emptyUsersDB();
-        datastore.emptyLogsDB();
-
-        //DELETE LOCAL PROJECT DB
-        app.cache.localprojdb.destroy().then(function (response) {
-            app.cache.localprojdb       = datastore.startupDB(config["database"]["proj_local"]);
-        }).catch(function (err) {
-            app.log("deleteLocalDB" + err, "Error");
-        });
-        return;
-    }
-
-    ,emptyLogsDB : function(){
-        //DELETE LOCAL DBs
-        app.cache.locallogdb.destroy().then(function (response) {
-            app.cache.locallogdb    = datastore.startupDB(config["database"]["log_local"]); 
-        }).catch(function (err) {
-            app.log("emptyLogsDB" + err, "Error");
-        });
-        return;
-    }
-
-    ,emptyUsersDB : function(){
-        //DELETE LOCAL DBs
-        app.cache.localusersdb.destroy().then(function (response) {
-            app.cache.localusersdb    = datastore.startupDB(config["database"]["users_local"]); 
-        }).catch(function (err) {
-            app.log("emptyUsersDB" + err, "Error");
-        });
-        return;
+    ,deleteDB : function(db,_callback){
+        //COMPACT AND DESTROY A DB
+        if(db){
+            db.compact().then(function (response) {
+                db.destroy().then(function (response) {
+                    app.log(db.name + " compacted and destroyed");
+                    _callback();
+                }).catch(function (err) {
+                    app.log("destroy :" + err, "Error");
+                });
+            }).catch(function (err) {
+                app.log("compact : " + err, "Error");
+            });
+        }
     }
 };
 
