@@ -1,0 +1,55 @@
+{
+  "name": "edu.stanford.discoverytool.ourvoice",
+  "version": "1.0.55",
+  "displayName": "The Discovery Tool",
+  "cordova": {
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "plugins": {
+      "cordova-plugin-camera": {},
+      "cordova-plugin-media-capture": {},
+      "cordova-plugin-dialogs": {},
+      "cordova-plugin-file": {},
+      "cordova-plugin-file-transfer": {},
+      "cordova-plugin-geolocation": {},
+      "cordova-plugin-media": {},
+      "cordova-plugin-network-information": {},
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-whitelist": {},
+      "cordova-plugin-insomnia": {},
+      "cordova-plugin-compat": {},
+      "cordova-plugin-globalization": {},
+      "cordova-plugin-device-orientation": {},
+      "cordova-plugin-device-motion": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-console": {},
+      "cordova-plugin-sqlite-2": {}
+    }
+  },
+  "dependencies": {
+    "cordova-android": "~6.3.0",
+    "cordova-ios": "~4.5.2",
+    "cordova-plugin-camera": "~2.1.1",
+    "cordova-plugin-media-capture": "~1.2.0",
+    "cordova-plugin-dialogs": "~1.2.0",
+    "cordova-plugin-file": "~4.1.1",
+    "cordova-plugin-file-transfer": "~1.5.0",
+    "cordova-plugin-geolocation": "~2.1.0",
+    "cordova-plugin-media": "~2.2.0",
+    "cordova-plugin-network-information": "~1.2.0",
+    "cordova-plugin-splashscreen": "~3.2.1",
+    "cordova-plugin-statusbar": "~2.1.2",
+    "cordova-plugin-whitelist": "~1.2.1",
+    "cordova-plugin-insomnia": "https://github.com/EddyVerbruggen/Insomnia-PhoneGap-Plugin.git",
+    "cordova-plugin-compat": "^1.1.0",
+    "cordova-plugin-globalization": "~1.0.3",
+    "cordova-plugin-device-orientation": "~1.0.2",
+    "cordova-plugin-device-motion": "~1.2.0",
+    "cordova-plugin-device": "~1.1.1",
+    "cordova-plugin-console": "~1.0.2",
+    "cordova-plugin-sqlite-2": "^1.0.4"
+  }
+}
