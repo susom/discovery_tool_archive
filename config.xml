@@ -4,12 +4,8 @@
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
     <content src="index.html" />
-    <gap:splash gap:platform="ios" height="1334" src="Splash/Default-667h@2x.png" width="750" />
-    <gap:splash gap:platform="ios" height="2208" src="Splash/Default-Portrait-736h@3x.png" width="1242" />
-    <gap:splash gap:platform="ios" height="1242" src="Splash/Default-Landscape-736h@3x.png" width="2208" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="android-minSdkVersion" value="14" />
-    <preference name="phonegap-version" value="cli-6.3.0" />
     <preference name="BackupWebStorage" value="local" />
     <preference name="StatusBarOverlaysWebView" value="false" />
     <preference name="StatusBarBackgroundColor" value="#A7A7A7" />
@@ -18,7 +14,6 @@
     <preference name="AndroidExtraFilesystems" value="files,files-external,documents,sdcard,cache,cache-external,assets,root" />
     <platform name="android">
         <allow-intent href="market:*" />
-        <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
         <icon density="ldpi" src="www/res/icon/android/drawable-ldpi-icon.png" />
         <icon density="mdpi" src="www/res/icon/android/drawable-mdpi-icon.png" />
         <icon density="hdpi" src="www/res/icon/android/drawable-hdpi-icon.png" />
