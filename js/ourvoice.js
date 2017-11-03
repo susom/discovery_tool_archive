@@ -780,15 +780,12 @@ var ourvoice = {
                     app.cache.user[app.cache.current_session].photos.splice(photo_i,1);
                 }
 
-                //TODO WHEN WORKS REMOVE ABOVE
-                // delete app.cache.attachments[app.cache.current_session]._attachments["photo_"+photo_i+".jpg"];
-
-                for(var filekey in app.cache.user[app.cache.current_session]._attachments){
-                    if(filekey.indexOf("audio_"+photo_i+"_") > -1){
-                        // delete app.cache.attachments[app.cache.current_session]._attachments[filekey];
-                    }
-                }
-
+                //TODO
+                var related_audio = "audio_"+photo_i+"_1." + app.cache.audioformat;
+                datastore.removeAttachment(app.cache.localattachmentsdb, app.cache.attachment["_id"], app.cache.attachment["_rev"] ,"photo_"+photo_i+".jpg", function(db,_id,_rev){
+                    datastore.removeAttachment(db, _id, _rev , related_audio, function(){});
+                });
+                
                 $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
                     $(this).remove();
                     var pic_count   = $(".mi_slideout b").text();
@@ -797,9 +794,6 @@ var ourvoice = {
 
                     //RECORD DELETED PHOTO
                     datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
-
-                    //TODO REMOVE ABOVE WHEN WORKS, THEN REMOVETHIS SOMEHOW
-                    datastore.writeDB(app.cache.localattachmentsdb , app.cache.attachments[app.cache.current_session]);
                     next();
                 });
              },            // callback to invoke with index of button pressed
@@ -852,15 +846,8 @@ var ourvoice = {
                 //.onComplete
                 if(info["ok"] && info["status"] == "complete"){
                     $("#datastatus i").addClass("synced");
-                   
-                    // setTimeout(function(){
-                    //      $(".uploading").removeClass("uploading");
-                    // },1500);
-
-                    // ourvoice.clearAllAudio();
                     // datastore.deleteDB(app.cache.localusersdb,function(){});
-                    console.log("user uploaded")
-                    window.plugins.insomnia.allowSleepAgain();
+                    console.log("user session uploaded")
                 }else{
                     $("#datastatus i").removeClass("synced");
                 }
@@ -872,7 +859,6 @@ var ourvoice = {
                     var _rev        = changed_doc["_rev"];
                     app.cache.localusersdb.get(_id).then(function (doc) {
                         doc.uploaded = true;
-
                         app.cache.localusersdb.put(doc);
 
                         $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
@@ -892,12 +878,11 @@ var ourvoice = {
                     $("#datastatus i").addClass("synced_attachments");
                    
                     setTimeout(function(){
-                        $(".uploading").removeClass("uploading_attachments");
+                        $(".uploading").removeClass("uploading");
                     },1500);
                     
                     ourvoice.clearAllAudio();
                     // datastore.deleteDB(app.cache.localattachmentsdb,function(){});
-                    console.log("attachments uploaded to log?");
                     window.plugins.insomnia.allowSleepAgain();
                 }else{
                     $("#datastatus i").removeClass("synced");
@@ -925,7 +910,7 @@ var ourvoice = {
         datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(info){
             if(info.hasOwnProperty("status")){
                 datastore.deleteDB(app.cache.locallogdb,function(){
-
+                    app.cache.locallogdb = datastore.startupDB(config["database"]["log_local"]);
                 });
                 console.log("local logs synced and deleted");
             }

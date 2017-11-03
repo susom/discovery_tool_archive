@@ -52,7 +52,6 @@ var app = {
     }
 
     ,bindEvents: function() {
-        // The scope of 'this' is the event. 
         // In order to call the 'receivedEvent' we call this.receivedEvent
         // Bind any events that are required on startup. "deviceready" is a must "pause" and "resume" seem useful
         document.addEventListener('deviceready' , this.onDeviceReady,   false);
@@ -85,9 +84,6 @@ var app = {
         app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
         app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
         app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
-
-        // this SQL PLUGIN IS BORKED or NEVER WORKED or WORKS BUT GIVES A FALSE ERRor?!!
-        // console.log(app.cache.localattachmentsdb.adapter);
 
         // CLEAN SLATE 
         // localStorage.clear();
@@ -139,10 +135,10 @@ var app = {
                         ourvoice.syncLocalData(); 
 
                         var bail = $(this);
-                        // setTimeout(function(){
-                        //     bail.removeClass("uploading");
-                        //     app.showNotif("Something went wrong", "Please try again later when on wifi");
-                        // },15000);
+                        app.cache.db_fail_timeout = setTimeout(function(){
+                            bail.removeClass("uploading");
+                            app.showNotif("Something went wrong", "Please try again later when on wifi");
+                        },15000);
                     }
                 }
                 return false;
@@ -190,7 +186,6 @@ var app = {
 
                             datastore.deleteDB(app.cache.locallogdb, function(){
                                 app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
-
                             });
 
                             //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
@@ -263,8 +258,7 @@ var app = {
 
                 //FREE UP THE MEMORY FOR THE MEDIA OBJECTS
                 // ourvoice.clearAllAudio();
-
-                app.log("start survey");
+                // app.log("start survey");
             }
 
             //TRANSITION TO NEXT PANEL
@@ -306,8 +300,7 @@ var app = {
                     app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-1;
                 }
             } 
-            
-            app.log("voting on photo");
+            // app.log("voting on photo");
 
             //RECORD THE VOTE
             datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
@@ -324,7 +317,7 @@ var app = {
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#"+next),1);
             }
-            app.log("delete photo");
+            // app.log("delete photo");
 
             ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
             return false;
@@ -352,14 +345,13 @@ var app = {
             var url = $(this).attr("href");
             var my_media = new Media(url,
                  function () {  
-                    console.log("playAudio():Audio Success"); 
+                    // console.log("playAudio():Audio Success"); 
                 }
                 ,function (err) { 
                     app.log(err.message); 
                 }
             );
-
-            app.log("play audio");
+            // app.log("play audio");
 
             my_media.play();
             my_media.release();
@@ -382,8 +374,7 @@ var app = {
                 });
                 app.transitionToPanel($("#loading"),savehistory);
                 app.closeCurrentPanel(panel);
-
-                app.log("take photo");
+                // app.log("take photo");
             }else{
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i,function(){
@@ -402,10 +393,10 @@ var app = {
 
             if( $(this).hasClass("hasAudio") ){
                 ourvoice.startPlaying(photo_i);
-                app.log("play audio");
+                // app.log("play audio");
             }else{
                 ourvoice.recordAudio(photo_i);
-                app.log("record audio");
+                // app.log("record audio");
             }
 
             app.closeCurrentPanel(panel);
@@ -525,8 +516,6 @@ var app = {
             $("#admin_master").show();
             $("#list_data").css("opacity",0);
             app.transitionToPanel($("#admin_view"));
-
-            app.log("Clicking review thumb");
         });
 
         //REVIEW PHOTOS SLIDEOUT

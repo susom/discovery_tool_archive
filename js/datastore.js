@@ -2,7 +2,7 @@ var datastore = {
     db : null
 
     ,startupDB: function(dbname){
-        
+        // PHONEGAP UI DOES NOT USE SQLite Plugin
         var db  = new PouchDB(dbname, {iosDatabaseLocation: 'default', auto_compaction: true, adapter: 'cordova-sqlite'});
         if (!db.adapter) {
           db = new PouchDB(dbname);
@@ -10,13 +10,20 @@ var datastore = {
         return db;
     }
 
-    ,destroyDB : function(dbname){
-        new PouchDB(dbname).destroy().then(function (){
-          app.log("DB DESTROYED: " + dbname);
-        }).catch(function (err) {
-          app.log("ERROR destroyDB(): " + dbname);
-          datastore.showError(err);
-        });
+    ,deleteDB : function(db,_callback){
+        //COMPACT AND DESTROY A DB
+        if(db){
+            db.compact().then(function (response) {
+                db.destroy().then(function (response) {
+                    app.log(db.name + " compacted and destroyed");
+                    _callback();
+                }).catch(function (err) {
+                    app.log("destroy :" + err, "Error");
+                });
+            }).catch(function (err) {
+                app.log("compact : " + err, "Error");
+            });
+        }
     }
 
     ,getDB : function(db,_id,assign_to_this){
@@ -62,25 +69,24 @@ var datastore = {
         });
     }
 
-    ,liveDB : function(db){
-        //DONT NEED THIS CAUSE THE OTHER LIVE SYNCS HAVE "change" EVENT TRIGGER TOO
-        db.changes({
-             since    : 'now'
-            ,live     : true
-        }).on('change', function(){
-
+    ,addAttachment : function(db, _id, _rev, attachmentId , attachment, content_type){
+        db.putAttachment(_id, attachmentId, _rev, attachment, content_type).then(function(result) {
+          // handle result
+          app.cache.attachment["_rev"] = result.rev;
+          console.log("attachment "+attachmentId+" attached to " + _id + " with rev : " + result.rev);
         }).catch(function (err) {
-            app.log("ERROR liveDB()", "Error");
+          console.log(err);
         });
     }
 
-    ,twoWaySyncDB : function(localdb_obj,remotedb_str){
-        localdb_obj.sync(remotedb_str, {
-            live: true
-        }).on('change', function (change) {
-        }).on('uptodate',function(update){
+    ,removeAttachment : function(db, _id, _rev, attachmentId, _callback){
+        db.removeAttachment(_id, attachmentId, _rev).then(function(result) {
+          // handle result
+          app.cache.attachment["_rev"] = result.rev;
+          _callback(db, _id, result.rev);
+          console.log("attachment "+attachmentId+" removed from " + _id + " with rev : " + result.rev);
         }).catch(function (err) {
-            app.log("ERROR twoWaySyncDB():");
+          console.log(err);
         });
     }
 
@@ -139,14 +145,25 @@ var datastore = {
         });
     }
 
-    ,addAttachment : function(db, _id, _rev, attachmentId , attachment, content_type){
-        db.putAttachment(_id, attachmentId, _rev, attachment, content_type).then(function(result) {
-          // handle result
-          app.cache.attachment["_rev"] = result.rev;
-          console.log(rev);
-          console.log("attachment "+attachmentId+" attached to " + _id + " with rev : " + result.rev);
+    ,liveDB : function(db){
+        //DONT NEED THIS CAUSE THE OTHER LIVE SYNCS HAVE "change" EVENT TRIGGER TOO
+        db.changes({
+             since    : 'now'
+            ,live     : true
+        }).on('change', function(){
+
         }).catch(function (err) {
-          console.log(err);
+            app.log("ERROR liveDB()", "Error");
+        });
+    }
+
+    ,twoWaySyncDB : function(localdb_obj,remotedb_str){
+        localdb_obj.sync(remotedb_str, {
+            live: true
+        }).on('change', function (change) {
+        }).on('uptodate',function(update){
+        }).catch(function (err) {
+            app.log("ERROR twoWaySyncDB():");
         });
     }
 
@@ -165,22 +182,6 @@ var datastore = {
 
     // ,pouchDeCollate : function(_id){
     //     return window.pouchCollate.parseIndexableString(_id);
-    // }
-
-    ,deleteDB : function(db,_callback){
-        //COMPACT AND DESTROY A DB
-        if(db){
-            db.compact().then(function (response) {
-                db.destroy().then(function (response) {
-                    app.log(db.name + " compacted and destroyed");
-                    _callback();
-                }).catch(function (err) {
-                    app.log("destroy :" + err, "Error");
-                });
-            }).catch(function (err) {
-                app.log("compact : " + err, "Error");
-            });
-        }
-    }
+    // }    
 };
 
