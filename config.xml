@@ -37,12 +37,22 @@
         <config-file parent="CFBundleURLTypes" target="*-Info.plist">
             <array>
                 <dict>
+                    <key>NSCameraUsageDescription</key>
+                    <string>The Discovery Tool app requires use of the camera for taking photos of neighborhood features</string>
+                    <key>NSMicrophoneUsageDescription</key>
+                    <string>The Discovery Tool app requires use of the microphone for recording observations of neighborhood features</string>
+                    <key>NSPhotoLibraryUsageDescription</key>
+                    <string>The Discovery Tool app may back up photos to the Photo Library</string>
+                    <key>NSLocationWhenInUseUsageDescription</key>
+                    <value>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</value>
                     <key>UIStatusBarHidden</key>
+                    <true />
+                    <key>UIFileSharingEnabled</key>
                     <true />
                     <key>UIViewControllerBasedStatusBarAppearance</key>
                     <false />
-                    <key>NSPhotoLibraryUsageDescription</key>
-                    <value>The Discovery Tool does no require usage of the Photo Library</value>
+                    <key>ITSAppUsesNonExemptEncryption</key>
+                    <false />
                 </dict>
             </array>
         </config-file>

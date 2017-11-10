@@ -268,7 +268,7 @@ nav .list{
     /*background:url(../img/icon_thumbs.png) top right no-repeat;*/
     background-size:200%;
 }
-#datastatus i.synced.synced_attachments{
+#datastatus i.synced{
     background-position:top left;
 }
 
@@ -1015,6 +1015,7 @@ copyright{
     border-radius:90px;
     width:90px;
     height:90px;
+    /*border:1px solid red;*/
 }
 #walk_summ dt{
     display:none;

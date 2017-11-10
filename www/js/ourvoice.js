@@ -36,6 +36,8 @@ var ourvoice = {
             if(synced){
                 tr.addClass("uploaded");
                 thumbs.addClass("uploaded");
+            }else{
+                // console.log("no 'sync flag'");
             }
             var up = $("<td>").append(thumbs);
 
@@ -48,7 +50,6 @@ var ourvoice = {
 
             $("#list_data tbody").append(tr);
         }
-
         return;
     }
 
@@ -818,7 +819,7 @@ var ourvoice = {
         $("#photos_took b").text(photos_took);
         $("#audios_recorded b").text(audios_recorded);
         
-        ourvoice.syncLocalData();
+        // ourvoice.syncLocalData();
 
         $(".mi_slideout").removeClass("reviewable");
 
@@ -842,17 +843,20 @@ var ourvoice = {
         window.plugins.insomnia.keepAwake();
 
         datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
-            if(info.hasOwnProperty("status")){
+            // console.log("local users db SYNC");
+            // console.log(info);
+
+            if(info.hasOwnProperty("docs_written") && info["docs_written"] < 1){
                 //.onComplete
                 if(info["ok"] && info["status"] == "complete"){
-                    $("#datastatus i").addClass("synced");
+                    // $("#datastatus i").addClass("synced");
                     // datastore.deleteDB(app.cache.localusersdb,function(){});
-                    console.log("user session uploaded")
                 }else{
-                    $("#datastatus i").removeClass("synced");
+                    // $("#datastatus i").removeClass("synced");
                 }
             }else{
                 //.onChange
+                var updated = 0;
                 for(var i in info["docs"]){
                     var changed_doc = info["docs"][i];
                     var _id         = changed_doc["_id"];
@@ -861,8 +865,8 @@ var ourvoice = {
                         doc.uploaded = true;
                         app.cache.localusersdb.put(doc);
 
-                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
-                        $("i[data-docid='"+_id+"']").addClass("uploaded");
+                        // $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
+                        // $("i[data-docid='"+_id+"']").addClass("uploaded");
                     }).catch(function (werr) {
                         app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
                         datastore.showError(werr);
@@ -872,16 +876,11 @@ var ourvoice = {
         }); 
 
         datastore.localSyncDB(app.cache.localattachmentsdb, app.cache.remoteattachmentsdb, function(info){
-            if(info.hasOwnProperty("status")){
+            if(info.hasOwnProperty("docs_written") && info["docs_written"] < 1){
                 //.onComplete
                 if(info["ok"] && info["status"] == "complete"){
-                    $("#datastatus i").addClass("synced_attachments");
+                    $("#datastatus i").addClass("synced");
                    
-                    setTimeout(function(){
-                        $(".uploading").removeClass("uploading");
-                    },1500);
-                    
-                    ourvoice.clearAllAudio();
                     // datastore.deleteDB(app.cache.localattachmentsdb,function(){});
                     window.plugins.insomnia.allowSleepAgain();
                 }else{
@@ -897,14 +896,20 @@ var ourvoice = {
                         doc.uploaded = true;
                         app.cache.localattachmentsdb.put(doc);
 
-                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded_attachments");
-                        $("i[data-docid='"+_id+"']").addClass("uploaded_attachments");
+                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
+                        $("i[data-docid='"+_id+"']").addClass("uploaded");
                     }).catch(function (werr) {
                         app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
                         datastore.showError(werr);
                     });
                 }
+                ourvoice.clearAllAudio();
+                $("#datastatus i").addClass("synced");
             }
+            setTimeout(function(){
+                console.log("uploading removed");
+                $(".uploading").removeClass("uploading");
+            },1500);
         });  
 
         datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(info){

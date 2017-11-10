@@ -73,7 +73,8 @@ var app = {
         app.cache.uuid                  = device.uuid;
         app.cache.platform              = device.platform;
         app.cache.audioformat           = app.cache.platform == "iOS" ? "wav" : "amr";
-        
+        app.cache.saveToAlbum           = app.cache.platform == "iOS" ? true : false;
+
         //OPEN LOCAL AND REMOTE DB
         app.cache.remoteprojdb          = config["database"]["proj_remote"];
         app.cache.remoteusersdb         = config["database"]["users_remote"];
@@ -137,7 +138,7 @@ var app = {
                         var bail = $(this);
                         app.cache.db_fail_timeout = setTimeout(function(){
                             bail.removeClass("uploading");
-                            app.showNotif("Something went wrong", "Please try again later when on wifi");
+                            // app.showNotif("Something went wrong", "Please try again later when on wifi");
                         },15000);
                     }
                 }
@@ -176,17 +177,17 @@ var app = {
                             ourvoice.resetDevice();
 
                             // EMPTY LOCAL DATABASE....
-                            datastore.deleteDB(app.cache.localusersdb, function(){
-                                app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
-                            });
+                            // datastore.deleteDB(app.cache.localusersdb, function(){
+                            //     app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
+                            // });
                             
-                            datastore.deleteDB(app.cache.localattachmentsdb, function(){
-                                app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
-                            });
+                            // datastore.deleteDB(app.cache.localattachmentsdb, function(){
+                            //     app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
+                            // });
 
-                            datastore.deleteDB(app.cache.locallogdb, function(){
-                                app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
-                            });
+                            // datastore.deleteDB(app.cache.locallogdb, function(){
+                            //     app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
+                            // });
 
                             //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
                             //RECORD THE ACTIVE PROJECT

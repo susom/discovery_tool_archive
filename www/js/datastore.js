@@ -109,7 +109,7 @@ var datastore = {
             //ACTUAL DETAILS THE CHANGES MADE
             // console.log("CHANGE CALLBACK");
             // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","docs"]);
-            // _callBack(info);
+            _callBack(info);
         }).catch(function (err) {
             // However, there is one gotcha with live replication: 
             // what if the user goes offline? In those cases, an error will be thrown 
