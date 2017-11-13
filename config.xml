@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.stanford.ourvoice.discoverytool" version="1.0.69" versionCode="10069" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<!-- IMPORTANT USE THIS FOR IOS and /dt FOR ANDROID MAKE EVEYRTHING ELSE THE SAME -->
+<widget id="edu.stanford.discoverytool.ourvoice" version="1.0.71" versionCode="10071" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>The Discovery Tool</name>
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
