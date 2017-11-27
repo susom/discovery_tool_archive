@@ -49,6 +49,7 @@ var app = {
         app.cache.playbackTimer         = null;
 
         app.cache.saveToAlbum           = false;
+        app.cache.accuracy_threshold    = 50;
     }
 
     ,bindEvents: function() {
@@ -78,18 +79,18 @@ var app = {
         //OPEN LOCAL AND REMOTE DB
         app.cache.remoteprojdb          = config["database"]["proj_remote"];
         app.cache.remoteusersdb         = config["database"]["users_remote"];
-        app.cache.remoteattachmentsdb   = config["database"]["attachments_remote"];
+        app.cache.remoteattachmentdb    = config["database"]["attachment_remote"];
         app.cache.remotelogdb           = config["database"]["log_remote"];  
 
         app.cache.localprojdb           = datastore.startupDB(config["database"]["proj_local"]);
         app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
-        app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
+        app.cache.localattachmentdb     = datastore.startupDB(config["database"]["attachment_local"]);
         app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
 
         // CLEAN SLATE 
         // localStorage.clear();
         // ourvoice.deleteLocalDB();
-        
+
         //Once DB loads, it will cleartimeout (if less than 12 seconds that is)
         app.cache.db_fail_timeout = setTimeout(function(){
             $("#loading_message").text("Could not reach database, try again later");
@@ -132,14 +133,34 @@ var app = {
                     if(!$(this).hasClass("uploading")){
                         //UPLOAD BUTTON
                         $(this).addClass("uploading");
-                        app.showNotif("Uploading Data", "Please be patient and leave this app open. Uploading all the photos and audio files can take up to 30 minutes.",function(){});
-                        ourvoice.syncLocalData(); 
 
-                        var bail = $(this);
-                        app.cache.db_fail_timeout = setTimeout(function(){
-                            bail.removeClass("uploading");
-                            // app.showNotif("Something went wrong", "Please try again later when on wifi");
-                        },15000);
+                        var needUpdating = 0;
+                        app.cache.localattachmentdb.allDocs({
+                          include_docs: true
+                        }).then(function (res) {
+                            var rows = res["rows"];
+                            for(var i in rows){
+                                var r_d = rows[i]["doc"];
+                                if(!r_d.hasOwnProperty("uploaded")){
+                                  needUpdating++;
+                                }
+                            }
+                            var timetoupload    = .75 * needUpdating; 
+                            timetoupload        = timetoupload.toFixed(1)
+                            app.showNotif("Uploading Data", "Please be patient and leave this app open. Uploading "+needUpdating+" photos and audio files can take up to "+timetoupload+" minutes.",function(){
+                                //TODO BUILD PROGRESS BAR AS OVERLAY?
+                                //CALCULATE HOW MANY ATTACHMENTs NEED TO BE UPLOADED TOTAL
+                                //THEN FAKE PROGRESS THE BAR WITH 10ms delay?
+                                
+                                $("#progressoverlay").addClass("uploading");
+
+                                //TODO MAYBE BRING ALL THE PROGRESS BAR WORKHERE?
+                                ourvoice.syncLocalData(needUpdating); 
+                            });
+                        }).catch(function(err){
+                            datastore.showError(err);
+                            app.showNotif("Error Uploading Data", "Please try again later.",function(){});
+                        });
                     }
                 }
                 return false;
@@ -181,10 +202,10 @@ var app = {
                             //     app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
                             // });
                             
-                            // datastore.deleteDB(app.cache.localattachmentsdb, function(){
-                            //     app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
+                            // datastore.deleteDB(app.cache.localattachmentdb, function(){
+                            //     app.cache.localattachmentdb    = datastore.startupDB(config["database"]["attachment_local"]);
                             // });
-
+                            
                             // datastore.deleteDB(app.cache.locallogdb, function(){
                             //     app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
                             // });
@@ -471,6 +492,13 @@ var app = {
             return false;
         });
 
+        $("#progressoverlay").on("click","#cancel_upload", function(){
+            $(".uploading").removeClass("uploading");
+            $("#progressbar span").width(0);
+            $("#progressoverlay b").text(0);
+            return false;
+        });
+
         $("#list_data").on("click","a.resync", function(){
             var doc_id  = $(this).data("docid");
 
@@ -492,6 +520,57 @@ var app = {
                     app.log("ERROR WRITING TO A DB", "Error");
                     datastore.showError(err);
                 });
+
+                for(var p in doc["photos"]){
+                    var photo = doc["photos"][p];
+                    var ph_id = doc_id + "_" + photo["name"];
+                    
+                    app.cache.localattachmentdb.get(ph_id).then(function (pdoc) {
+                        // handle doc
+                        delete pdoc["uploaded"];  //IF IT HAS BEEN UPLOADED PREVIOULSY IT WIL HAVE THIS
+                        
+                        //THIS IS HOW WE DIRTY IT
+                        if(pdoc.hasOwnProperty("upload_try")){
+                            pdoc["upload_try"] = parseInt(pdoc["upload_try"]) + 1;
+                        }else{
+                            pdoc["upload_try"] = 2;
+                        }
+                       
+                        app.cache.localattachmentdb.put(pdoc).then(function (new_o) {
+                            console.log("TRY A RESYNC ON RECORD " + ph_id);
+                        }).catch(function (err) {
+                            console.log("ERROR WRITING TO A DB", "Error");
+                            datastore.showError(err);
+                        });
+                    }).catch(function (err) {
+                      console.log(err);
+                    });
+
+                    var audios = photo["audios"];
+                    for(var a in audios){
+                        var au_id = doc_id + "_" + audios[a];
+                        app.cache.localattachmentdb.get(au_id).then(function (adoc) {
+                            // handle doc
+                            delete adoc["uploaded"];  //IF IT HAS BEEN UPLOADED PREVIOULSY IT WIL HAVE THIS
+                            
+                            //THIS IS HOW WE DIRTY IT
+                            if(adoc.hasOwnProperty("upload_try")){
+                                adoc["upload_try"] = parseInt(adoc["upload_try"]) + 1;
+                            }else{
+                                adoc["upload_try"] = 2;
+                            }
+                           
+                            app.cache.localattachmentdb.put(adoc).then(function (new_o) {
+                                console.log("TRY A RESYNC ON RECORD " + au_id);
+                            }).catch(function (err) {
+                                console.log("ERROR WRITING TO A DB", "Error");
+                                datastore.showError(err);
+                            });
+                        }).catch(function (err) {
+                          console.log(err);
+                        });
+                    }
+                }
             }).catch(function (err) {
               console.log(err);
             });
@@ -567,9 +646,9 @@ var app = {
                 datastore.deleteDB(app.cache.localusersdb, function(){
                     app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
                 });
-                
-                datastore.deleteDB(app.cache.localattachmentsdb, function(){
-                    app.cache.localattachmentsdb    = datastore.startupDB(config["database"]["attachments_local"]);
+
+                datastore.deleteDB(app.cache.localattachmentdb, function(){
+                    app.cache.localattachmentdb    = datastore.startupDB(config["database"]["attachment_local"]);
                 });
 
                 datastore.deleteDB(app.cache.locallogdb, function(){

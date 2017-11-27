@@ -1277,6 +1277,79 @@ nowrap{
 }
 
 
+
+#progressoverlay.uploading {
+    display:block;
+}
+#progressoverlay{
+    display:none;
+    width:300px;
+    height:160px;
+    position:absolute;
+    top: 50%;
+    transform: translateY(-25%);
+    left:50%;
+    margin-left:-150px;
+    text-align:center;
+    color:#fff;
+    border-radius:5px;
+    box-shadow:0 0 6px 6px #ccc;
+}
+#progressoverlay:before{
+    z-index:-1;
+    content:"";
+    position:absolute;
+    top:-3px;
+    left:-3px;
+    width:100%;
+    height:100%;
+    opacity:.85;
+    background:#454442;
+    border:2px solid #333;
+    border-radius:5px;
+}
+#progressoverlay h3,
+#progressoverlay h4 {
+    margin:10px 0;
+}
+#progressbar{
+    border:1px solid #333;
+    border-radius:3px;
+    background:#ccc;
+    width:280px;
+    margin:0 auto;
+    height:30px;
+    text-align:left;
+}
+#progressbar span{
+    display:inline-block;
+    width:0;
+    height:30px;
+    transition: width .6s ease;
+    background-color: #3ddcde;
+    background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+    
+    /*animation: progress-bar-stripes 1s linear infinite;*/
+}
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+#cancel_upload{
+    float:left;
+    margin-left:10px;
+    padding:2px 5px;
+    text-decoration:none;
+    color:#000;
+    border:1px solid #333;
+    border-radius:3px;
+    background:#ccc;
+
+}
 /*BIGGER SELECT BOX*/
 .touchify_text input,
 .touchify_select select,

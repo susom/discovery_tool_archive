@@ -248,7 +248,6 @@ var ourvoice = {
         app.cache.positionTrackerId = navigator.geolocation.watchPosition(
             function(position){
                 var acuracy = position.coords.accuracy;
-
                 var curLat  = position.coords.latitude;
                 var curLong = position.coords.longitude;
 
@@ -271,17 +270,19 @@ var ourvoice = {
                     app.cache.user[app.cache.current_session].geotags.push(curpos);
                 }
 
-                if(curLat != prvLat && curLong != prvLong){
-                    app.cache.user[app.cache.current_session].geotags.push(curpos); 
-                    curdist     = curdist + utils.calculateDistance(prvLat, prvLong, curLat, curLong);
-                    app.cache.user[app.cache.current_session].currentDistance = curdist;
-                }
-                
-                //SAVE THE POINTS IN GOOGLE FORMAT
-                if(utils.checkConnection()){
-                    app.cache.currentWalkMap.push(
-                        new google.maps.LatLng(curLat, curLong)
-                    );
+                if(acuracy <= app.cache.accuracy_threshold){
+                    if(curLat != prvLat && curLong != prvLong){
+                        app.cache.user[app.cache.current_session].geotags.push(curpos); 
+                        curdist     = curdist + utils.calculateDistance(prvLat, prvLong, curLat, curLong);
+                        app.cache.user[app.cache.current_session].currentDistance = curdist;
+                    
+                        //SAVE THE POINTS IN GOOGLE FORMAT
+                        if(utils.checkConnection()){
+                            app.cache.currentWalkMap.push(
+                                new google.maps.LatLng(curLat, curLong)
+                            );
+                        } 
+                    }
                 }
             }
             ,function(err){
@@ -296,7 +297,9 @@ var ourvoice = {
 
     ,tagLocation: function(add_to){
         //GEOLOCATION
-        var curpos = {};
+        // ILL JUST SET IT TO THE PREVIOUS ONE FIRST, THEN IF THIS CALLBACK DOESNT ERROR, IT WILL SET ITS OWN GEOTAG?
+        add_to["geotag"]    = app.cache.user[app.cache.current_session].geotags[app.cache.user[app.cache.current_session].geotags.length - 1];
+        curpos              = {}
         navigator.geolocation.getCurrentPosition(function(position) {
             curpos.longitude    = position.coords.longitude;
             curpos.latitude     = position.coords.latitude;
@@ -304,9 +307,13 @@ var ourvoice = {
             curpos.heading      = position.coords.heading;
             curpos.speed        = position.coords.speed;
             curpos.timestamp    = position.timestamp;
+            curpos.lat          = position.coords.latitude;
+            curpos.lng          = position.coords.longitude;
+            curpos.accuracy     = position.coords.accuracy;
             add_to["geotag"]    = curpos;
         }, function(err){
-            console.log(err);
+            // if timed out use the the latest WAtchPostiion?
+            console.log("TagLocation either it timed out or errored out? " + err);
         },{ 
               enableHighAccuracy: true
              ,maximumAge        : 100
@@ -349,23 +356,22 @@ var ourvoice = {
             title: "Starting Point"
         });
 
-
         for(var i = 1; i < geopoints; i++) {
-          latLngBounds.extend(app.cache.currentWalkMap[i]);
-          // Place the marker
-          new google.maps.Marker({
-            map: map,
-            position: app.cache.currentWalkMap[i],
-            icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 1,
-                fillColor: "#008800",
-                strokeColor: "#0000FF",
-                fillOpacity: 0.5
+            latLngBounds.extend(app.cache.currentWalkMap[i]);
+                // Place the marker
+                new google.maps.Marker({
+                map: map,
+                position: app.cache.currentWalkMap[i],
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 1,
+                    fillColor: "#008800",
+                    strokeColor: "#0000FF",
+                    fillOpacity: 0.5
 
-            },
-            title: "Point " + (i + 1)
-          });
+                },
+                title: "Point " + (i + 1)
+            });
         }
 
         // Creates the polyline object
@@ -454,14 +460,14 @@ var ourvoice = {
                 //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
                 app.cache.currentAudio.file(function(file) {
                         //RECORD AUDIO ATTACHMENT 
-                        //TODO instead of carrying an image all over, just put it directly to the pouchDB asap and forget it
-                        var attach_rev = app.cache.attachment.hasOwnProperty("_rev") ? app.cache.attachment["_rev"] : null;
-                        datastore.addAttachment( app.cache.localattachmentsdb
-                                                ,app.cache.attachment["_id"]
-                                                ,attach_rev
+                        //instead of carrying an image all over, just put it directly to the pouchDB asap and forget it
+                        datastore.addAttachment( app.cache.localattachmentdb
+                                                ,app.cache.attachment["_id"] + "_" + recordFileName
+                                                ,null
                                                 ,recordFileName
                                                 ,file
                                                 ,"audio/" + app.cache.audioformat );
+                        app.cache.user[app.cache.current_session].photos[photo_i]["audios"].push(recordFileName);
                     }
                     ,function(err){
                         console.log(err);
@@ -553,13 +559,13 @@ var ourvoice = {
 
                                         //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
                                         //RECORD AUDIO ATTACHMENT 
-                                        var attach_rev = app.cache.attachment.hasOwnProperty("_rev") ? app.cache.attachment["_rev"] : null;
-                                        datastore.addAttachment( app.cache.localattachmentsdb
-                                                                ,app.cache.attachment["_id"]
-                                                                ,attach_rev
+                                        datastore.addAttachment( app.cache.localattachmentdb
+                                                                ,app.cache.attachment["_id"] + "_" + recordFileName
+                                                                ,null
                                                                 ,recordFileName
                                                                 ,file
                                                                 ,"audio/" + app.cache.audioformat );
+                                        app.cache.user[app.cache.current_session].photos[photo_i]["audios"].push(recordFileName);
                                     }
                                     ,function(err){ console.log(err); }
                                 );
@@ -637,27 +643,25 @@ var ourvoice = {
         navigator.camera.getPicture( 
             function(imageData){
                 var fileurl = "data:image/jpeg;base64," + imageData;
+                
+                //make sure the audio gets the proper photo to save to
+                var thispic_i   = app.cache.user[app.cache.current_session].photos.length;
+                var attref      = "photo_" + thispic_i + ".jpg";
                 app.cache.user[app.cache.current_session].photos.push({
                          "audio"    : false
                         ,"geotag"   : null 
                         ,"goodbad"  : null
+                        ,"name"     : attref
+                        ,"audios"   : []
                     });
-
-                //make sure the audio gets the proper photo to save to
-                var thispic_i   = app.cache.user[app.cache.current_session].photos.length - 1;
                 var geotag      = ourvoice.tagLocation(app.cache.user[app.cache.current_session].photos[thispic_i]);
-
-                //PREPARE ATTACHEMENT
-                var attref      = "photo_" + thispic_i + ".jpg";
 
                 //RECORD PHOTO DATAURL
                 datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
 
-                //TODO
-                var attach_rev = app.cache.attachment.hasOwnProperty("_rev") ? app.cache.attachment["_rev"] : null;
-                datastore.addAttachment( app.cache.localattachmentsdb
-                                        ,app.cache.attachment["_id"]
-                                        ,attach_rev
+                datastore.addAttachment( app.cache.localattachmentdb
+                                        ,app.cache.attachment["_id"] + "_" + attref
+                                        ,null
                                         ,attref
                                         ,imageData
                                         ,"image/jpeg" );
@@ -781,11 +785,11 @@ var ourvoice = {
                     app.cache.user[app.cache.current_session].photos.splice(photo_i,1);
                 }
 
-                //TODO
+                //TODO DELETE ATTACHMENTS
                 var related_audio = "audio_"+photo_i+"_1." + app.cache.audioformat;
-                datastore.removeAttachment(app.cache.localattachmentsdb, app.cache.attachment["_id"], app.cache.attachment["_rev"] ,"photo_"+photo_i+".jpg", function(db,_id,_rev){
-                    datastore.removeAttachment(db, _id, _rev , related_audio, function(){});
-                });
+                // datastore.removeAttachment(app.cache.localattachmentsdb, app.cache.attachment["_id"], app.cache.attachment["_rev"] ,"photo_"+photo_i+".jpg", function(db,_id,_rev){
+                //     datastore.removeAttachment(db, _id, _rev , related_audio, function(){});
+                // });
                 
                 $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
                     $(this).remove();
@@ -838,23 +842,13 @@ var ourvoice = {
         return;
     }
 
-    ,syncLocalData: function(){
+    ,syncLocalData: function(needUpdating){
         $("#datastatus i").removeClass("synced");
         window.plugins.insomnia.keepAwake();
 
         datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
-            // console.log("local users db SYNC");
             // console.log(info);
-
-            if(info.hasOwnProperty("docs_written") && info["docs_written"] < 1){
-                //.onComplete
-                if(info["ok"] && info["status"] == "complete"){
-                    // $("#datastatus i").addClass("synced");
-                    // datastore.deleteDB(app.cache.localusersdb,function(){});
-                }else{
-                    // $("#datastatus i").removeClass("synced");
-                }
-            }else{
+            if(info.hasOwnProperty("docs")){
                 //.onChange
                 var updated = 0;
                 for(var i in info["docs"]){
@@ -864,9 +858,6 @@ var ourvoice = {
                     app.cache.localusersdb.get(_id).then(function (doc) {
                         doc.uploaded = true;
                         app.cache.localusersdb.put(doc);
-
-                        // $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
-                        // $("i[data-docid='"+_id+"']").addClass("uploaded");
                     }).catch(function (werr) {
                         app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
                         datastore.showError(werr);
@@ -875,49 +866,100 @@ var ourvoice = {
             }
         }); 
 
-        datastore.localSyncDB(app.cache.localattachmentsdb, app.cache.remoteattachmentsdb, function(info){
-            if(info.hasOwnProperty("docs_written") && info["docs_written"] < 1){
-                //.onComplete
-                if(info["ok"] && info["status"] == "complete"){
-                    $("#datastatus i").addClass("synced");
-                   
-                    // datastore.deleteDB(app.cache.localattachmentsdb,function(){});
-                    window.plugins.insomnia.allowSleepAgain();
-                }else{
-                    $("#datastatus i").removeClass("synced");
-                }
-            }else{
+        datastore.localSyncDB(app.cache.localattachmentdb, app.cache.remoteattachmentdb, function(info){
+            if(info.hasOwnProperty("status") && info["status"] == "complete"){
+                //onComplete
+                //THIS APPEARS AFTER THE onChange() BLOCK BELOW
+                
+                //CHANGE SYNC INDICATOR TO THUMBS UP
+                $("#datastatus i").addClass("synced");
+               
+                //TODO WHEN WE TRUST THIS WE CANTHINK ABOUT DELETING LOCAL AFTER SYNCED
+                //datastore.deleteDB(app.cache.localattachmentsdb,function(){});
+                
+                //TODO USE info["start_time"] && info["end_time"] TO CALCULATE TIME TO UPLOAD?
+                //GET DIFF BETWEEN info["start_time"] && info["end_time"]
+                // console.log("start and end time " + info["start_time"] +" | " +info["end_time"]);
+                
+                //LET THE PHONE SLEEP AGAIN
+                window.plugins.insomnia.allowSleepAgain();
+
+                //REMOVE UPLOADING SPINNER
+                setTimeout(function(){
+                    $("#cancel_upload").click();
+                    // $(".uploading").removeClass("uploading");
+                }, (needUpdating + 1) * 750);
+            }else if(info.hasOwnProperty("docs") && info["docs_written"] > 0){
                 //.onChange
-                for(var i in info["docs"]){
+                //THIS GIVES DETAILS OF UPLOADED DATA ROWS , UNFORTUNATELY THEY COME ALL AT ONCE (OR NOTHING?) SO CAN'T DO PROPER PROGRES BAR
+                // console.log(info);
+                // GO THROUGH EACH ATTACHMENT UPLOAD AND UPDATE A PROGRESS BAR? WITH ARTIFICIAL TIME IN BETWEEN FOR UI SATISFACTION
+                
+                var max_width       = 280;
+                var segment_width   = Math.round(max_width/needUpdating);
+                var current_width   = $("#progressbar span").width();
+                var current_perc    = parseInt($("#percent_uploaded").text());
+                var segment_perc    = Math.round((segment_width/max_width) * 100);
+                
+                //THIS IS HOW TO PUT ARTIFICAL DELAY IN FOR "LOOP"
+                (function next(i, maxLoops) {
                     var changed_doc = info["docs"][i];
                     var _id         = changed_doc["_id"];
                     var _rev        = changed_doc["_rev"];
-                    app.cache.localattachmentsdb.get(_id).then(function (doc) {
-                        doc.uploaded = true;
-                        app.cache.localattachmentsdb.put(doc);
 
-                        $("i[data-docid='"+_id+"']").closest("tr").addClass("uploaded");
-                        $("i[data-docid='"+_id+"']").addClass("uploaded");
+                    var filename;
+                    for(var key in changed_doc["_attachments"]) {
+                        filename = key;
+                        break;
+                    }
+
+                    var main_id  = _id.substr(0,_id.indexOf("_"+filename));
+                    app.cache.localattachmentdb.get(_id).then(function (doc) {
+                        //WHEN I "dirty" the local data with "uploaded=true" won't that trigger a new upload? doesnt matter?
+                        doc.uploaded = true;
+                        app.cache.localattachmentdb.put(doc);
+
+                        $("i[data-docid='"+main_id+"']").closest("tr").addClass("uploaded");
+                        $("i[data-docid='"+main_id+"']").addClass("uploaded");
                     }).catch(function (werr) {
-                        app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
+                        app.log("syncLocalData error UPDATING attachment data  " + _id, Error);
                         datastore.showError(werr);
                     });
-                }
+                    
+                    current_width       = current_width + segment_width;
+                    current_width       = current_width > max_width ? max_width : current_width;
+                    current_perc        = current_perc + segment_perc;
+                    current_perc        = current_perc > 100 ? 100 : current_perc;
+                    var timeout         = i * 3000;
+                    
+                    $("#progressbar span").width(current_width);
+                    $("#percent_uploaded").text(current_perc);
+
+                    // break if maxLoops has been reached
+                    if (i++ > maxLoops){
+                        return;
+                    }
+                    setTimeout(function() {
+                        // call next() recursively
+                        next(i, maxLoops);
+                    }, 750);
+                })(0, needUpdating);
+
+                var timeout = (needUpdating + 1) * 750;
+                //REMOVE UPLOADING SPINNER
+                setTimeout(function(){
+                    $("#cancel_upload").click();
+                }, timeout) ;
+
                 ourvoice.clearAllAudio();
-                $("#datastatus i").addClass("synced");
             }
-            setTimeout(function(){
-                console.log("uploading removed");
-                $(".uploading").removeClass("uploading");
-            },1500);
-        });  
+        });
 
         datastore.localSyncDB(app.cache.locallogdb, app.cache.remotelogdb, function(info){
             if(info.hasOwnProperty("status")){
                 datastore.deleteDB(app.cache.locallogdb,function(){
                     app.cache.locallogdb = datastore.startupDB(config["database"]["log_local"]);
                 });
-                console.log("local logs synced and deleted");
             }
         }); 
     }
@@ -926,7 +968,7 @@ var ourvoice = {
         //DELETE LOCAL USER DB
         datastore.deleteDB(app.cache.localprojdb, function(){});
         datastore.deleteDB(app.cache.localusersdb, function(){});
-        datastore.deleteDB(app.cache.localattachmentsdb, function(){});
+        datastore.deleteDB(app.cache.localattachmentdb, function(){});
         datastore.deleteDB(app.cache.locallogdb, function(){});
         return;
     }
