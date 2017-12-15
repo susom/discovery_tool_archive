@@ -48,7 +48,7 @@ var app = {
         app.cache.currentAudio          = null;
         app.cache.playbackTimer         = null;
 
-        app.cache.saveToAlbum           = false;
+        app.cache.saveToAlbum           = true;
         app.cache.accuracy_threshold    = 50;
     }
 
@@ -74,7 +74,7 @@ var app = {
         app.cache.uuid                  = device.uuid;
         app.cache.platform              = device.platform;
         app.cache.audioformat           = app.cache.platform == "iOS" ? "wav" : "amr";
-        app.cache.saveToAlbum           = app.cache.platform == "iOS" ? true : false;
+        // app.cache.saveToAlbum           = app.cache.platform == "iOS" ? true : false;
 
         //OPEN LOCAL AND REMOTE DB
         app.cache.remoteprojdb          = config["database"]["proj_remote"];
@@ -103,17 +103,21 @@ var app = {
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
-                // app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
-                //     var blobURL = URL.createObjectURL(blobOrBuffer);
-                //     var cssTag  = $("<link>");
-                //     cssTag.attr("rel" , "stylesheet");
-                //     cssTag.attr("type", "text/css");
-                //     cssTag.attr("href", blobURL);
-                //     $("head").append(cssTag);
-                // }).catch(function (err) {
-                //     console.log(err);
-                // });
                 
+                //TODO BRING BACK DYNAMIC CSS
+                app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
+                    var blobURL = URL.createObjectURL(blobOrBuffer);
+                    var cssTag  = $("<link>");
+                    cssTag.attr("rel" , "stylesheet");
+                    cssTag.attr("type", "text/css");
+                    cssTag.attr("href", blobURL);
+                    $("head").append(cssTag);
+                }).catch(function (err) {
+                    console.log(err);
+                });
+                
+                //TODO CHECK FOR CHANGES AND PROMPT PASSWORD AGAIN
+
                 //LOOK FOR AN ACTIVE PROJECT IF AVAIALABLE, THEN GET ALL PROJECTS
                 ourvoice.getActiveProject();
             });
@@ -636,27 +640,31 @@ var app = {
             return false;
         });
 
-        $("copyright").click(function(){
+        $("#reset_dbs").click(function(){
             // click on the copyright 5 x to reset all 3 local databases
-            app.cache.reset_dbs++;
+            navigator.notification.confirm(
+                'All Discovery Tool data saved on this device will be deleted and reset. Click \'Continue\' to proceed.', // message
+                 function(i){
+                    if(i == 1){
+                        //the button label indexs start from 1 = 'Cancel'
+                        return;
+                    }
+                    datastore.deleteDB(app.cache.localusersdb, function(){
+                        app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
+                    });
 
-            if(app.cache.reset_dbs == 5){
-                app.cache.reset_dbs = 0;
+                    datastore.deleteDB(app.cache.localattachmentdb, function(){
+                        app.cache.localattachmentdb    = datastore.startupDB(config["database"]["attachment_local"]);
+                    });
 
-                datastore.deleteDB(app.cache.localusersdb, function(){
-                    app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
-                });
-
-                datastore.deleteDB(app.cache.localattachmentdb, function(){
-                    app.cache.localattachmentdb    = datastore.startupDB(config["database"]["attachment_local"]);
-                });
-
-                datastore.deleteDB(app.cache.locallogdb, function(){
-                    app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
-                });
-                
-                app.showNotif("Databases Reset","", function(){});
-            }
+                    datastore.deleteDB(app.cache.locallogdb, function(){
+                        app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
+                    });
+                    app.showNotif("Databases Reset and Data Erased","", function(){});
+                 },            // callback to invoke with index of button pressed
+                'Reset Databases?',           // title
+                ['Cancel','Continue']     // buttonLabels
+            );
         });
 
         // var myElement   = document.getElementById('main');

@@ -232,6 +232,10 @@ nav .list{
 #step_setup .adminbtn {
     background    : tomato;
 }
+#step_setup #reset_dbs{
+    background      : red;
+    color:#fff;
+}
 #step_setup label{
     margin-bottom : 10px;
     display       : block;
@@ -254,18 +258,25 @@ nav .list{
     color              : #333;
     position           : absolute;
     left               : 0;
-    bottom             : 5px;
+    bottom             : 10px;
     text-decoration    : none;
+    padding:5px 0;
+    border:1px transparent red;
 }
 #datastatus {
     left:auto;
     right:0;
+    border:1px solid #999;
+    border-radius:5px;
+    padding:5px 10px;
+    background:#efefef;
+    box-shadow: 0 0 1px 1px #888;
+    font-weight:bold;
 }
 #datastatus i {
     display:inline-block;
     vertical-align:bottom;
     width:20px; height:25px;
-    /*background:url(../img/icon_thumbs.png) top right no-repeat;*/
     background-size:200%;
 }
 #datastatus i.synced{
@@ -1554,8 +1565,14 @@ nowrap{
         font-size     : 120%;
     }
     #step_setup .adminbtn {
-        background    : tomato;
+        background      : tomato;
     }
+
+    #step_setup #reset_dbs{
+        background      : red;
+        color:#fff;
+    }
+
     #step_setup label{
         margin-bottom : 10px;
         display       : block;

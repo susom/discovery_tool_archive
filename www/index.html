@@ -43,7 +43,7 @@
     
     <!-- THIS STYLESHEET WILL NOW BE STORED AS AN ATTACHMENT IN COUCHDB AND INCLUDED via JS -->
     <link rel="stylesheet" type="text/css" href="css/index_splash.css" />
-    <link rel="stylesheet" type="text/css" href="css/index.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="css/index.css" /> -->
     <title>Our Voice Discovery Tool</title>
 </head>
 <body>
@@ -53,7 +53,7 @@
             <span class='logo'></span>
             <hgroup>
                 <h1 data-translation-key="main_title">The Discovery Tool</h1>
-                <span id="loading_message">version 1.9</span>
+                <span id="loading_message">version 1.9.1</span>
             </hgroup>
         </div>
     </header>
@@ -98,6 +98,7 @@
                 <label><span data-translation-key="proj_id">Project Id</span>: <input type="text" id="admin_projid"/></label>
                 <label><span data-translation-key="pw">Password</span>: <input type="password" id="admin_pw"/></label>
                 <a href="#" data-next="step_zero" class="button adminbtn" data-translation-key="setup_proj">Setup Project on this Device</a>
+                <a href="#" id="reset_dbs" class="button danger" data-translation-key="reset_dbs">Reset Databases/Erase Data?</a>
             </div>
         </div>
     </div>
