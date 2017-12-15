@@ -802,9 +802,11 @@ copyright{
 }
 #pic_review .actions {
     position:relative;
+    padding:0; 
+    margin-bottom:5px;
 }
 #pic_review .actions h3 {
-    margin:0 0 10px; 
+    margin:2px 0 ; 
 }
 #pic_review .trashit {
     position:absolute; 
@@ -831,7 +833,7 @@ copyright{
 }
 #pic_review li { 
     text-align:left; 
-    margin-bottom:20px;
+    margin-bottom:10px;
     color:#333;
     width:100%;
 }

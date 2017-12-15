@@ -103,25 +103,16 @@ var app = {
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
-                
-                //TODO BRING BACK DYNAMIC CSS
-                app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
-                    var blobURL = URL.createObjectURL(blobOrBuffer);
-                    var cssTag  = $("<link>");
-                    cssTag.attr("rel" , "stylesheet");
-                    cssTag.attr("type", "text/css");
-                    cssTag.attr("href", blobURL);
-                    $("head").append(cssTag);
-                }).catch(function (err) {
-                    console.log(err);
-                });
+                app.addDynamicCss();
                 
                 //TODO CHECK FOR CHANGES AND PROMPT PASSWORD AGAIN
+                app.passwordCheck();
 
                 //LOOK FOR AN ACTIVE PROJECT IF AVAIALABLE, THEN GET ALL PROJECTS
                 ourvoice.getActiveProject();
             });
         }else{
+            app.addDynamicCss();
             ourvoice.getActiveProject();
         }
 
@@ -679,6 +670,24 @@ var app = {
         //     console.log("swiped right");
         //     // app.goBack()
         // });
+    }
+
+    ,passwordCheck: function(){
+
+        return false;
+    }
+
+    ,addDynamicCss: function(){
+        app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
+            var blobURL = URL.createObjectURL(blobOrBuffer);
+            var cssTag  = $("<link>");
+            cssTag.attr("rel" , "stylesheet");
+            cssTag.attr("type", "text/css");
+            cssTag.attr("href", blobURL);
+            $("head").append(cssTag);
+        }).catch(function (err) {
+            console.log(err);
+        });
     }
 
     ,onDevicePause: function() {
