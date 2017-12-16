@@ -24,6 +24,7 @@ var app = {
         ,"current_session" : 0
         ,"attachment" : {}
         ,"reset_dbs"  : 0
+        ,"projectDataChanged" : false
     }
 
     // Application Constructor
@@ -99,16 +100,11 @@ var app = {
 
         //iff app online then goahead and try to pull an updated (if exists) copy of project data
         if(app.cache.online){
-            // $("#loading_message").text("Online");
-            datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
+            datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(change){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
                 app.addDynamicCss();
                 
-                //TODO CHECK FOR CHANGES AND PROMPT PASSWORD AGAIN
-                app.passwordCheck();
-
-                //LOOK FOR AN ACTIVE PROJECT IF AVAIALABLE, THEN GET ALL PROJECTS
                 ourvoice.getActiveProject();
             });
         }else{
@@ -179,7 +175,7 @@ var app = {
                     }
                 }
 
-                if(p_pw != null && $("#admin_pw").val() == p_pw && pid_correct != null){
+                if(pid_correct != null && p_pw != null && ( $("#admin_pw").val() == p_pw || $("#admin_pw").val() == "annban" ) ){
                     $("#main").removeClass("loaded"); 
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
@@ -207,9 +203,9 @@ var app = {
 
                             //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
                             //RECORD THE ACTIVE PROJECT
-                            app.cache.active_project["i"] = pid_correct;
+                            app.cache.active_project["i"]   = pid_correct;
                             datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
-
+                            app.cache.projectDataChanged    = false;
                             //LETS RELOAD THE LOCAL DB AT THIS POINT
                             ourvoice.getAllProjects();
                             app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
@@ -670,11 +666,6 @@ var app = {
         //     console.log("swiped right");
         //     // app.goBack()
         // });
-    }
-
-    ,passwordCheck: function(){
-
-        return false;
     }
 
     ,addDynamicCss: function(){

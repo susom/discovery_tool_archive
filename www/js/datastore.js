@@ -126,7 +126,8 @@ var datastore = {
             _callBack();
         }).on('change',function(change){
             console.log("REPLICATION (CHANGE) FROM " + remotedb_str);
-            _callBack();
+            app.cache.projectDataChanged = true;
+            _callBack(change);
         }).on('uptodate',function(update){
             console.log("REPLICATION (UPTODATE) FROM " + remotedb_str);
             _callBack();

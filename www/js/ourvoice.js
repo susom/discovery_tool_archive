@@ -104,6 +104,7 @@ var ourvoice = {
         }).then(function (doc) {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
             app.cache.active_project = doc;
+            console.log(doc);
         }).catch(function (err) {
             console.log(err);
             app.log("get active_project error : ");
@@ -124,7 +125,7 @@ var ourvoice = {
                 $("h3.loadfail").remove();
 
                 //CHECK TO SEE IF THERE IS AN "active_project" SET YET
-                if(app.cache.active_project.hasOwnProperty("i")){
+                if(app.cache.active_project.hasOwnProperty("i") && !app.cache.projectDataChanged){
                     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                     ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
                     
