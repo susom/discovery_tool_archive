@@ -211,14 +211,15 @@ var ourvoice = {
     ,updateLanguage : function(projid,lang){
         lang        = !lang ? "en" :lang;
         var project = app.cache.projects["project_list"][app.cache.active_project["i"]];
-        var trans   = project["app_text"];
-        
+        var trans   = app.cache.projects["app_text"];
+
         //OK JUST REDO THE SURVEY EVERYTIME
         $("#survey fieldset").empty();
         survey.build(project["surveys"], lang);
         consent.build(project["consent"], lang); 
 
         $("body").removeClass().addClass(lang); 
+
         if(project["project_id"] == projid){
             for(var n in trans){
                 var kvpair      = trans[n];
