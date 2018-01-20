@@ -212,13 +212,11 @@ var ourvoice = {
         lang                = !lang ? "en" :lang;
         var project         = app.cache.projects["project_list"][app.cache.active_project["i"]];
         var trans           = app.cache.projects["app_text"];
-        var survey_trans    = app.cache.projects["survey_text"][project["template_type"]];
-        var consent_trans   = app.cache.projects["consent_text"][project["template_type"]];
-        
+        var survey_trans    = project.hasOwnProperty("template_type") ? app.cache.projects["survey_text"][project["template_type"]]  : project["surveys"];
+        var consent_trans   = project.hasOwnProperty("template_type") ? app.cache.projects["consent_text"][project["template_type"]] : project["consent"];
+
         //OK JUST REDO THE SURVEY EVERYTIME
         $("#survey fieldset").empty();
-        // survey.build(project["surveys"], lang);
-        // consent.build(project["consent"], lang); 
         survey.build(survey_trans, lang);
         consent.build(consent_trans, lang);
         
