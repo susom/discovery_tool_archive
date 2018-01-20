@@ -209,15 +209,19 @@ var ourvoice = {
     }
 
     ,updateLanguage : function(projid,lang){
-        lang        = !lang ? "en" :lang;
-        var project = app.cache.projects["project_list"][app.cache.active_project["i"]];
-        var trans   = app.cache.projects["app_text"];
-
+        lang                = !lang ? "en" :lang;
+        var project         = app.cache.projects["project_list"][app.cache.active_project["i"]];
+        var trans           = app.cache.projects["app_text"];
+        var survey_trans    = app.cache.projects["survey_text"][project["template_type"]];
+        var consent_trans   = app.cache.projects["consent_text"][project["template_type"]];
+        
         //OK JUST REDO THE SURVEY EVERYTIME
         $("#survey fieldset").empty();
-        survey.build(project["surveys"], lang);
-        consent.build(project["consent"], lang); 
-
+        // survey.build(project["surveys"], lang);
+        // consent.build(project["consent"], lang); 
+        survey.build(survey_trans, lang);
+        consent.build(consent_trans, lang);
+        
         $("body").removeClass().addClass(lang); 
 
         if(project["project_id"] == projid){
@@ -444,7 +448,7 @@ var ourvoice = {
         } else if (app.cache.audioStatus == "stop_release"){
             //STOPS RECORDING ON MEDIA OBJECT
             app.cache.audioObj[recordFileName].stopRecord();
-            
+            // app.cache.audioObj[recordFileName].play();
             //RESET FAKE TIMER
             $("#audio_time").text("00:00");
 
