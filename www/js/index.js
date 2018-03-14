@@ -138,12 +138,19 @@ var app = {
                             }
                             var timetoupload    = .75 * needUpdating; 
                             timetoupload        = timetoupload.toFixed(1)
-                            app.showNotif("Uploading Data", "Please be patient and leave this app open. Uploading "+needUpdating+" photos and audio files can take up to "+timetoupload+" minutes.",function(){
+                            app.showNotif("Uploading Data", "Please be patient and leave this app open. Uploading "+needUpdating+" total photos and audio files.",function(){
                                 //TODO BUILD PROGRESS BAR AS OVERLAY?
                                 //CALCULATE HOW MANY ATTACHMENTs NEED TO BE UPLOADED TOTAL
                                 //THEN FAKE PROGRESS THE BAR WITH 10ms delay?
                                 
                                 $("#progressoverlay").addClass("uploading");
+
+                                //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
+                                var percentFill = .50;
+                                var rate        = .05; //percent of bar per second
+                                app.cache.pbacutoff = false;
+                                ourvoice.progressBarAnimation(percentFill,rate);
+
 
                                 //TODO MAYBE BRING ALL THE PROGRESS BAR WORKHERE?
                                 ourvoice.syncLocalData(needUpdating); 
