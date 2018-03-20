@@ -870,7 +870,7 @@ var ourvoice = {
             }
         }); 
 
-        datastore.localSyncDB(app.cache.localattachmentdb, app.cache.remoteattachmentdb, function(info){
+        datastore.localSyncDB(app.cache.localattachmentdb, app.cache.remoteattachmentdb, function(info){ //callback
             if(info.hasOwnProperty("status") && info["status"] == "complete"){
                 //onComplete
                 //THIS APPEARS AFTER THE onChange() BLOCK BELOW
@@ -879,88 +879,31 @@ var ourvoice = {
                 $("#datastatus i").addClass("synced");
                 //TODO WHEN WE TRUST THIS WE CANTHINK ABOUT DELETING LOCAL AFTER SYNCED
                 //datastore.deleteDB(app.cache.localattachmentsdb,function(){});
-                
-                app.cache.pbacutoff = true;
+           
+
+
+                app.cache.pbacutoff = true; //set to true to finish cutoff in animation
+                $("i[data-docid]").addClass("uploaded");
+                $("i[data-docid]").closest("tr").addClass("uploaded");
 
                 //TODO USE info["start_time"] && info["end_time"] TO CALCULATE TIME TO UPLOAD?
                 //GET DIFF BETWEEN info["start_time"] && info["end_time"]
                 // console.log("start and end time " + info["start_time"] +" | " +info["end_time"]);
-                
+            
+
                 //LET THE PHONE SLEEP AGAIN
                 window.plugins.insomnia.allowSleepAgain();
-
                 //REMOVE UPLOADING SPINNER
                 setTimeout(function(){
                     $("#cancel_upload").click();
-                    // $(".uploading").removeClass("uploading");
-                }, (needUpdating + 1) * 750);
+                    $(".uploading").removeClass("uploading");
+                }, 180000);
             }else if(info.hasOwnProperty("docs") && info["docs_written"] > 0){
                 //.onChange
                 //THIS GIVES DETAILS OF UPLOADED DATA ROWS , UNFORTUNATELY THEY COME ALL AT ONCE (OR NOTHING?) SO CAN'T DO PROPER PROGRES BAR
                 // console.log(info);
                 // GO THROUGH EACH ATTACHMENT UPLOAD AND UPDATE A PROGRESS BAR? WITH ARTIFICIAL TIME IN BETWEEN FOR UI SATISFACTION
                 
-                //TODO FINISH THE ANIMATION
-                var percentFill = 1;
-                var rate        = .05; //percent of bar per second
-                ourvoice.progressBarAnimation(percentFill,rate);
-
-                // var max_width       = 280;
-                // var segment_width   = Math.round(max_width/needUpdating);
-                // var current_width   = $("#progressbar span").width();
-                // var current_perc    = parseInt($("#percent_uploaded").text());
-                // var segment_perc    = Math.round((segment_width/max_width) * 100);
-                
-                // //THIS IS HOW TO PUT ARTIFICAL DELAY IN FOR "LOOP"
-                // (function next(i, maxLoops) {
-                //     var changed_doc = info["docs"][i];
-                //     var _id         = changed_doc["_id"];
-                //     var _rev        = changed_doc["_rev"];
-
-                //     var filename;
-                //     for(var key in changed_doc["_attachments"]) {
-                //         filename = key;
-                //         break;
-                //     }
-
-                //     var main_id  = _id.substr(0,_id.indexOf("_"+filename));
-                //     app.cache.localattachmentdb.get(_id).then(function (doc) {
-                //         //WHEN I "dirty" the local data with "uploaded=true" won't that trigger a new upload? doesnt matter?
-                //         doc.uploaded = true;
-                //         app.cache.localattachmentdb.put(doc);
-
-                //         $("i[data-docid='"+main_id+"']").closest("tr").addClass("uploaded");
-                //         $("i[data-docid='"+main_id+"']").addClass("uploaded");
-                //     }).catch(function (werr) {
-                //         app.log("syncLocalData error UPDATING attachment data  " + _id, Error);
-                //         datastore.showError(werr);
-                //     });
-                    
-                //     current_width       = current_width + segment_width;
-                //     current_width       = current_width > max_width ? max_width : current_width;
-                //     current_perc        = current_perc + segment_perc;
-                //     current_perc        = current_perc > 100 ? 100 : current_perc;
-                //     var timeout         = i * 3000;
-                    
-                //     $("#progressbar span").width(current_width);
-                //     $("#percent_uploaded").text(current_perc);
-
-                //     // break if maxLoops has been reached
-                //     if (i++ > maxLoops){
-                //         return;
-                //     }
-                //     setTimeout(function() {
-                //         // call next() recursively
-                //         next(i, maxLoops);
-                //     }, 750);
-                // })(0, needUpdating);
-
-                // var timeout = (needUpdating + 1) * 750;
-                // //REMOVE UPLOADING SPINNER
-                // setTimeout(function(){
-                //     $("#cancel_upload").click();
-                // }, timeout) ;
-
                 ourvoice.clearAllAudio();
             }
         });
@@ -974,70 +917,64 @@ var ourvoice = {
         }); 
     }
 
-    //TODO UPDATE ANIMATION MAGIC TRICK 
-    ,progressBarAnimation : function(percentFill, rate){
+    ,progressBarAnimationStart: function(needUpdating){
         var max_width       = 280;
-        var segment_width   = Math.round(max_width/needUpdating);
+        var segment_width   = Math.round(max_width/needUpdating); //needUpdating = numFiles
+        var linear_segment_width = Math.round(max_width/100);
         var current_width   = $("#progressbar span").width();
         var current_perc    = parseInt($("#percent_uploaded").text());
-        var segment_perc    = Math.round((segment_width/max_width) * 100);
-        
+        var segment_perc    = Math.round((linear_segment_width/max_width) * 100);
+
         //THIS IS HOW TO PUT ARTIFICAL DELAY IN FOR "LOOP"
-        (function next(i, maxLoops) {
-            var changed_doc = info["docs"][i];
-            var _id         = changed_doc["_id"];
-            var _rev        = changed_doc["_rev"];
+        (function next(i, maxLoops, finished) {
+            if(!finished){
+                current_width       = current_width + linear_segment_width;
+                current_width       = current_width > (max_width*0.8) ? (max_width*0.8) : current_width;
+                current_perc        = current_perc + segment_perc;
+                current_perc        = current_perc > 80 ? 80 : current_perc;
+                var timeout         = i * 3000;
+                $("#progressbar span").width(current_width);
+                $("#percent_uploaded").text(current_perc);
+            }else{
+                var difference = max_width - current_width;
+                var increment = Math.ceil(difference/maxLoops) + ((Math.random()/3)*difference)+1;
 
-            var filename;
-            for(var key in changed_doc["_attachments"]) {
-                filename = key;
-                break;
+                console.log("increment " + increment);
+                console.log("cw " + current_width);
+                
+                current_width = current_width + increment;
+               // current_width = current_width + Math.round(max_width/maxLoops);
+                current_width = current_width > max_width ? max_width : current_width;
+
+               // current_perc = current_perc + math.round((segment_width/max_width)*100);
+                current_perc = current_perc + Math.round((increment/max_width)*100);
+                current_perc = current_perc > 100 ? 100 : current_perc;
+                $("#progressbar span").width(current_width);
+                $("#percent_uploaded").text(current_perc);
             }
-
-            var main_id  = _id.substr(0,_id.indexOf("_"+filename));
-            app.cache.localattachmentdb.get(_id).then(function (doc) {
-                //WHEN I "dirty" the local data with "uploaded=true" won't that trigger a new upload? doesnt matter?
-                doc.uploaded = true;
-                app.cache.localattachmentdb.put(doc);
-
-                $("i[data-docid='"+main_id+"']").closest("tr").addClass("uploaded");
-                $("i[data-docid='"+main_id+"']").addClass("uploaded");
-            }).catch(function (werr) {
-                app.log("syncLocalData error UPDATING attachment data  " + _id, Error);
-                datastore.showError(werr);
-            });
             
-            current_width       = current_width + segment_width;
-            current_width       = current_width > max_width ? max_width : current_width;
-            current_perc        = current_perc + segment_perc;
-            current_perc        = current_perc > 100 ? 100 : current_perc;
-            var timeout         = i * 3000;
-            
-            $("#progressbar span").width(current_width);
-            $("#percent_uploaded").text(current_perc);
-
-            // break if maxLoops has been reached
-            if (i++ > maxLoops){
-                return;
-            }
-
-            var pbanim = setTimeout(function() {
-                if(app.cache.pbacutoff){
-                    clearTimeout(pbanim);
-                    
-
-
-                }
-                // call next() recursively
-                next(i, maxLoops);
-            }, 750);
-        })(0, needUpdating);
-
-        var timeout = (needUpdating + 1) * 750;
-        //REMOVE UPLOADING SPINNER
-        setTimeout(function(){
+        if(current_width >= max_width){
             $("#cancel_upload").click();
-        }, timeout) ;
+            setTimeout(function(){},750);
+                        console.log(info);
+
+            return;
+        }
+            var pbanim = setTimeout(function() {
+                if(app.cache.pbacutoff){ //if the data upload is done...
+                    //clearTimeout(pbanim);
+
+                    next(i, maxLoops,true);
+                    //finish(current_width, current_perc);
+                    
+                }else{
+                // call next() recursively
+                    next(i, maxLoops, false);
+                }
+            }, 750); //setTimeout
+
+        })(0, needUpdating,false); //next(0,maxloops) function invoking gets called immediately
+
     }
 
     ,deleteLocalDB : function(){

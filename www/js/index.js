@@ -143,17 +143,17 @@ var app = {
                                 //CALCULATE HOW MANY ATTACHMENTs NEED TO BE UPLOADED TOTAL
                                 //THEN FAKE PROGRESS THE BAR WITH 10ms delay?
                                 
-                                $("#progressoverlay").addClass("uploading");
+                                $("#progressoverlay").addClass("uploading"); //start progress bar
 
                                 //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
-                                var percentFill = .50;
-                                var rate        = .05; //percent of bar per second
                                 app.cache.pbacutoff = false;
-                                ourvoice.progressBarAnimation(percentFill,rate);
 
 
                                 //TODO MAYBE BRING ALL THE PROGRESS BAR WORKHERE?
                                 ourvoice.syncLocalData(needUpdating); 
+                                ourvoice.progressBarAnimationStart(needUpdating);
+
+
                             });
                         }).catch(function(err){
                             datastore.showError(err);
