@@ -186,6 +186,15 @@ nav .list{
     vertical-align:top;
     margin:3px 0;
 }
+#list_data .trash{
+    text-indent:-5000px;
+    background-size:65%;
+    width:30px;
+    height:30px;
+    vertical-align:top;
+    margin:3px 0;
+    border:1px solid red;
+}
 #list_data tbody td i{
     vertical-align:top;
     margin:3px 0;

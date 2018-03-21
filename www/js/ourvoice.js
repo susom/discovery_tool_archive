@@ -31,8 +31,9 @@ var ourvoice = {
             var audio   = $("<td>").text(picount);
             var thumbs  = $("<i>").attr("data-docid",r_id);
             var reset   = $("<td>");
+            var trash   = $("<td>");
             reset.append($("<a>").addClass("resync").attr("data-docid",r_id).text('reset'));
-
+            trash.append($("<a>").addClass("trash").attr("data-docid",r_id).html('&#128465;'));
             if(synced){
                 tr.addClass("uploaded");
                 thumbs.addClass("uploaded");
@@ -47,6 +48,7 @@ var ourvoice = {
             tr.append(audio);
             tr.append(up);
             tr.append(reset);
+            tr.append(trash);
 
             $("#list_data tbody").append(tr);
         }
@@ -877,33 +879,23 @@ var ourvoice = {
                 
                 //CHANGE SYNC INDICATOR TO THUMBS UP
                 $("#datastatus i").addClass("synced");
-                //TODO WHEN WE TRUST THIS WE CANTHINK ABOUT DELETING LOCAL AFTER SYNCED
-                //datastore.deleteDB(app.cache.localattachmentsdb,function(){});
-           
 
+                app.cache.pbacutoff = true; //set to true to finish complete the upload animation
 
-                app.cache.pbacutoff = true; //set to true to finish cutoff in animation
                 $("i[data-docid]").addClass("uploaded");
                 $("i[data-docid]").closest("tr").addClass("uploaded");
 
-                //TODO USE info["start_time"] && info["end_time"] TO CALCULATE TIME TO UPLOAD?
-                //GET DIFF BETWEEN info["start_time"] && info["end_time"]
-                // console.log("start and end time " + info["start_time"] +" | " +info["end_time"]);
-            
-
                 //LET THE PHONE SLEEP AGAIN
                 window.plugins.insomnia.allowSleepAgain();
+                
                 //REMOVE UPLOADING SPINNER
                 setTimeout(function(){
                     $("#cancel_upload").click();
                     $(".uploading").removeClass("uploading");
-                }, 180000);
+                }, 180000); //??
             }else if(info.hasOwnProperty("docs") && info["docs_written"] > 0){
                 //.onChange
                 //THIS GIVES DETAILS OF UPLOADED DATA ROWS , UNFORTUNATELY THEY COME ALL AT ONCE (OR NOTHING?) SO CAN'T DO PROPER PROGRES BAR
-                // console.log(info);
-                // GO THROUGH EACH ATTACHMENT UPLOAD AND UPDATE A PROGRESS BAR? WITH ARTIFICIAL TIME IN BETWEEN FOR UI SATISFACTION
-                
                 ourvoice.clearAllAudio();
             }
         });
@@ -918,12 +910,15 @@ var ourvoice = {
     }
 
     ,progressBarAnimationStart: function(needUpdating){
-        var max_width       = 280;
-        var segment_width   = Math.round(max_width/needUpdating); //needUpdating = numFiles
-        var linear_segment_width = Math.round(max_width/100);
-        var current_width   = $("#progressbar span").width();
-        var current_perc    = parseInt($("#percent_uploaded").text());
-        var segment_perc    = Math.round((linear_segment_width/max_width) * 100);
+        var max_width               = 280;
+        var segment_width           = Math.round(max_width/needUpdating); //needUpdating = numFiles
+        var linear_segment_width    = Math.round(max_width/100);
+        var current_width           = $("#progressbar span").width();
+        var current_perc            = parseInt($("#percent_uploaded").text());
+        var segment_perc            = Math.round((linear_segment_width/max_width) * 100);
+        var timeout                 = 750;
+        var min                     = 750;
+        var max                     = 750;
 
         //THIS IS HOW TO PUT ARTIFICAL DELAY IN FOR "LOOP"
         (function next(i, maxLoops, finished) {
@@ -932,49 +927,47 @@ var ourvoice = {
                 current_width       = current_width > (max_width*0.8) ? (max_width*0.8) : current_width;
                 current_perc        = current_perc + segment_perc;
                 current_perc        = current_perc > 80 ? 80 : current_perc;
-                var timeout         = i * 3000;
+                
+                if(current_width <= max_width*.25){
+                    min = 750;
+                    max = 1000;
+                }else if(current_width <= max_width*.5){
+                    min = 1000;
+                    max = 1250;
+                }else if(current_width <= max_width*.8){
+                    min = 1250;
+                    max = 1500;
+                }
+                
+                timeout = utils.randomInRange(min,max);
                 $("#progressbar span").width(current_width);
                 $("#percent_uploaded").text(current_perc);
             }else{
-                var difference = max_width - current_width;
-                var increment = Math.ceil(difference/maxLoops) + ((Math.random()/3)*difference)+1;
-
-                console.log("increment " + increment);
-                console.log("cw " + current_width);
-                
-                current_width = current_width + increment;
-               // current_width = current_width + Math.round(max_width/maxLoops);
-                current_width = current_width > max_width ? max_width : current_width;
-
-               // current_perc = current_perc + math.round((segment_width/max_width)*100);
-                current_perc = current_perc + Math.round((increment/max_width)*100);
-                current_perc = current_perc > 100 ? 100 : current_perc;
+                var difference  = max_width - current_width;
+                var increment   = Math.ceil(difference/maxLoops) + ((Math.random()/3)*difference)+1;
+                current_width   = current_width + increment;
+                current_width   = current_width > max_width ? max_width : current_width;
+                current_perc    = current_perc + Math.round((increment/max_width)*100);
+                current_perc    = current_perc > 100 ? 100 : current_perc;
                 $("#progressbar span").width(current_width);
                 $("#percent_uploaded").text(current_perc);
             }
             
-        if(current_width >= max_width){
-            $("#cancel_upload").click();
-            setTimeout(function(){},750);
-                        console.log(info);
+            if(current_width >= max_width){
+                $("#cancel_upload").click();
+                setTimeout(function(){ },750);
+                return;
+            }
 
-            return;
-        }
             var pbanim = setTimeout(function() {
                 if(app.cache.pbacutoff){ //if the data upload is done...
-                    //clearTimeout(pbanim);
-
-                    next(i, maxLoops,true);
-                    //finish(current_width, current_perc);
-                    
+                    next(i, maxLoops, true);
                 }else{
-                // call next() recursively
+                    // call next() recursively
                     next(i, maxLoops, false);
                 }
-            }, 750); //setTimeout
-
-        })(0, needUpdating,false); //next(0,maxloops) function invoking gets called immediately
-
+            }, timeout); //setTimeout
+        })(0, needUpdating, false); //next(0,maxloops) function invoking gets called immediately
     }
 
     ,deleteLocalDB : function(){

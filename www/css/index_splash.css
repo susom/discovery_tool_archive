@@ -186,7 +186,10 @@ header:after {
     background:url(../img/icon_reset.png) 50% no-repeat;
 }
 
-
+.trash {
+    background:url(../img/icon_trash.png) 50% 20% no-repeat;
+    background-size:20%;
+}
 .walk {
     background:#91AA3A url(../img/icon_walk.png) 50% 20% no-repeat;
     background-size:20%;

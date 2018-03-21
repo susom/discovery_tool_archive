@@ -136,24 +136,16 @@ var app = {
                                   needUpdating++;
                                 }
                             }
-                            var timetoupload    = .75 * needUpdating; 
-                            timetoupload        = timetoupload.toFixed(1)
-                            app.showNotif("Uploading Data", "Please be patient and leave this app open. Uploading "+needUpdating+" total photos and audio files.",function(){
-                                //TODO BUILD PROGRESS BAR AS OVERLAY?
-                                //CALCULATE HOW MANY ATTACHMENTs NEED TO BE UPLOADED TOTAL
-                                //THEN FAKE PROGRESS THE BAR WITH 10ms delay?
+
+                            app.showNotif("Uploading Data", "Please be patient and leave this app open until data upload is complete.",function(){
                                 
                                 $("#progressoverlay").addClass("uploading"); //start progress bar
 
                                 //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
                                 app.cache.pbacutoff = false;
 
-
-                                //TODO MAYBE BRING ALL THE PROGRESS BAR WORKHERE?
                                 ourvoice.syncLocalData(needUpdating); 
                                 ourvoice.progressBarAnimationStart(needUpdating);
-
-
                             });
                         }).catch(function(err){
                             datastore.showError(err);
@@ -186,40 +178,17 @@ var app = {
                     $("#main").removeClass("loaded"); 
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
-                    navigator.notification.confirm(
-                        'Setup of a new project will erase any Discovery Tool data previously saved on this device. Click \'Continue\' to proceed.', // message
-                         function(i){
-                            if(i == 1){
-                                //the button label indexs start from 1 = 'Cancel'
-                                return;
-                            }
-                            ourvoice.resetDevice();
+                    
+                    ourvoice.resetDevice();
 
-                            // EMPTY LOCAL DATABASE....
-                            // datastore.deleteDB(app.cache.localusersdb, function(){
-                            //     app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
-                            // });
-                            
-                            // datastore.deleteDB(app.cache.localattachmentdb, function(){
-                            //     app.cache.localattachmentdb    = datastore.startupDB(config["database"]["attachment_local"]);
-                            // });
-                            
-                            // datastore.deleteDB(app.cache.locallogdb, function(){
-                            //     app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
-                            // });
+                    //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                    //RECORD THE ACTIVE PROJECT
+                    app.cache.active_project["i"]   = pid_correct;
+                    datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
+                    app.cache.projectDataChanged    = false;
 
-                            //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
-                            //RECORD THE ACTIVE PROJECT
-                            app.cache.active_project["i"]   = pid_correct;
-                            datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
-                            app.cache.projectDataChanged    = false;
-                            //LETS RELOAD THE LOCAL DB AT THIS POINT
-                            ourvoice.getAllProjects();
-                            app.log("Setting up Device with " + app.cache.projects["project_list"][pid_correct]["project_id"]);
-                         },            // callback to invoke with index of button pressed
-                        'Project Setup',           // title
-                        ['Cancel','Continue']     // buttonLabels
-                    );
+                    //LETS RELOAD THE LOCAL DB AT THIS POINT
+                    ourvoice.getAllProjects();
                 }else{
                     $("#main").addClass("loaded");
                     app.showNotif("Please Try Again","Wrong ProjectID or Password", function(){});
@@ -576,6 +545,65 @@ var app = {
             $("#datastatus i").removeClass("synced");
             $(this).closest("tr").removeClass("uploaded");
             $("i[data-docid='"+doc_id+"']").removeClass("uploaded");
+            return false;
+        });
+
+        $("#list_data").on("click","a.trash", function(){
+            var doc_id  = $(this).data("docid");
+
+            // FIND THE DATA IN disc_users AND ALL ATTACHMENTS in disc_attachment
+            app.cache.localusersdb.get(doc_id).then(function (doc) {
+                console.log("does the length work on empty array? #" + doc["photos"].length )
+                if(doc["photos"].length){
+                    //DELETE PHOTOS AND AUDIO ATTACHMENTS
+                    for(var p in doc["photos"]){
+                        var photo = doc["photos"][p];
+                        var ph_id = doc_id + "_" + photo["name"];
+                        
+                        app.cache.localattachmentdb.get(ph_id).then(function (pdoc) {
+                            // delete this attachment
+                            pdoc["_deleted"] = true;
+                            app.cache.localattachmentdb.put(pdoc).then(function (new_o) {
+                                console.log("DELETEING ATTACHMENT : " + ph_id);
+                            }).catch(function (err) {
+                                datastore.showError(err);
+                            });
+                        }).catch(function (err) {
+                          console.log(err);
+                        });
+
+                        var audios = photo["audios"];
+                        for(var a in audios){
+                            var au_id = doc_id + "_" + audios[a];
+                            app.cache.localattachmentdb.get(au_id).then(function (adoc) {
+                                // delete this attachment
+                                adoc["_deleted"] = true;
+                               
+                                app.cache.localattachmentdb.put(adoc).then(function (new_o) {
+                                    console.log("DELETEING ATTACHMENT : " + au_id);
+                                }).catch(function (err) {
+                                    datastore.showError(err);
+                                });
+                            }).catch(function (err) {
+                              console.log(err);
+                            });
+                        }
+                    }
+                }
+
+                // NOW DELETE THE DOC FROM local disc_users
+                doc["_deleted"] = true;
+                app.cache.localusersdb.put(doc).then(function (new_o) {
+                    app.log("Deleting the doc: " + doc_id);
+                }).catch(function (err) {
+                    app.log("ERROR WRITING TO A DB", "Error");
+                    datastore.showError(err);
+                });
+            }).catch(function (err) {
+              console.log(err);
+            });
+
+            $(this).closest("tr").remove();
             return false;
         });
 
