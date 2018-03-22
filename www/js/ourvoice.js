@@ -1,4 +1,4 @@
-// var ourvoice = {
+var ourvoice = {
     adminSetup : function(){
         app.cache.admin_pass = null;
         $("#main").addClass("loaded");
@@ -48,7 +48,7 @@
             tr.append(audio);
             tr.append(up);
             tr.append(reset);
-            // tr.append(trash);
+            tr.append(trash);
 
             $("#list_data tbody").append(tr);
         }
