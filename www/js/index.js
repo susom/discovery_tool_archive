@@ -552,58 +552,60 @@ var app = {
             var doc_id  = $(this).data("docid");
 
             // FIND THE DATA IN disc_users AND ALL ATTACHMENTS in disc_attachment
-            app.cache.localusersdb.get(doc_id).then(function (doc) {
-                console.log("does the length work on empty array? #" + doc["photos"].length )
-                if(doc["photos"].length){
-                    //DELETE PHOTOS AND AUDIO ATTACHMENTS
-                    for(var p in doc["photos"]){
-                        var photo = doc["photos"][p];
-                        var ph_id = doc_id + "_" + photo["name"];
-                        
-                        app.cache.localattachmentdb.get(ph_id).then(function (pdoc) {
-                            // delete this attachment
-                            pdoc["_deleted"] = true;
-                            app.cache.localattachmentdb.put(pdoc).then(function (new_o) {
-                                console.log("DELETEING ATTACHMENT : " + ph_id);
-                            }).catch(function (err) {
-                                datastore.showError(err);
-                            });
-                        }).catch(function (err) {
-                          console.log(err);
-                        });
-
-                        var audios = photo["audios"];
-                        for(var a in audios){
-                            var au_id = doc_id + "_" + audios[a];
-                            app.cache.localattachmentdb.get(au_id).then(function (adoc) {
+            if(1==2){
+                app.cache.localusersdb.get(doc_id).then(function (doc) {
+                    console.log("does the length work on empty array? #" + doc["photos"].length )
+                    if(doc["photos"].length){
+                        //DELETE PHOTOS AND AUDIO ATTACHMENTS
+                        for(var p in doc["photos"]){
+                            var photo = doc["photos"][p];
+                            var ph_id = doc_id + "_" + photo["name"];
+                            
+                            app.cache.localattachmentdb.get(ph_id).then(function (pdoc) {
                                 // delete this attachment
-                                adoc["_deleted"] = true;
-                               
-                                app.cache.localattachmentdb.put(adoc).then(function (new_o) {
-                                    console.log("DELETEING ATTACHMENT : " + au_id);
+                                pdoc["_deleted"] = true;
+                                app.cache.localattachmentdb.put(pdoc).then(function (new_o) {
+                                    console.log("DELETEING ATTACHMENT : " + ph_id);
                                 }).catch(function (err) {
                                     datastore.showError(err);
                                 });
                             }).catch(function (err) {
                               console.log(err);
                             });
+
+                            var audios = photo["audios"];
+                            for(var a in audios){
+                                var au_id = doc_id + "_" + audios[a];
+                                app.cache.localattachmentdb.get(au_id).then(function (adoc) {
+                                    // delete this attachment
+                                    adoc["_deleted"] = true;
+                                   
+                                    app.cache.localattachmentdb.put(adoc).then(function (new_o) {
+                                        console.log("DELETEING ATTACHMENT : " + au_id);
+                                    }).catch(function (err) {
+                                        datastore.showError(err);
+                                    });
+                                }).catch(function (err) {
+                                  console.log(err);
+                                });
+                            }
                         }
                     }
-                }
 
-                // NOW DELETE THE DOC FROM local disc_users
-                doc["_deleted"] = true;
-                app.cache.localusersdb.put(doc).then(function (new_o) {
-                    app.log("Deleting the doc: " + doc_id);
+                    // NOW DELETE THE DOC FROM local disc_users
+                    doc["_deleted"] = true;
+                    app.cache.localusersdb.put(doc).then(function (new_o) {
+                        app.log("Deleting the doc: " + doc_id);
+                    }).catch(function (err) {
+                        app.log("ERROR WRITING TO A DB", "Error");
+                        datastore.showError(err);
+                    });
                 }).catch(function (err) {
-                    app.log("ERROR WRITING TO A DB", "Error");
-                    datastore.showError(err);
+                  console.log(err);
                 });
-            }).catch(function (err) {
-              console.log(err);
-            });
 
-            $(this).closest("tr").remove();
+                $(this).closest("tr").remove();
+            }
             return false;
         });
 

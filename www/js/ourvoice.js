@@ -31,9 +31,9 @@ var ourvoice = {
             var audio   = $("<td>").text(picount);
             var thumbs  = $("<i>").attr("data-docid",r_id);
             var reset   = $("<td>");
-            var trash   = $("<td>");
+            // var trash   = $("<td>");
             reset.append($("<a>").addClass("resync").attr("data-docid",r_id).text('reset'));
-            trash.append($("<a>").addClass("trash").attr("data-docid",r_id).html('&#128465;'));
+            // trash.append($("<a>").addClass("trash").attr("data-docid",r_id).html('&#128465;'));
             if(synced){
                 tr.addClass("uploaded");
                 thumbs.addClass("uploaded");
@@ -48,7 +48,7 @@ var ourvoice = {
             tr.append(audio);
             tr.append(up);
             tr.append(reset);
-            tr.append(trash);
+            // tr.append(trash);
 
             $("#list_data tbody").append(tr);
         }
