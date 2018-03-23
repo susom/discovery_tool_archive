@@ -930,13 +930,16 @@ var ourvoice = {
                 
                 if(current_width <= max_width*.25){
                     min = 750;
-                    max = 1000;
-                }else if(current_width <= max_width*.5){
-                    min = 1000;
                     max = 1250;
-                }else if(current_width <= max_width*.8){
+                }else if(current_width <= max_width*.5){
                     min = 1250;
-                    max = 1500;
+                    max = 1750;
+                }else if(current_width <= max_width*.75){
+                    min = 1750;
+                    max = 2250;
+                }else if(current_width <= max_width*.83){
+                    min = 3000;
+                    max = 5000;
                 }
                 
                 timeout = utils.randomInRange(min,max);
