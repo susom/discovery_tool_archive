@@ -90,6 +90,37 @@
         </div>
     </div>
 
+    <div id="admin_scratch" class="panel">
+        <div class="consent">
+            <h2 data-translation-key="current_upload">Current upload status of data on this device</h2>
+            <div id="scratch_list_data">
+                <table border="1" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th class='pics' data-translation-key="pics">Pics</th>
+                        <th class='audio' data-translation-key="audio">Audio</th>
+                        <th data-translation-key="status">Status</th>
+                        <th data-translation-key="reset">Reset</th>
+                        <!-- <th data-translation-key="delete">Delete</th> -->
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <a href="#" data-next="admin_scratch" class="button uploadbtn">Upload<span>ing</span> Data</a>
+            </div>
+        </div>
+        <div id='scratch_progressoverlay'>
+            <h3 data-translation-key="uploadprogress">Upload Progress</h3>
+            <div id="scratch_progressbar">
+                <span></span>
+            </div>
+            <h4><b id="scratch_percent_uploaded">0</b>%</h4>
+            <a href="#" id="scratch_cancel_upload">Cancel</a>
+        </div>
+    </div>
+
     <div id="step_setup" class="panel">
         <div class="consent">
             <h2 data-translation-key="thanks_interest">Thank you for your interest in the Stanford Healthy Neighborhood Discovery Tool™!</h2>

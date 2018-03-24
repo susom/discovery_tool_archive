@@ -93,31 +93,30 @@ var datastore = {
     ,localSyncDB : function(localdb_obj,remotedb_str, _callBack){
         //'complete', 'active', 'paused', 'change', 'denied' and 'error'
         
-
-        // localdb_obj.replicate.to(remotedb_str,{
-        //     // live: true
-        //     filter: function(doc){
-        //         return !doc.uploaded
-        //     }
-        // }).on('active',function(){
-        //     // not very useful
-        // }).on('complete', function (info) {
-        //     // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","status","end_time"]);
-        //     // console.log("docs_read : "+info["docs_read"]);
-        //     // console.log("docs_written : "+info["docs_written"]);
-        //     _callBack(info);
-        // }).on('change',function(info){
-        //     //THIS IS MORE VALUABLE THAN "complete"
-        //     //ACTUAL DETAILS THE CHANGES MADE
-        //     // console.log("CHANGE CALLBACK");
-        //     // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","docs"]);
-        //     _callBack(info);
-        // }).catch(function (err) {
-        //     // However, there is one gotcha with live replication: 
-        //     // what if the user goes offline? In those cases, an error will be thrown 
-        //     // and replication will stop.
-        //     app.log("ERROR localSyncDB()", "Error");
-        // });
+        localdb_obj.replicate.to(remotedb_str,{
+            // live: true
+            filter: function(doc){
+                return !doc.uploaded
+            }
+        }).on('active',function(){
+            // not very useful
+        }).on('complete', function (info) {
+            // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","status","end_time"]);
+            // console.log("docs_read : "+info["docs_read"]);
+            // console.log("docs_written : "+info["docs_written"]);
+            _callBack(info);
+        }).on('change',function(info){
+            //THIS IS MORE VALUABLE THAN "complete"
+            //ACTUAL DETAILS THE CHANGES MADE
+            // console.log("CHANGE CALLBACK");
+            // console.log(info["ok","start_time","docs_read","docs_written","doc_write_failures","errors","last_seq","docs"]);
+            _callBack(info);
+        }).catch(function (err) {
+            // However, there is one gotcha with live replication: 
+            // what if the user goes offline? In those cases, an error will be thrown 
+            // and replication will stop.
+            app.log("ERROR localSyncDB()", "Error");
+        });
     }
 
     ,remoteSyncDB : function(localdb_obj,remotedb_str, _callBack){

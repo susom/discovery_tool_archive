@@ -924,9 +924,9 @@ var ourvoice = {
         (function next(i, maxLoops, finished) {
             if(!finished){
                 current_width       = current_width + linear_segment_width;
-                current_width       = current_width > (max_width*0.8) ? (max_width*0.8) : current_width;
+                current_width       = current_width > (max_width*0.83) ? (max_width*0.83) : current_width;
                 current_perc        = current_perc + segment_perc;
-                current_perc        = current_perc > 80 ? 80 : current_perc;
+                current_perc        = current_perc > 83 ? 83 : current_perc;
                 
                 if(current_width <= max_width*.25){
                     min = 750;

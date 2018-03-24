@@ -227,6 +227,13 @@ var app = {
                 $(".mi_slideout").addClass("reviewable");
                 ourvoice.startWatch(8000);   
                 app.cache.history = [];
+
+                var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
+                var b4      = $("<b>").html(last4); 
+                var i4      = $("<i>").html("walk id:").append(b4);
+
+                $("header .title hgroup").append(i4);
+
                 app.log("start  walk");
             }else if($(this).hasClass("continuewalk")){
                 $("#recent_pic").attr("src","");
@@ -460,6 +467,7 @@ var app = {
         });
 
         $("#progressoverlay").on("click","#cancel_upload", function(){
+            console.log("canceling upload")
             $(".uploading").removeClass("uploading");
             $("#progressbar span").width(0);
             $("#progressoverlay b").text(0);

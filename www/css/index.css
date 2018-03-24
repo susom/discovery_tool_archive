@@ -76,6 +76,18 @@ body.iw{
     padding     : 0;
 }
 
+header .title hgroup i{
+    position:absolute;
+    right:10px;
+    bottom:8px;
+    font-size:92%;
+    font-style:normal;
+}
+header .title hgroup b{
+    display:inline-block;
+    margin-left:5px;
+}
+
 /*BACK/HELP NAV FIXED TO THE BOTTOM*/
 nav.step_zero,
 nav.finish,
