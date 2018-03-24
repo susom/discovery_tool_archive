@@ -230,8 +230,8 @@ var app = {
 
                 var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
                 var b4      = $("<b>").html(last4); 
-                var i4      = $("<i>").html("walk id:").append(b4);
-
+                var i4      = $("<i>").addClass("delete_on_reset").html("walk id:").append(b4);
+                console.log("adding walk id to header");
                 $("header .title hgroup").append(i4);
 
                 app.log("start  walk");
@@ -443,6 +443,7 @@ var app = {
             //DITCH USER TOO
             $("#admin_null").show();
             $("#admin_passed").hide();
+
             app.closeCurrentPanel($("#step_zero"));
             ourvoice.adminSetup();
             return false;

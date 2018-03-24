@@ -247,9 +247,7 @@ nav .list{
 #step_setup .consent .button {
     width         : auto;
 }
-#step_setup input {
-    font-size     : 120%;
-}
+
 #step_setup .adminbtn {
     background    : tomato;
 }
@@ -269,6 +267,8 @@ nav .list{
     border        : 1px solid #999;
     float         : right;
     border-radius : 3px;
+    font-size     : 120%;
+    width: 71%;
 }
 
 /*USER SPLASH PAGE*/
@@ -332,14 +332,14 @@ nav .list{
 }
 #step_zero label span {
     display            : inline-block;
-    width              : 120px;
+    min-width          : 100px;
     font-weight        : 500;
     font-size          : 120%;
     vertical-align     : top;
 }
 #step_zero label b {
     display            : inline-block;
-    width              : 166px;
+    width              : auto;
     vertical-align     : top;
 }
 #step_zero select {
@@ -407,13 +407,16 @@ nav .list{
 
 copyright{
     position:fixed;
-    bottom:10px;
     left:50%;
     width:280px;
     text-align:Center;
     margin-left:-140px;
     font-weight:normal !important;
     font-size:88%;
+
+    bottom: 0;
+    background: #fff;
+    padding: 5px;
 } 
 
 /*CONSENT FLOW ABOUT*/
@@ -474,11 +477,11 @@ copyright{
 .actions {
     width           : 100%;
     text-align      : center;
-    padding         : 20px 0;
+    padding         : 0 0;
     position        : relative;
 }
 .actions h2{
-    margin          : 35px 0;
+    margin          : 15px 0;
     padding         : 0;
     font-size       : 140%;
     font-weight     : 500;
@@ -510,7 +513,7 @@ copyright{
 .walk_actions .endwalk {
     border:none;
     box-shadow:none;
-    min-height      : 180px;
+    min-height      : 160px;
     width           : 50%;
     margin          : 0 auto;
     /*background      : url(../img/icon_stop.png) 50% 50% no-repeat;*/
@@ -1010,7 +1013,7 @@ copyright{
 #finish h3 {
     font-weight:normal;
     line-height:initial;
-    font-size:108%;
+    font-size:100%;
 }
 #finish .instructions li {
     width:auto;
@@ -1083,7 +1086,7 @@ copyright{
 
 .btn.finish{
     font-size:85%;
-    padding:5px 10px;
+    padding: 5px 0;
     display         : block;
     border-radius   : 5px;
     color           : #000;
@@ -1092,7 +1095,6 @@ copyright{
     text-decoration : none;
     background      : #ECF16D;
     margin          : 20px auto 0;
-    padding         : 15px 0;
     text-align      : center;
     position        : relative;
     box-shadow: 0 0 1px 1px #888;
@@ -1687,3 +1689,12 @@ nowrap{
 
 
 }
+
+
+
+
+
+
+
+
+
