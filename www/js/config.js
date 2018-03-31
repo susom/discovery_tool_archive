@@ -14,5 +14,8 @@ var config = {
     
         ,"log_local"      		: "disc_log"
         ,"log_remote"     		: "https://disc_user_general:rQaKibbDx7rP@ourvoice-cdb.med.stanford.edu/disc_log"
+
+        ,"upload_endpoint"      : "http://ourvoice-projects.med.stanford.edu/attachment_upload.php"
+        ,"hook_thumbs"          : "http://ourvoice-projects.med.stanford.edu/process_thumbs.php"
     }
 };

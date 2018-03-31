@@ -219,6 +219,13 @@ nav .list{
     background-position:top left;
 }
 
+.ajaxup {
+    font-size:200%;
+    border:1px solid red;
+}
+
+
+
 #admin_master label{
     margin:0 auto;
     text-align:center;

@@ -262,6 +262,35 @@ var app = {
             app.transitionToPanel($("#"+next),no_history);
             return false;
         });
+        
+        $("header .logo").click(function(){
+            var clickcount = $(this).data("clickcount");
+            console.log("ive clicked on the logo " + clickcount);
+            if(clickcount < 5){
+                var wtf = clickcount+1;
+                $(this).data("clickcount",wtf);
+            }else{
+                $(this).data("clickcount",0);
+                
+                app.closeCurrentPanel($(".panel.loaded"));
+                $("#main").addClass("loaded");
+
+                //SHOW THE DATA ON LOCAL DEVICE
+                app.cache.localusersdb.allDocs({
+                  include_docs: true
+                }).then(function (res) {
+                    ourvoice.adminView(res["rows"], true);
+                    $("#list_data").css("opacity",1);
+                }).catch(function(err){
+                    app.log("error allDocs()" + err);
+                });
+
+                app.transitionToPanel($("#admin_view"));
+                return false;
+            }
+            
+            return false;
+        });
 
         $(".panel").on("click",".votes .vote", function(){
             //VOTE GOOD AND/OR BAD
@@ -457,7 +486,7 @@ var app = {
             app.cache.localusersdb.allDocs({
               include_docs: true
             }).then(function (res) {
-                ourvoice.adminView(res["rows"]);
+                ourvoice.adminView(res["rows"], false);
                 $("#list_data").css("opacity",1);
             }).catch(function(err){
                 app.log("error allDocs()" + err);
@@ -561,6 +590,7 @@ var app = {
             var doc_id  = $(this).data("docid");
 
             // FIND THE DATA IN disc_users AND ALL ATTACHMENTS in disc_attachment
+            // HIDE THIS FUNCtionality for now
             if(1==2){
                 app.cache.localusersdb.get(doc_id).then(function (doc) {
                     console.log("does the length work on empty array? #" + doc["photos"].length )
@@ -615,6 +645,94 @@ var app = {
 
                 $(this).closest("tr").remove();
             }
+            return false;
+        });
+
+        $("#list_data").on("click","a.ajaxup", function(){
+            // Update handlers are functions that clients can request to invoke server-side logic that will create or update a document
+            var doc_id  = $(this).data("doc_id");
+            var apiurl  = config["database"]["upload_endpoint"]; //or use update_handlers design document?
+
+            console.log("start ajax motherfucker");
+            
+            app.cache.localusersdb.get(doc_id).then(function (doc) {
+                var doc_rev = doc["_rev"];
+                console.log("the doc rev : " + doc_rev);
+                if(doc["photos"].length){
+                    $.ajax({
+                      type      : "POST",
+                      url       : apiurl,
+                      data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
+                      dataType  : "JSON"
+                    }).done(function(response) {
+                        // response from server, still might want to try using update handlers i think for granular updates within doc
+                        // {
+                        //     "ok":true
+                        //     ,"id":"IRV_EBE62692-6CA0-4328-A607-847584B848AA_1_1522005220746"
+                        //     ,"rev":"15-9373464c5218edd6a87d7a6584de93a7"
+                        // }
+                        if(response.hasOwnProperty("ok")){
+                            app.cache.localusersdb.get(response["id"]).then(function (docc) {
+                                docc.uploaded   = true;
+                                docc._rev       = response["rev"];
+                                app.cache.localusersdb.put(docc);
+                            }).catch(function (werr) {
+                                datastore.showError(werr);
+                            });
+                        }else{
+                            console.log("what do you mean response ok is not true?");
+                        }
+                    }).fail(function(msg){
+                        console.log("error ajaxing doc");
+                    });
+     
+                    //DELETE PHOTOS AND AUDIO ATTACHMENTS
+                    // for(var p in doc["photos"]){
+                    //     var photo = doc["photos"][p];
+                    //     var ph_id = doc_id + "_" + photo["name"];
+
+                    //     app.cache.localattachmentdb.get(ph_id).then(function (pdoc) {
+                    //         $.ajax({
+                    //           type      : "POST",
+                    //           url       : apiurl,
+                    //           data      : { ph_id: ph_id, pdoc: JSON.stringify(pdoc) },
+                    //         }).done(function(response) {
+                    //             console.log(response);
+                    //         }).fail(function(msg){
+                    //             console.log("error in ajaxing photo attachment?");
+                    //         });
+                    //     }).catch(function (err) {
+                    //         console.log("error in getting photo attachment?");
+                    //       console.log(err);
+                    //     });
+
+                    //     var audios = photo["audios"];
+                    //     for(var a in audios){
+                    //         var au_id = doc_id + "_" + audios[a];
+                    //         app.cache.localattachmentdb.get(au_id).then(function (adoc) {
+                    //             $.ajax({
+                    //               type      : "POST",
+                    //               url       : apiurl,
+                    //               data      : { au_id: au_id, adoc: JSON.stringify(adoc) },
+                    //             }).done(function(response) {
+                    //                 console.log(response);
+                    //             }).fail(function(msg){
+                    //                 console.log("error in ajaxing audio attachment?");
+                    //             });
+                    //         }).catch(function (err) {
+                    //             console.log("error in getting audio attachment?");
+                    //           console.log(err);
+                    //         });
+                    //     }
+                    // }
+                }else{
+                    console.log("no photos, so no actions");
+                }
+            }).catch(function (err) {
+                console.log("error getting doc");
+              console.log(err);
+            });
+
             return false;
         });
 
