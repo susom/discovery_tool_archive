@@ -653,11 +653,10 @@ var app = {
             var doc_id  = $(this).data("doc_id");
             var apiurl  = config["database"]["upload_endpoint"]; //or use update_handlers design document?
 
-            console.log("start ajax motherfucker");
-            
+            //pull data and prepare it to upload to some other fucking thing. 
+            //
             app.cache.localusersdb.get(doc_id).then(function (doc) {
                 var doc_rev = doc["_rev"];
-                console.log("the doc rev : " + doc_rev);
                 if(doc["photos"].length){
                     $.ajax({
                       type      : "POST",

@@ -316,18 +316,29 @@ var ourvoice = {
         //GEOLOCATION
         // ILL JUST SET IT TO THE PREVIOUS ONE FIRST, THEN IF THIS CALLBACK DOESNT ERROR, IT WILL SET ITS OWN GEOTAG?
         add_to["geotag"]    = app.cache.user[app.cache.current_session].geotags[app.cache.user[app.cache.current_session].geotags.length - 1];
+        console.log("default geo tag for foto will be most recent from the walk");
+        console.log(app.cache.user[app.cache.current_session].geotags[app.cache.user[app.cache.current_session].geotags.length - 1]);
         curpos              = {}
         navigator.geolocation.getCurrentPosition(function(position) {
-            curpos.longitude    = position.coords.longitude;
-            curpos.latitude     = position.coords.latitude;
-            curpos.altitude     = position.coords.altitude;
-            curpos.heading      = position.coords.heading;
-            curpos.speed        = position.coords.speed;
-            curpos.timestamp    = position.timestamp;
-            curpos.lat          = position.coords.latitude;
-            curpos.lng          = position.coords.longitude;
-            curpos.accuracy     = position.coords.accuracy;
-            add_to["geotag"]    = curpos;
+            console.log("this will be the position of the photo?");
+            console.log(position);
+
+            if(position){
+                curpos.longitude    = position.coords.longitude;
+                curpos.latitude     = position.coords.latitude;
+                curpos.altitude     = position.coords.altitude;
+                curpos.heading      = position.coords.heading;
+                curpos.speed        = position.coords.speed;
+                curpos.timestamp    = position.timestamp;
+                curpos.lat          = position.coords.latitude;
+                curpos.lng          = position.coords.longitude;
+                curpos.accuracy     = position.coords.accuracy;
+
+                if(position.hasOwnProperty("latitude") && position.hasOwnProperty("longitude") && position.hasOwnProperty("accuracy")){
+                    //TO HAVE LESS BLUE OCEAN GEO TAGS FOR PHOTOS, ONLY OVERWRITE THE OLD POSITION IF ALL OF THE ABOVVE 3 ARE SET
+                    add_to["geotag"]    = curpos;
+                }
+            }
         }, function(err){
             // if timed out use the the latest WAtchPostiion?
             console.log("TagLocation either it timed out or errored out? " + err);
@@ -336,6 +347,7 @@ var ourvoice = {
              ,maximumAge        : 100
              ,timeout           : 5000
         });
+        
         return curpos;
     }
 
