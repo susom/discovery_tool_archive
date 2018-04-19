@@ -207,6 +207,16 @@ nav .list{
     margin:3px 0;
     border:1px solid red;
 }
+
+
+#list_data .alternate_upload{
+    display:none;
+}
+
+#list_data .alternate_upload.backdoor{
+    display:table-cell;
+}
+
 #list_data tbody td i{
     vertical-align:top;
     margin:3px 0;

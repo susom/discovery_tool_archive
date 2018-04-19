@@ -19,8 +19,11 @@ var ourvoice = {
             var r_d     = rows[i]["doc"];
             var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
             var r_id    = r_d["_id"];
-            var truncid = r_id.substr(r_id.length - 4);
-
+            var split   = r_id.split("_");
+            var ts      = split[split.length-1];
+            var truncid = ts.substr(ts.length - 4);
+            var pid     = split[0];
+            
             var picount = 0;
             for(var p in r_d["photos"]){
                 var pic = r_d["photos"][p];
@@ -29,8 +32,13 @@ var ourvoice = {
                 }
             }
 
+            var date    = new Date(0);
+            date.setUTCSeconds(Math.round(ts/1000));
+            var mon     = date.getMonth() + 1;
+            var day     = date.getDate();
             var tr      = $("<tr>")
-            var walknum = $("<td>").text(numwalks - parseInt(i));
+            var walkdate= $("<td>").text(mon+"/"+day);
+            pid         = $("<td>").text(pid);
             truncid     = $("<td>").text(truncid);
             var pics    = $("<td>").text(r_d["photos"].length);
             var audio   = $("<td>").text(picount);
@@ -46,7 +54,8 @@ var ourvoice = {
             }
             var up = $("<td>").append(thumbs);
 
-            tr.append(walknum);
+            tr.append(walkdate);
+            tr.append(pid);
             tr.append(truncid);
             tr.append(pics);
             tr.append(audio);
@@ -190,7 +199,8 @@ var ourvoice = {
             //Display This Info
             $("#step_zero b.proj_name").text(p["project_name"]);
             $("#step_zero b.user_id").text(app.cache.participant_id);
-            if(!app.cache.proj_thumbs){
+           
+            if(!app.cache.proj_thumbs || app.cache.proj_thumbs < 1){
                 $("#pic_review li.good_or_bad").hide();
             }else{
                 //TODO think of a better way to do this
@@ -370,7 +380,7 @@ var ourvoice = {
 
         var latLngBounds    = new google.maps.LatLngBounds();
         var geopoints       = app.cache.currentWalkMap.length; 
-        
+
         new google.maps.Marker({
             map: map,
             position: app.cache.currentWalkMap[0],
@@ -386,6 +396,14 @@ var ourvoice = {
         });
 
         for(var i = 1; i < geopoints; i++) {
+
+            if(app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"] > 20){
+                console.log("no good accuracy: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
+                continue;
+            }else{
+                console.log("accuracy< 20?: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
+            }
+
             latLngBounds.extend(app.cache.currentWalkMap[i]);
                 // Place the marker
                 new google.maps.Marker({
@@ -401,6 +419,7 @@ var ourvoice = {
                 },
                 title: "Point " + (i + 1)
             });
+        
         }
 
         // Creates the polyline object

@@ -782,6 +782,8 @@ var app = {
 
             ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
 
+            $("#pic_review li.good_or_bad").show();
+
             app.closeCurrentPanel($("#finish"));
             app.transitionToPanel($("#step_zero"),true);
 
