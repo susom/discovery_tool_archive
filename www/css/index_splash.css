@@ -227,3 +227,12 @@ header:after {
     box-shadow: 0 0 1px 1px #888;
 }
 
+
+.alternate_upload.uploading{
+    background:url(../img/icon_spinner.gif) 50% no-repeat;
+    background-size:contain;
+}
+
+.alternate_upload.uploading a{
+    font-size:100%;
+}

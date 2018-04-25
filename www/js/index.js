@@ -653,8 +653,14 @@ var app = {
             var doc_id  = $(this).data("doc_id");
             var apiurl  = config["database"]["upload_endpoint"]; //or use update_handlers design document?
 
+            //replace the upload icon with an animated gif circling a number that counts down!
+            var attach_count = $(this).data("attach_count");
+            $(this).parent().addClass("uploading");
+            $(this).html(attach_count);
+
+            console.log("there are " + attach_count + " attachements to upload");
+
             //pull data and prepare it to upload to some other fucking thing. 
-            //
             app.cache.localusersdb.get(doc_id).then(function (doc) {
                 var doc_rev = doc["_rev"];
                 if(doc["photos"].length){
@@ -662,68 +668,22 @@ var app = {
                       type      : "POST",
                       url       : apiurl,
                       data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
-                      dataType  : "JSON"
-                    }).done(function(response) {
-                        // response from server, still might want to try using update handlers i think for granular updates within doc
-                        // {
-                        //     "ok":true
-                        //     ,"id":"IRV_EBE62692-6CA0-4328-A607-847584B848AA_1_1522005220746"
-                        //     ,"rev":"15-9373464c5218edd6a87d7a6584de93a7"
-                        // }
-                        if(response.hasOwnProperty("ok")){
-                            app.cache.localusersdb.get(response["id"]).then(function (docc) {
-                                docc.uploaded   = true;
-                                docc._rev       = response["rev"];
-                                app.cache.localusersdb.put(docc);
-                            }).catch(function (werr) {
-                                datastore.showError(werr);
-                            });
-                        }else{
-                            console.log("what do you mean response ok is not true?");
-                        }
-                    }).fail(function(msg){
-                        console.log("error ajaxing doc");
+                      dataType  : "JSON",
+                      success   : function(attachments){
+                        // console.log("these attachments need uploading");
+                        // console.log(attachments);
+
+                        // console.log("start recursive upload of " + attachments.length + " attachments");
+                        app.recursiveUpload(doc_id, attachments);
+                      },
+                      error     : function(err){
+                        // console.log("opposite of success, error");
+                        console.log(err);
+                      }
+                    }).fail(function(err){
+                        // console.log("ajax upload fail");
+                        console.log(err);
                     });
-     
-                    //DELETE PHOTOS AND AUDIO ATTACHMENTS
-                    // for(var p in doc["photos"]){
-                    //     var photo = doc["photos"][p];
-                    //     var ph_id = doc_id + "_" + photo["name"];
-
-                    //     app.cache.localattachmentdb.get(ph_id).then(function (pdoc) {
-                    //         $.ajax({
-                    //           type      : "POST",
-                    //           url       : apiurl,
-                    //           data      : { ph_id: ph_id, pdoc: JSON.stringify(pdoc) },
-                    //         }).done(function(response) {
-                    //             console.log(response);
-                    //         }).fail(function(msg){
-                    //             console.log("error in ajaxing photo attachment?");
-                    //         });
-                    //     }).catch(function (err) {
-                    //         console.log("error in getting photo attachment?");
-                    //       console.log(err);
-                    //     });
-
-                    //     var audios = photo["audios"];
-                    //     for(var a in audios){
-                    //         var au_id = doc_id + "_" + audios[a];
-                    //         app.cache.localattachmentdb.get(au_id).then(function (adoc) {
-                    //             $.ajax({
-                    //               type      : "POST",
-                    //               url       : apiurl,
-                    //               data      : { au_id: au_id, adoc: JSON.stringify(adoc) },
-                    //             }).done(function(response) {
-                    //                 console.log(response);
-                    //             }).fail(function(msg){
-                    //                 console.log("error in ajaxing audio attachment?");
-                    //             });
-                    //         }).catch(function (err) {
-                    //             console.log("error in getting audio attachment?");
-                    //           console.log(err);
-                    //         });
-                    //     }
-                    // }
                 }else{
                     console.log("no photos, so no actions");
                 }
@@ -831,6 +791,52 @@ var app = {
         //     console.log("swiped right");
         //     // app.goBack()
         // });
+    }
+
+    ,recursiveUpload : function(walk_id , attachments_array){
+        var attachment  = attachments_array.pop();
+        var attach_id   = attachment["_id"];
+        var attach_name = attachment["name"]; 
+        var apiurl      = config["database"]["upload_endpoint"]; 
+
+        // console.log("kick off one ajax upload of " + attach_id);
+        app.cache.localattachmentdb.getAttachment(attach_id, attach_name).then(function(blob){
+            var fd  = new FormData();
+            fd.append("attachment", blob, attach_id);
+            fd.append("attach_name", attach_name);
+
+            // console.log(attach_id + " " + attach_name);
+            $.ajax({
+                type        : "POST",
+                url         : apiurl + "?walk_id=" + walk_id,
+                data        : fd,
+                contentType : false, // The content type used when sending data to the server.
+                processData : false, // To send DOMDocument or non processed data file it is set to false
+                // async       : false,
+                dataType    : "JSON",
+                success   : function(response){
+                    // console.log("does done happen before this?");
+                    console.log(response);
+                    var current_count = parseInt($(".alternate_upload.uploading a").html());
+                    $(".alternate_upload.uploading a").html(current_count-1);                    
+                },
+                error     : function(err){
+                    console.log(err);
+                }
+            }).done(function(_junk){
+                if(attachments_array.length){
+                    // console.log("does done fire right away?");
+                    // console.log("start a new atachments array that is now " + attachments_array.length + " length");
+                    app.recursiveUpload(walk_id, attachments_array);
+                }else{
+                    console.log("done with all attachments");
+                    $(".alternate_upload.uploading a").html('&#8686;');
+                    $(".alternate_upload.uploading").removeClass("uploading");
+                }
+            }).fail(function(msg){
+                console.log("error in ajaxing attachment?");
+            });
+        });
     }
 
     ,addDynamicCss: function(){
