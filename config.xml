@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.stanford.discoverytool.ourvoice" version="1.0.83" versionCode="10083" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="edu.stanford.discoverytool.ourvoice" version="1.0.88" versionCode="10088" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>The Discovery Tool</name>
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
@@ -95,23 +95,21 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
-    <plugin name="cordova-plugin-insomnia" spec="https://github.com/EddyVerbruggen/Insomnia-PhoneGap-Plugin.git" />
-    <plugin name="cordova-plugin-device-orientation" spec="~1.0.2" />
-    <plugin name="cordova-plugin-device-motion" spec="~1.2.0" />
-    <plugin name="cordova-plugin-sqlite-2" spec="^1.0.4" />
-    <plugin name="cordova-plugin-file" spec="^6.0.1" />
-    <plugin name="cordova-plugin-media" spec="^5.0.2">
-        <variable name="KEEP_AVAUDIOSESSION_ALWAYS_ACTIVE" value="NO" />
+    <plugin name="cordova-plugin-insomnia" spec="~4.3.0" />
+    <plugin name="cordova-plugin-media" spec="^5.0.2" />
+    <plugin name="cordova-plugin-file" spec="~6.0.1" />
+    <plugin name="cordova-plugin-dialogs" spec="~2.0.1" />
+    <plugin name="cordova-plugin-network-information" spec="~2.0.1" />
+    <plugin name="cordova-plugin-splashscreen" spec="~5.0.2" />
+    <plugin name="cordova-plugin-whitelist" spec="~1.3.3" />
+    <plugin name="cordova-plugin-compat" spec="~1.2.0" />
+    <plugin name="cordova-plugin-geolocation" spec="~4.0.1">
+        <variable name="GEOLOCATION_USAGE_DESCRIPTION" value="The Our Voice Discovery Tool requires use of 'Location Services' on your device" />
     </plugin>
-    <plugin name="cordova-plugin-media-capture" spec="^3.0.1" />
-    <plugin name="cordova-plugin-camera" spec="^4.0.2" />
-    <plugin name="cordova-plugin-dialogs" spec="^2.0.1" />
-    <plugin name="cordova-plugin-geolocation" spec="^4.0.1" />
-    <plugin name="cordova-plugin-network-information" spec="^2.0.1" />
-    <plugin name="cordova-plugin-splashscreen" spec="^5.0.2" />
-    <plugin name="cordova-plugin-statusbar" spec="^2.4.1" />
-    <plugin name="cordova-plugin-whitelist" spec="^1.3.3" />
-    <plugin name="cordova-plugin-compat" spec="^1.2.0" />
-    <plugin name="cordova-plugin-device" spec="^2.0.1" />
-    <engine name="ios" spec="^4.5.4" />
+    <plugin name="cordova-plugin-camera" spec="~4.0.3" />
+    <plugin name="cordova-plugin-device" spec="~2.0.2" />
+    <plugin name="cordova-plugin-media-capture" spec="~3.0.2" />
+    <plugin name="cordova-plugin-sqlite-2" spec="~1.0.4" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.4.2" />
+    <engine name="ios" spec="4.5.4" />
 </widget>

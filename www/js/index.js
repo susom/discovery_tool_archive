@@ -25,6 +25,7 @@ var app = {
         ,"attachment" : {}
         ,"reset_dbs"  : 0
         ,"projectDataChanged" : false
+        ,"gps_on" : true
     }
 
     // Application Constructor
@@ -51,6 +52,7 @@ var app = {
 
         app.cache.saveToAlbum           = true;
         app.cache.accuracy_threshold    = 50;
+        app.cache.uploadInProgress      = false;
     }
 
     ,bindEvents: function() {
@@ -61,7 +63,41 @@ var app = {
         document.addEventListener('resume'      , this.onDeviceResume,  false);
     }
 
+    ,onDevicePause: function() {
+        //IF THEY PAUSE WHAT SHOULD HAPPEN?
+        //KEEP USER INFO IN THE APP/LOCAL
+        // app.log("DEVICE PAUSING");
+    }
+
+    ,onDeviceResume: function() {
+        //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
+        //SO NO DO NOT RELOAD PROJECT
+        // app.log("DEVICE RESUMING"); 
+        var GPS_TEST = navigator.geolocation.getCurrentPosition(function(position) {
+            console.log("Testing if Location Services On :");
+            if(position){
+                app.cache.gps_on = true;
+            }
+        }, function(err){
+            if(err.code == 1){
+                app.cache.gps_on = false;
+                app.showNotif("Location Services Required", "Please turn on location services so that the app works properly.",function(){});
+                return false;
+            }
+        }); 
+    }
+
     ,onDeviceReady: function() {
+        var GPS_TEST = navigator.geolocation.getCurrentPosition(function(position) {
+            // OnLOAD DO NOTHING gps on is DEFAULT TRUE
+        }, function(err){
+            if(err.code == 1){
+                console.log("ERROR PERMISSION DENIED LOCATION SERVICES");
+                app.cache.gps_on = false;
+            }
+        });
+
+        console.log("oh you hasshole");
         //FIRST APP LOAD, SO SET UP NEW USER SESSION
         window.plugins.insomnia.keepAwake();
 
@@ -137,16 +173,16 @@ var app = {
                                 }
                             }
 
-                            app.showNotif("Uploading Data", "Please be patient and leave this app open until data upload is complete.",function(){
+                            // app.showNotif("Uploading Data", "Please be patient and leave this app open until data upload is complete.",function(){
                                 
-                                $("#progressoverlay").addClass("uploading"); //start progress bar
+                            $("#progressoverlay").addClass("uploading"); //start progress bar
 
-                                //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
-                                app.cache.pbacutoff = false;
+                            //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
+                            app.cache.pbacutoff = false;
 
-                                ourvoice.syncLocalData(needUpdating); 
-                                ourvoice.progressBarAnimationStart(needUpdating);
-                            });
+                            ourvoice.syncLocalData(needUpdating); 
+                            ourvoice.progressBarAnimationStart(needUpdating);
+                            // });
                         }).catch(function(err){
                             datastore.showError(err);
                             app.showNotif("Error Uploading Data", "Please try again later.",function(){});
@@ -156,6 +192,11 @@ var app = {
                 return false;
             }
 
+            if(!app.cache.gps_on){
+                app.showNotif("Location Services Required", "Please turn on location services so that the app works properly.",function(){});
+                return false;
+            }
+            
             if(next == "step_zero"){
                 $("#main").removeClass("loaded");
 
@@ -265,7 +306,6 @@ var app = {
         
         $("header .logo").click(function(){
             var clickcount = $(this).data("clickcount");
-            console.log("ive clicked on the logo " + clickcount);
             if(clickcount < 5){
                 var wtf = clickcount+1;
                 $(this).data("clickcount",wtf);
@@ -672,8 +712,8 @@ var app = {
                       success   : function(attachments){
                         // console.log("these attachments need uploading");
                         // console.log(attachments);
-
                         // console.log("start recursive upload of " + attachments.length + " attachments");
+                        // var duplicateObject = JSON.parse(JSON.stringify( originalObject ));
                         app.recursiveUpload(doc_id, attachments);
                       },
                       error     : function(err){
@@ -751,32 +791,48 @@ var app = {
             app.log("ending session");
             return false;
         });
-
+        
         $("#reset_dbs").click(function(){
-            // click on the copyright 5 x to reset all 3 local databases
-            navigator.notification.confirm(
-                'All Discovery Tool data saved on this device will be deleted and reset. Click \'Continue\' to proceed.', // message
-                 function(i){
-                    if(i == 1){
-                        //the button label indexs start from 1 = 'Cancel'
-                        return;
-                    }
-                    datastore.deleteDB(app.cache.localusersdb, function(){
-                        app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
-                    });
+            var clickcount = $(this).data("clickcount");
+            if(clickcount < 13){
+                var wtf = clickcount+1;
+                $(this).data("clickcount",wtf);
+            }else if(clickcount < 14){
+                $(this).addClass("active");
+                var wtf = clickcount+1;
+                $(this).data("clickcount",wtf);
+            }else{
+                $(this).removeClass("active");
+                $(this).data("clickcount",0);
+                
+                // click on the copyright 5 x to reset all 3 local databases
+                navigator.notification.confirm(
+                    'All Discovery Tool data saved on this device will be deleted and reset. Click \'Continue\' to proceed.', // message
+                     function(i){
+                        if(i == 1){
+                            //the button label indexs start from 1 = 'Cancel'
+                            return;
+                        }
+                        datastore.deleteDB(app.cache.localusersdb, function(){
+                            app.cache.localusersdb          = datastore.startupDB(config["database"]["users_local"]); 
+                        });
 
-                    datastore.deleteDB(app.cache.localattachmentdb, function(){
-                        app.cache.localattachmentdb    = datastore.startupDB(config["database"]["attachment_local"]);
-                    });
+                        datastore.deleteDB(app.cache.localattachmentdb, function(){
+                            app.cache.localattachmentdb    = datastore.startupDB(config["database"]["attachment_local"]);
+                        });
 
-                    datastore.deleteDB(app.cache.locallogdb, function(){
-                        app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
-                    });
-                    app.showNotif("Databases Reset and Data Erased","", function(){});
-                 },            // callback to invoke with index of button pressed
-                'Reset Databases?',           // title
-                ['Cancel','Continue']     // buttonLabels
-            );
+                        datastore.deleteDB(app.cache.locallogdb, function(){
+                            app.cache.locallogdb            = datastore.startupDB(config["database"]["log_local"]);
+                        });
+                        app.showNotif("Databases Reset and Data Erased","", function(){
+                            $("#list_data tbody").empty();
+                        });
+
+                     },            // callback to invoke with index of button pressed
+                    'Reset Databases?',           // title
+                    ['Cancel','Continue']     // buttonLabels
+                );
+            }
         });
 
         // var myElement   = document.getElementById('main');
@@ -830,6 +886,81 @@ var app = {
                     app.recursiveUpload(walk_id, attachments_array);
                 }else{
                     console.log("done with all attachments");
+                    
+                    // OK LETS MARK IT AS UPLOADED SO NO MORE ERRORS NEXT TIME
+                    app.cache.localusersdb.get(walk_id).then(function (doc) {
+                        doc.uploaded = true;
+                        app.cache.localusersdb.put(doc);
+
+                        //CHANGE SYNC INDICATOR TO THUMBS UP
+                        $("i[data-docid='"+walk_id+"']").addClass("uploaded");
+                        $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
+
+                        // NOW PROCESS THE THUMBNAILS
+                        var ph_ids = [];
+                        for(var p in doc["photos"]){
+                            var pic = doc["photos"][p];
+                            ph_ids.push(walk_id + "_" + pic["name"]);
+                        }
+
+
+                        // AJAX HIT THE SERVER TO CREATE THUMBNAILS
+                        $.ajax({
+                          type      : "POST",
+                          url       : config["database"]["hook_thumbs"],
+                          data      : { ph_ids : ph_ids },
+                          dataType  : "JSON",
+                          success   : function(response){
+                            //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
+                            console.log(response);
+                          }
+                        });
+                    }).catch(function (werr) {
+                        app.log("syncLocalData error UPDATING USER DATA " + walk_id, Error);
+                        datastore.showError(werr);
+                    });
+
+                    // THE WALK JSON and ALL THE ATTACHMENTS HAVE RECURSIVELY SAVED TO THE SERVER!!!
+                    // NOW HIT UPLOAD PING TO ALERT THE ADMIN EMAIL
+                    var apiurl      = config["database"]["upload_ping"]; 
+                    $.ajax({
+                        type        : "POST",
+                        url         : apiurl,
+                        data        : { uploaded_walk_id: walk_id, project_email: app.cache.active_project["email"] },
+                        dataType    : "JSON",
+                        success   : function(response){
+                            console.log("upload_ping for walk meta succesffuly.. pinged");
+                            console.log(response);
+
+                            app.cache.localusersdb.allDocs({
+                              include_docs: true
+                            }).then(function (res) {
+                                var all_synced = true;
+                                var rows = res["rows"];
+                                for(var i in rows){
+                                    var r_d     = rows[i]["doc"];
+                                    var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
+                                    if(!synced){
+                                        all_synced = false;
+                                    }
+                                }
+                                
+                                //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
+                                if(all_synced){
+                                    console.log("its all synced man");
+                                    $("#datastatus i").addClass("synced");
+                                }else{
+                                    console.log("no its not all synced.. wut");
+                                }
+                            }).catch(function(err){
+                                app.log("error allDocs()" + err);
+                            });
+                        },
+                        error     : function(err){
+                            console.log(err);
+                        }
+                    });
+
                     $(".alternate_upload.uploading a").html('&#8686;');
                     $(".alternate_upload.uploading").removeClass("uploading");
                 }
@@ -850,18 +981,6 @@ var app = {
         }).catch(function (err) {
             console.log(err);
         });
-    }
-
-    ,onDevicePause: function() {
-        //IF THEY PAUSE WHAT SHOULD HAPPEN?
-        //KEEP USER INFO IN THE APP/LOCAL
-        // app.log("DEVICE PAUSING");
-    }
-
-    ,onDeviceResume: function() {
-        //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
-        //SO NO DO NOT RELOAD PROJECT
-        // app.log("DEVICE RESUMING");  
     }
 
     ,goBack : function(){

@@ -16,6 +16,7 @@ var config = {
         ,"log_remote"     		: "https://disc_user_general:rQaKibbDx7rP@ourvoice-cdb.med.stanford.edu/disc_log"
 
         ,"upload_endpoint"      : "http://ourvoice-projects.med.stanford.edu/attachment_upload.php"
+        ,"upload_ping"          : "http://ourvoice-projects.med.stanford.edu/upload_ping.php"
         ,"hook_thumbs"          : "http://ourvoice-projects.med.stanford.edu/process_thumbs.php"
     }
 };

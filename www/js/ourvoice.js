@@ -7,9 +7,11 @@ var ourvoice = {
     }
 
     ,adminView: function(rows, backdoor){
-        $("th.alternate_upload").removeClass("backdoor");
+        $(".backdoor").removeClass("backdoor");
         if(backdoor){
             $("th.alternate_upload").addClass("backdoor");
+            $("th.reset,td.reset").addClass("backdoor");
+            $("#list_data .button").addClass("backdoor");
         }
 
         rows.reverse();
@@ -43,7 +45,7 @@ var ourvoice = {
             var pics    = $("<td>").text(r_d["photos"].length);
             var audio   = $("<td>").text(picount);
             var thumbs  = $("<i>").attr("data-docid",r_id);
-            var reset   = $("<td>");
+            var reset   = $("<td>").addClass("reset");
             reset.append($("<a>").addClass("resync").attr("data-docid",r_id).text('reset'));
             
             if(synced){
@@ -60,7 +62,7 @@ var ourvoice = {
             tr.append(pics);
             tr.append(audio);
             tr.append(up);
-            tr.append(reset);
+            
             // tr.append(trash);
             if(backdoor){
                 var altup   = $("<td>").addClass("alternate_upload").addClass("backdoor");
@@ -68,6 +70,9 @@ var ourvoice = {
                 tr.append(altup);
                 // var trash   = $("<td>");
                 // trash.append($("<a>").addClass("trash").attr("data-docid",r_id).html('&#128465;'));
+            }else{
+                // FUCK IT
+                tr.append(reset);
             }
 
             $("#list_data tbody").append(tr);
@@ -192,6 +197,7 @@ var ourvoice = {
             //SET THE NEXT AVAILABLE USER OBJECT _id
             var time_stamp                      = Date.now();
             app.cache.active_project["proj_id"] = p["project_id"];
+            app.cache.active_project["email"]   = p.hasOwnProperty("project_email") ? p["project_email"] : "";
             app.cache.participant_id            = (res["rows"].length + 1);
             app.cache.next_id                   = datastore.pouchCollate([ app.cache.active_project["proj_id"], app.cache.uuid,   app.cache.participant_id, time_stamp]);
             app.cache.proj_thumbs               = p["thumbs"];
@@ -895,7 +901,7 @@ var ourvoice = {
         window.plugins.insomnia.keepAwake();
 
         datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
-            // console.log(info);
+            // IF IT GETS HERE IT MEANS AT LEAST THE WALK META DATA json was sucessfully uploaded
             if(info.hasOwnProperty("docs")){
                 //.onChange
                 var updated = 0;
@@ -906,6 +912,22 @@ var ourvoice = {
                     app.cache.localusersdb.get(_id).then(function (doc) {
                         doc.uploaded = true;
                         app.cache.localusersdb.put(doc);
+                        var this_id = doc["_id"];
+
+                        var apiurl      = config["database"]["upload_ping"]; 
+                        $.ajax({
+                            type        : "POST",
+                            url         : apiurl,
+                            data        : { uploaded_walk_id: this_id, project_email: app.cache.active_project["email"], doc: JSON.stringify(doc) },
+                            dataType    : "JSON",
+                            success   : function(response){
+                                console.log("upload_ping for walk ["+this_id+"] meta succesffuly.. pinged");
+                                console.log(response);
+                            },
+                            error     : function(err){
+                                console.log(err);
+                            }
+                        });
                     }).catch(function (werr) {
                         app.log("syncLocalData error UPDATING USER DATA " + _id, Error);
                         datastore.showError(werr);
@@ -923,7 +945,7 @@ var ourvoice = {
                 $("#datastatus i").addClass("synced");
 
                 app.cache.pbacutoff = true; //set to true to finish complete the upload animation
-
+                
                 $("i[data-docid]").addClass("uploaded");
                 $("i[data-docid]").closest("tr").addClass("uploaded");
 
@@ -935,75 +957,7 @@ var ourvoice = {
                     $("#cancel_upload").click();
                     $(".uploading").removeClass("uploading");
                 }, 180000); //??
-
-                // {
-                //   "ok": true,
-                //   "start_time": "2018-03-30T19:11:13.145Z",
-                //   "docs_read": 2,
-                //   "docs_written": 2,
-                //   "doc_write_failures": 0,
-                //   "errors": [],
-                //   "last_seq": 32,
-                //   "status": "complete",
-                //   "end_time": "2018-03-30T19:11:15.078Z"
-                // }
             }else if(info.hasOwnProperty("docs") && info["docs_written"] > 0){
-                // {
-                //   "ok": true,
-                //   "start_time": "2018-03-30T19:11:13.145Z",
-                //   "docs_read": 2,
-                //   "docs_written": 2,
-                //   "doc_write_failures": 0,
-                //   "errors": [],
-                //   "last_seq": 32,
-                //   "docs": [
-                //     {
-                //       "_attachments": {
-                //         "photo_0.jpg": {
-                //           "digest": "md5-U90LeZe0IVIhLQ87p32RoQ==",
-                //           "content_type": "image/jpeg",
-                //           "revpos": 1,
-                //           "data": {}
-                //         }
-                //       },
-                //       "upload_try": 3,
-                //       "_id": "IRV_4FE48F85-314A-49DE-BF76-437D1370EBD1_6_1521869717004_photo_0.jpg",
-                //       "_rev": "3-c9f56e989ef443989f05e7dec8b3e78a",
-                //       "_revisions": {
-                //         "start": 3,
-                //         "ids": [
-                //           "c9f56e989ef443989f05e7dec8b3e78a",
-                //           "73b01081255af473c678c7d06d10a56d",
-                //           "c96ecdd4713291097f2308fc27b17250"
-                //         ]
-                //       }
-                //     },
-                //     {
-                //       "_attachments": {
-                //         "audio_0_1.wav": {
-                //           "digest": "md5-TV3VgwTZVYp+RHGQTcw3fw==",
-                //           "content_type": "audio/wav",
-                //           "revpos": 1,
-                //           "data": {}
-                //         }
-                //       },
-                //       "upload_try": 3,
-                //       "_id": "IRV_4FE48F85-314A-49DE-BF76-437D1370EBD1_6_1521869717004_audio_0_1.wav",
-                //       "_rev": "3-1357251e19df63a59d57ec42e4d24acf",
-                //       "_revisions": {
-                //         "start": 3,
-                //         "ids": [
-                //           "1357251e19df63a59d57ec42e4d24acf",
-                //           "38408cff63990b59f164df52b229406a",
-                //           "52bc919377cbf69372f23b0c59319121"
-                //         ]
-                //       }
-                //     }
-                //   ]
-                // }
-                //.onChange
-                //THIS GIVES DETAILS OF UPLOADED DATA ROWS , UNFORTUNATELY THEY COME ALL AT ONCE (OR NOTHING?) SO CAN'T DO PROPER PROGRES BAR
-                
                 // MAKE AN ARRAY OF SPECIFIC PHOTO ATTACHMENTS TO CREATE THUMBNAILS FOR
                 var ph_ids = [];
                 for(var i in info["docs"]){
@@ -1021,9 +975,11 @@ var ourvoice = {
                   dataType  : "JSON",
                   success   : function(response){
                     //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
+                    console.log("photo ids: " + ph_ids + " succesfully passed to " + config["database"]["hook_thumbs"]);
                     console.log(response);
                   }
                 });
+
                 ourvoice.clearAllAudio();
             }
         });
@@ -1057,14 +1013,14 @@ var ourvoice = {
                 current_perc        = current_perc > 83 ? 83 : current_perc;
                 
                 if(current_width <= max_width*.25){
-                    min = 750;
-                    max = 1250;
+                    min = 1000;
+                    max = 1500;
                 }else if(current_width <= max_width*.5){
-                    min = 1250;
-                    max = 1750;
+                    min = 1500;
+                    max = 2000;
                 }else if(current_width <= max_width*.75){
-                    min = 1750;
-                    max = 2250;
+                    min = 2000;
+                    max = 2500;
                 }else if(current_width <= max_width*.83){
                     min = 3000;
                     max = 5000;
@@ -1085,7 +1041,7 @@ var ourvoice = {
             }
             
             if(current_width >= max_width){
-                $("#cancel_upload").click();
+                $("#cancel_upload").click(function(){});
                 setTimeout(function(){ },750);
                 return;
             }

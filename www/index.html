@@ -53,7 +53,7 @@
             <span class='logo' data-clickcount="0"></span>
             <hgroup>
                 <h1 data-translation-key="main_title">The Discovery Tool</h1>
-                <span id="loading_message">version 1.9.9</span>
+                <span id="loading_message" data-translation-key="app_version">version 2.0.2</span>
             </hgroup>
         </div>
     </header>
@@ -61,7 +61,7 @@
     <!-- SUMMARY OF USER DATA ON THE PHONE -->
     <div id="admin_view" class="panel">
         <div class="consent">
-            <h2 data-translation-key="current_upload">Current upload status of data on this device</h2>
+            <h2 data-translation-key="current_upload">Current Upload Status of data on this device</h2>
             <div id="list_data">
                 <table border="1" cellspacing="0">
                     <thead>
@@ -71,19 +71,19 @@
                         <th>ID</th>
                         <th class='pics' data-translation-key="pics">Pics</th>
                         <th class='audio' data-translation-key="audio">Audio</th>
-                        <th data-translation-key="status">Status</th>
-                        <th data-translation-key="reset">Reset</th>
+                        <th class='status' data-translation-key="status">Status</th>
+                        <th class='reset' data-translation-key="reset">Reset</th>
                         <!-- <th data-translation-key="delete">Delete</th> -->
                         <th class="alternate_upload" data-translation-key="altup">Upload</th>
                     </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
-                <a href="#" data-next="admin_view" class="button uploadbtn">Upload<span>ing</span> Data</a>
+                <a href="#" data-next="admin_view" class="button uploadbtn"><i data-translation-key="upload_data">Upload Data</i><b data-translation-key="uploading_data" class='ing'>Uploading Data</b></a>
             </div>
         </div>
         <div id='progressoverlay'>
-            <h3 data-translation-key="uploadprogress">Upload Progress</h3>
+            <h3 data-translation-key="upload_progress">Upload Progress</h3>
             <div id="progressbar">
                 <span></span>
             </div>
@@ -101,7 +101,8 @@
                 <label><span data-translation-key="proj_id">Project Id</span>: <input type="text" id="admin_projid"/></label>
                 <label><span data-translation-key="pw">Password</span>: <input type="password" id="admin_pw"/></label>
                 <a href="#" data-next="step_zero" class="button adminbtn" data-translation-key="setup_proj">Setup Project on this Device</a>
-                <a href="#" id="reset_dbs" class="button danger" data-translation-key="reset_dbs">Reset Databases/Erase Data?</a>
+                
+                <a href="#" id="reset_dbs" data-clickcount="0" class="button danger" data-translation-key="reset_dbs">Reset/Erase Data?</a>
             </div>
         </div>
     </div>
@@ -110,7 +111,7 @@
         <a href="#" class="help" data-translation-key="help">Help</a>
         <a href="#" class="back" data-translation-key="back">Back</a>
         <a href="#" class="mi_slideout">
-            <span data-translation-key="review"></span>
+            <span data-translation-key="review">Review</span>
             (<b>0</b>)
         </a>
     </nav>
@@ -129,9 +130,9 @@
             <input type="hidden" name="user_id" value="1"/>
 
             <!-- this .button converts to consent_0 if there are any consent forms -->
-            <a href="#" data-translation-key="letsgo" id='letsgo' data-next="step_one" class="button"></a>
+            <a href="#" data-translation-key="letsgo" id='letsgo' data-next="step_one" class="button">Let's Go</a>
             <a href="#" id="resetdevice" data-translation-key="reset_device">Reset Device?</a>
-            <a href="#" id="datastatus"><span data-translation-key="sync_status">Sync Status</span>: <i class="synced"></i><!--  <b class="user_id"></b> --></a>
+            <a href="#" id="datastatus"><span data-translation-key="sync_status">Upload Status</span>: <i class="synced"></i><!--  <b class="user_id"></b> --></a>
 
             <copyright data-translation-key="copyright">© Stanford University 2017</copyright>
         </form>
@@ -146,59 +147,51 @@
   
     <div id="step_one" class="panel">
         <div class="actions">
-            <h2 data-translation-key="step_1"></h2>
+            <h2 data-translation-key="step_1">Step 1</h2>
             <a data-next="step_two" class="button" href="#"><i data-translation-key="start">Start</i></a>
         </div>
     </div>
 
     <div id="step_two" class="panel">
         <div class="actions">
-            <h2 data-translation-key="step_2"></h2>
+            <h2 data-translation-key="step_2">Step 2</h2>
             <a data-next="pic_review" class="button daction camera" href='#'></a>
         </div>
         <div class="walk_actions">
-            <a data-next="step_three" class="button endwalk" href="#"><i data-translation-key="done_walk"></i></a>
+            <a data-next="step_three" class="button endwalk" href="#"><i data-translation-key="done_walk">Done with my walk</i></a>
             
         </div>
     </div>
     
     <ol id="mediacaptured">
         <li class="noli slideclose">X</li>
-        <li class="noli nobor"><h3 data-translation-key="review_pics"></h3></li>
-        <li class="noli nomedia nobor"><i data-translation-key="photos_here"></i></li>
+        <li class="noli nobor"><h3 data-translation-key="review_pics">Review Photos</h3></li>
+        <li class="noli nomedia nobor"><i data-translation-key="photos_here">Your photos will show here...</i></li>
     </ol>
 
     <div id="step_three" class="panel">
         <div id="walkmap">
-            <h3 data-translation-key="confirm_end">Review Your Walk</h3>
+            <h3 data-translation-key="confirm_end">Are you done?</h3>
             <div id="google_map"></div>
             <p class="done_photos">
                 <span data-translation-key="you_took">You took</span> <b>0</b> <span data-translation-key="photos">Photos</span>
             </p>
         </div>
         <div class="consent">
-            <a href='#' data-next="survey" class="button confirm endwalk" data-translation-key="yes_done"></a>
-            <a href='#' data-next="step_two" class="button confirm continuewalk" data-translation-key="no_continue"></a>
-        </div>
-    </div>
-
-    <div id="step_four" class="panel">
-        <h3 data-translation-key="confirm_end"></h3>
-        <div class="consent">
-            <a href='#' data-next="survey" class="button confirm endwalk" data-translation-key="yes_done"></a>
-            <a href='#' data-next="step_two" class="button confirm continuewalk" data-translation-key="no_continue"></a>
+            <a href='#' data-next="survey" class="button confirm endwalk" data-translation-key="yes_done">Yes, I am done with my walk</a>
+            <a href='#' data-next="step_two" class="button confirm continuewalk" data-translation-key="no_continue">No, I want to continue my walk</a>
         </div>
     </div>
 
     <div id="pic_review" class="panel">
         <div class="actions">
-            <h3 data-translation-key="photo_detail"></h3>
+            <h3 data-translation-key="photo_detail">Photo Preview</h3>
             <a href="#" class="trashit">&#128465;</a>
             <img id="recent_pic"/>
         </div>
         <ol>
             <li class="why_audio">
-                <h4 data-translation-key="why_audio"></h4>
+                <h4 data-translation-key="why_audio">Tell us why you took this photo.</h4>
                 <div class="device_actions">
                     <a href='#' data-next="audio_record" class="button daction audiorec audio"></a>
                     <i>
@@ -210,26 +203,26 @@
                 </div>
             </li>
             <li class="good_or_bad">
-                <h4 data-translation-key="good_or_bad"></h4>
+                <h4 data-translation-key="good_or_bad">Is this good or bad for the community?</h4>
                 <div class="votes">
                     <a href="#" class="vote up" rel="1">vote up</a>
                     <a href="#" class="vote down" rel="1">vote down</a>
                 </div>
             </li>
             <li class="consent">
-                <a href='#' class="button continuewalk" data-next="step_two" data-translation-key="review_done"></a>
+                <a href='#' class="button continuewalk" data-next="step_two" data-translation-key="review_done">Done with photo!</a>
             </li>
         </ol>
     </div>
 
     <div id="audio_record" class="panel">
-        <h3 class="record" data-translation-key="you_recording"></h3>
-        <h3 class="play" data-translation-key="you_playing"></h3>
+        <h3 class="record" data-translation-key="you_recording">You are recording...</h3>
+        <h3 class="play" data-translation-key="you_playing">Audio playback ...</h3>
         <div id="soundwaves"></div>
         <div id="audio_time">00:00</div>
         <div id="audio_controls">
             <ul>
-                <li><a id="ctl_stop" href="#"><i class="record" data-translation-key="done_recording"></i><i class="play" data-translation-key="done_playing"></i></a></li>
+                <li><a id="ctl_stop" href="#"><i class="record" data-translation-key="done_recording">Done Recording</i><i class="play" data-translation-key="done_playing">End playback</i></a></li>
             </ul>
         </div>
     </div>
@@ -237,8 +230,8 @@
     <div id="survey" class="panel">
         <form id="walk_survey" class="instructions consent">
             <div id="survey_please">
-                <h2 data-translation-key="almost_there"></h2>
-                <h4 data-translation-key="please_answer"></h4>
+                <h2 data-translation-key="almost_there">Almost there...</h2>
+                <h4 data-translation-key="please_answer">Please answer a few questions.</h4>
             </div>
             <fieldset>
             </fieldset>
@@ -253,17 +246,17 @@
                     <h4 data-translation-key="nice_work">Nice Work!</h4>  
                     <dl class="pics">
                         <dt data-translation-key="you_took">You took:</dt>
-                        <dd id='photos_took'><b>2</b> <span data-translation-key="photos">photos</span></dd>
+                        <dd id='photos_took'><b>0</b> <span data-translation-key="photos">photos</span></dd>
                     </dl>
                     <dl class="audios">
                         <dt data-translation-key="you_made">You made:</dt>
-                        <dd id='audios_recorded'><b>3</b> <span data-translation-key="recordings">recordings</span></dd>
+                        <dd id='audios_recorded'><b>0</b> <span data-translation-key="recordings">recordings</span></dd>
                     </dl>
-                    <p data-translation-key="please_sync">Be sure to click on the "Sync Status" button on the start page the next time you are connected to wifi</p>                      
+                    <p data-translation-key="please_sync">You will be able to upload your data the next time you are connected to wifi.</p>                      
                 </li>
-                <li><h3 data-translation-key="thank_you_participant"></h3></li>
+                <li><h3 data-translation-key="thank_you_participant">Thank you for sharing your community with us!</h3></li>
                 <li class="consent">
-                    <a href="#" id="end_session" data-next="step_zero" data-translation-key="finish_return" class="btn finish"></a>
+                    <a href="#" id="end_session" data-next="step_zero" data-translation-key="finish_return" class="btn finish">Finish</a>
                 </li>
             </ol>
         </div>

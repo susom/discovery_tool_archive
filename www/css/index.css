@@ -208,9 +208,16 @@ nav .list{
     border:1px solid red;
 }
 
-
+#list_data .button.backdoor,
+#list_data .button.danger,
+#list_data .reset.backdoor,
 #list_data .alternate_upload{
     display:none;
+}
+
+#list_data .button.danger.backdoor{
+    display:block;
+    margin-top:60px;
 }
 
 #list_data .alternate_upload.backdoor{
@@ -227,6 +234,18 @@ nav .list{
 
 #list_data tbody td i.uploaded{
     background-position:top left;
+}
+
+#reset_dbs.button.danger{
+    cursor:pointer;
+    background:#efefef;
+    color:#ccc;
+    border:1px solid #eee;
+}
+
+#reset_dbs.button.danger.active{
+    background:red;
+    color:#fff;
 }
 
 .ajaxup {
@@ -264,10 +283,6 @@ nav .list{
 
 #step_setup .adminbtn {
     background    : tomato;
-}
-#step_setup #reset_dbs{
-    background      : red;
-    color:#fff;
 }
 #step_setup label{
     margin-bottom : 10px;
@@ -395,6 +410,29 @@ nav .list{
     transform       : translate(-50%,-50%);
 
     -webkit-tap-highlight-color: red;
+}
+
+.button.uploadbtn{
+    padding:30px 0;
+
+}
+
+.uploadbtn i,
+.uploadbtn b{
+    font-weight:bold;
+    font-style:normal;
+}
+
+.uploadbtn b{
+    display:none;
+}
+.uploadbtn.uploading b{
+    display:inline-block;
+    position:relative;
+    z-index:0;
+}
+.uploadbtn.uploading i{
+    display:none;
 }
 
 .uploadbtn span{
@@ -1604,11 +1642,6 @@ nowrap{
     }
     #step_setup .adminbtn {
         background      : tomato;
-    }
-
-    #step_setup #reset_dbs{
-        background      : red;
-        color:#fff;
     }
 
     #step_setup label{
