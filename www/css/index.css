@@ -236,6 +236,14 @@ nav .list{
     background-position:top left;
 }
 
+#list_data td.walkid {
+    text-decoration:underline;
+    color:cornflowerblue;
+    padding-left:3px;
+    padding-right:3px;
+    /*hi*/
+}
+
 #reset_dbs.button.danger{
     cursor:pointer;
     background:#efefef;
@@ -698,6 +706,7 @@ copyright{
     width               : 60px;
     background          : pink;
 }
+
 .mediaitem .votes{
     position            : absolute;
     width               : 105px;
@@ -735,18 +744,20 @@ copyright{
     border-radius       : 3px;
     box-shadow          : 0 0 1px 1px lightgrey;
 }
+
+.review .mediaitem .trashit{
+	display:none;
+}
+
 .mediaitem .audiorec{
-    position            : absolute;
-    z-index             : 11;
-    right               : 60px;
-    top                 : 25px;
-    width               : 30px;
-    height              : 30px;
-    /*background          : #4dc2ff url(../img/icon_mic.png) 50% 50% no-repeat;*/
-    background-size     : 40%;
-    line-height         : 180%;
-    border-radius       : 3px;
-    box-shadow          : 0 0 1px 1px lightgrey;
+    position        : absolute;
+    top             : 30px;
+    left            : 70px;
+    width           : 30px;
+    height          : 30px;
+    background-size : 40%;
+    border-radius   : 3px;
+    box-shadow      : 0 0 1px 1px lightgrey;
 }
 .mediaitem .hasAudio{
     /*background          : url(../img/icon_listen.png) 50% 50% no-repeat;*/

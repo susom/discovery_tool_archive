@@ -53,6 +53,8 @@ var app = {
         app.cache.saveToAlbum           = true;
         app.cache.accuracy_threshold    = 50;
         app.cache.uploadInProgress      = false;
+        app.cache.audioPlayer 			= null;
+        app.cache.versionCheck			= null;
     }
 
     ,bindEvents: function() {
@@ -88,7 +90,7 @@ var app = {
     }
 
     ,onDeviceReady: function() {
-        var GPS_TEST = navigator.geolocation.getCurrentPosition(function(position) {
+        var GPS_TEST 	= navigator.geolocation.getCurrentPosition(function(position) {
             // OnLOAD DO NOTHING gps on is DEFAULT TRUE
         }, function(err){
             if(err.code == 1){
@@ -97,7 +99,9 @@ var app = {
             }
         });
 
-        console.log("oh you hasshole");
+        var version 	= $("#loading_message").data("version");
+        $("#loading_message b").text(version);
+
         //FIRST APP LOAD, SO SET UP NEW USER SESSION
         window.plugins.insomnia.keepAwake();
 
@@ -139,8 +143,20 @@ var app = {
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(change){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
+
+                console.log("hmm change?");
+                console.log(change);
+                if(!app.cache.versionCheck){
+                	app.cache.versionCheck = true;
+                	app.cache.localprojdb.get("all_projects").then(function (doc) {
+		                if(doc["version"] !== $("#loading_message b").text()){
+		                	app.showNotif("Newer Version Available", "There is a newer version of the app in the app store.  Please update the app to ensure optimal functionality.", function(){
+				            });
+		                }
+		            });	
+                }
+
                 app.addDynamicCss();
-                
                 ourvoice.getActiveProject();
             });
         }else{
@@ -262,6 +278,8 @@ var app = {
                 app.cache.attachment.project_id = app.cache.active_project.i;
 
                 app.log("Starting consent process for User " + app.cache.user[app.cache.current_session]._id);
+		        $("#mediacaptured .mediaitem").remove();
+		        $(".mi_slideout b, .done_photos b").text(0);
             }
             
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
@@ -450,24 +468,28 @@ var app = {
             }
             return false;
         });
-
+		
         $("#mediacaptured").on("click",".audiorec", function(){
-            var panel   = $(this).closest(".panel");
-            var next    = "audio_record";
-            var photo_i = $(this).data("photo_i");
-
-            if( $(this).hasClass("hasAudio") ){
-                ourvoice.startPlaying(photo_i);
-                // app.log("play audio");
-            }else{
-                ourvoice.recordAudio(photo_i);
-                // app.log("record audio");
+            var attach_id   = $(this).data("attach_id");
+            var file_i      = $(this).data("file_i");
+            var el 			= $(this);
+            
+            if( el.hasClass("hasAudio") ){
+            	el.addClass("playing");
+            	app.cache.localattachmentdb.getAttachment(attach_id, file_i).then(function(blob){
+					var tmpurl 	= window.URL.createObjectURL(blob);
+					if(!app.cache.audioPlayer){
+						app.cache.audioPlayer = new Audio();
+					}
+					var audio 	= app.cache.audioPlayer;
+					audio.src 	= tmpurl;
+					audio.play();
+					setTimeout(function(){
+						el.removeClass("playing");
+					},1500);
+            	});
             }
 
-            app.closeCurrentPanel(panel);
-            app.transitionToPanel($("#"+next), true);
-
-            //I WANT THEM BOTH TO GO TO THE AUDIO PAGE, THEN RETURN
             return false;
         });
 
@@ -537,14 +559,14 @@ var app = {
         });
 
         $("#progressoverlay").on("click","#cancel_upload", function(){
-            console.log("canceling upload")
             $(".uploading").removeClass("uploading");
             $("#progressbar span").width(0);
             $("#progressoverlay b").text(0);
             return false;
         });
 
-        $("#list_data").on("click","a.resync", function(){
+        $("#list_data").on("click","a.resync", function(event){
+            event.preventDefault();
             var doc_id  = $(this).data("docid");
 
             //DIRTY THIS DATA BY REMOVING THE FLAG HAHA!
@@ -759,14 +781,14 @@ var app = {
         });
 
         $("#mediacaptured .slideclose").click(function(){
-            $("#mediacaptured").removeClass("preview");
+            $("#mediacaptured").removeClass("preview").removeClass("review");
             return false;
         });
 
         //DOCUMENT CLICKS FOR CLOSING POPUPS
         $(document).on("click", function(event){
             if (!$(event.target).closest('#mediacaptured').length) {
-                $("#mediacaptured").removeClass("preview");
+                $("#mediacaptured").removeClass("preview").removeClass("review");
             }
         });
 

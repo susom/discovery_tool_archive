@@ -41,7 +41,8 @@ var ourvoice = {
             var tr      = $("<tr>")
             var walkdate= $("<td>").text(mon+"/"+day);
             pid         = $("<td>").text(pid);
-            truncid     = $("<td>").text(truncid);
+            var walkid  = $("<td>").addClass("walkid");
+            walkid.text(truncid).data("walkid",r_id)
             var pics    = $("<td>").text(r_d["photos"].length);
             var audio   = $("<td>").text(picount);
             var thumbs  = $("<i>").attr("data-docid",r_id);
@@ -58,11 +59,50 @@ var ourvoice = {
 
             tr.append(walkdate);
             tr.append(pid);
-            tr.append(truncid);
+            tr.append(walkid);
             tr.append(pics);
             tr.append(audio);
             tr.append(up);
             
+            // SHOW EACH PHOTOS FOCKING SLIDE OUT PREVIEW THING
+            walkid.click(function(){
+                var doc_id = $(this).data("walkid");
+
+                app.cache.localusersdb.get(doc_id).then(function (doc) {
+                    var photos      = doc["photos"];
+                    var attachments = {};
+                    var akeys        = [];
+                    var audios_count = {};
+                    for(var i in photos){
+                        var file_i              = photos[i]["name"];
+                        var attach_key          = doc_id+"_"+file_i;
+                        akeys.push(attach_key);
+                        var photos_info         = photos[i];
+                        photos_info["_id"]      = doc_id;
+                        attachments[attach_key] = photos_info;
+                    }
+
+                    $("#mediacaptured .mediaitem").remove();
+                    app.cache.localattachmentdb.allDocs({keys: akeys, include_docs: true, attachments: true}).then(function(response){
+                        for(var p in response["rows"]){
+                            var _id     = response["rows"][p]["id"];
+                            var tmp     = _id.split("_photo_");
+                            var p_i     = "photo_"+tmp[1];
+                            var doc     = response["rows"][p]["doc"];
+                            var attach  = doc["_attachments"][p_i];
+                            var fileurl = "data:" + attach["content_type"] + ";base64," + attach["data"];
+                            ourvoice.addMediaItem(attachments[_id], fileurl);
+                        }
+                    });
+                    
+                    $("#mediacaptured").addClass("preview").addClass("review");
+                }).catch(function (err) {
+                    console.log("error getting doc");
+                    console.log(err);
+                });
+                return false;
+            });
+
             // tr.append(trash);
             if(backdoor){
                 var altup   = $("<td>").addClass("alternate_upload").addClass("backdoor");
@@ -75,6 +115,10 @@ var ourvoice = {
                 tr.append(reset);
             }
 
+            $(tr).find().click(function(){
+                console.log("this");
+                console.log($(this));
+            });
             $("#list_data tbody").append(tr);
         }
         return;
@@ -373,7 +417,7 @@ var ourvoice = {
         }
         // Create the map
         var myOptions = {
-            zoom        : 32,
+            zoom        : 16,
             center      : app.cache.currentWalkMap[0],
             mapTypeId   : google.maps.MapTypeId.ROADMAP
         }
@@ -396,23 +440,25 @@ var ourvoice = {
                 fillColor: "#ffffff",
                 strokeColor: "#0000FF",
                 fillOpacity: 1
-
             },
             title: "Starting Point"
         });
 
         for(var i = 1; i < geopoints; i++) {
 
-            if(app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"] > 20){
+            if(app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"] > 50){
                 console.log("no good accuracy: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
                 continue;
             }else{
-                console.log("accuracy< 20?: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
+                console.log("accuracy < 50?: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
             }
 
             latLngBounds.extend(app.cache.currentWalkMap[i]);
-                // Place the marker
-                new google.maps.Marker({
+            console.log("ltlngbounds");
+            console.log(app.cache.currentWalkMap[i]);
+
+            // Place the marker
+            new google.maps.Marker({
                 map: map,
                 position: app.cache.currentWalkMap[i],
                 icon: {
@@ -434,7 +480,7 @@ var ourvoice = {
           path: app.cache.currentWalkMap,
           strokeColor: '#0000FF',
           strokeOpacity: 0.7,
-          strokeWeight: 1
+          strokeWeight: 0
         });
 
         // Fit the bounds of the generated points
@@ -778,13 +824,14 @@ var ourvoice = {
     }
 
     ,addMediaItem:function(_photo,fileurl){
-        var photo_i     = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
+        var photo_i     = app.cache.user[app.cache.current_session].photos.indexOf(_photo); 
         var tmstmp      = "";
         if(utils.checkConnection()){
             var geotag      = _photo["geotag"];
             var time        = !geotag ? "n/a" : utils.readableTime(geotag.timestamp);
             tmstmp          = "@ " + time;
         }
+
         //NOW ADD THIS TO THE VIEW #mediacaptured
         var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
         var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>").text(tmstmp));
@@ -795,13 +842,17 @@ var ourvoice = {
         
         var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#128465;");
         
-        //SAVE MAYBE BRING BACK LATER
-        // var audiorec    = $("<a>").attr("href","#").addClass("audiorec").data("photo_i",photo_i).attr("rel",photo_i).attr("data-next","audio_record");
-        // if(_photo["audio"]){
-        //     //IF HAS AUDIO THEN SHOW PLAY BUTTON
-        //     audiorec.addClass("hasAudio");
-        // }
-        // newitem.append(audiorec);
+        console.log(_photo);
+        if(_photo["audios"]){
+            for(var a in _photo["audios"]){
+                var audio_file_i    = _photo["audios"][a];
+                if(_photo.hasOwnProperty("_id")){
+                    var attach_id = _photo["_id"] + "_" + audio_file_i;
+                }
+                var audiorec        = $("<a>").attr("href","#").addClass("audiorec").addClass("hasAudio").data("attach_id",attach_id).data("file_i", audio_file_i);
+                newitem.append(audiorec);
+            }
+        }
         
         // if(app.cache.proj_thumbs ){
         //     var thumbs      = $("<div>").addClass("votes");
@@ -811,6 +862,7 @@ var ourvoice = {
         //     thumbs.append(thumbsdown);
         //     newitem.append(thumbs);
         // }
+
         newitem.append(trash);
 
         $(".nomedia").hide();
@@ -1039,10 +1091,10 @@ var ourvoice = {
                 $("#progressbar span").width(current_width);
                 $("#percent_uploaded").text(current_perc);
             }
-            
+
             if(current_width >= max_width){
-                $("#cancel_upload").click(function(){});
-                setTimeout(function(){ },750);
+                $("#cancel_upload").trigger("click");
+                setTimeout(function(){},750);
                 return;
             }
 

@@ -112,6 +112,10 @@ header:after {
 .mediaitem .hasAudio{
     background          : url(../img/icon_listen.png) 50% 50% no-repeat;
 }
+.mediaitem .hasAudio.playing{
+    background          : url(../img/anim_soundwaves_blue.gif) 50% 50% no-repeat;
+    background-size: cover ;
+}
 
 .listen {
     background: url(../img/icon_listen.png) 10px 4px no-repeat;
