@@ -144,8 +144,6 @@ var app = {
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
 
-                console.log("hmm change?");
-                console.log(change);
                 if(!app.cache.versionCheck){
                 	app.cache.versionCheck = true;
                 	app.cache.localprojdb.get("all_projects").then(function (doc) {
@@ -732,7 +730,6 @@ var app = {
                       data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
                       dataType  : "JSON",
                       success   : function(attachments){
-                        // console.log("these attachments need uploading");
                         // console.log(attachments);
                         // console.log("start recursive upload of " + attachments.length + " attachments");
                         // var duplicateObject = JSON.parse(JSON.stringify( originalObject ));
@@ -877,118 +874,117 @@ var app = {
         var attach_name = attachment["name"]; 
         var apiurl      = config["database"]["upload_endpoint"]; 
 
-        // console.log("kick off one ajax upload of " + attach_id);
         app.cache.localattachmentdb.getAttachment(attach_id, attach_name).then(function(blob){
-            var fd  = new FormData();
-            fd.append("attachment", blob, attach_id);
-            fd.append("attach_name", attach_name);
+            // AM I DOING ALL THIS JUST TO HAVE A FILE INPUT ELEMENT TO USE FOR THE PLUGIN?
+            $("#fileupload").remove();
+            var fileupload = $("<input>");
+            $("#admin_view").append(fileupload);
+            fileupload.attr("id","fileupload");
+            fileupload.attr("type","file");
+            fileupload.attr("name","files[]");
+            fileupload.attr("multiple","");
+            fileupload.css("opacity","0").css("position","absolute").css("left","-5000px");
 
-            // console.log(attach_id + " " + attach_name);
-            $.ajax({
-                type        : "POST",
-                url         : apiurl + "?walk_id=" + walk_id,
-                data        : fd,
-                contentType : false, // The content type used when sending data to the server.
-                processData : false, // To send DOMDocument or non processed data file it is set to false
-                // async       : false,
-                dataType    : "JSON",
-                success   : function(response){
-                    // console.log("does done happen before this?");
-                    console.log(response);
+            // THIS WORKS FOR THE JSON WALK META, BUT NOT ACTUAL FILES WTPHO
+            $('#fileupload').fileupload({
+                url: apiurl + "?walk_id=" + walk_id,
+                dataType: 'JSON',
+                success : function(e, data){
+                    console.log(data);
                     var current_count = parseInt($(".alternate_upload.uploading a").html());
-                    $(".alternate_upload.uploading a").html(current_count-1);                    
+                    $(".alternate_upload.uploading a").html(current_count-1);        
                 },
-                error     : function(err){
-                    console.log(err);
-                }
-            }).done(function(_junk){
-                if(attachments_array.length){
-                    // console.log("does done fire right away?");
-                    // console.log("start a new atachments array that is now " + attachments_array.length + " length");
-                    app.recursiveUpload(walk_id, attachments_array);
-                }else{
-                    console.log("done with all attachments");
-                    
-                    // OK LETS MARK IT AS UPLOADED SO NO MORE ERRORS NEXT TIME
-                    app.cache.localusersdb.get(walk_id).then(function (doc) {
-                        doc.uploaded = true;
-                        app.cache.localusersdb.put(doc);
+                error : function(e, data){
+                    console.log("error");
+                    console.log(e);
+                    console.log(data);
+                },
+                done: function (e, data) {
+                    console.log(data);
+                    if(attachments_array.length){
+                        // IF THERE ARE ATTACHMENTS LEFT KEEP GOING
+                        app.recursiveUpload(walk_id, attachments_array);
+                    }else{
+                        console.log("done with all attachments");
+                        
+                        // OK LETS MARK IT AS UPLOADED SO NO MORE ERRORS NEXT TIME
+                        app.cache.localusersdb.get(walk_id).then(function (doc) {
+                            doc.uploaded = true;
+                            app.cache.localusersdb.put(doc);
 
-                        //CHANGE SYNC INDICATOR TO THUMBS UP
-                        $("i[data-docid='"+walk_id+"']").addClass("uploaded");
-                        $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
-
-                        // NOW PROCESS THE THUMBNAILS
-                        var ph_ids = [];
-                        for(var p in doc["photos"]){
-                            var pic = doc["photos"][p];
-                            ph_ids.push(walk_id + "_" + pic["name"]);
-                        }
-
-
-                        // AJAX HIT THE SERVER TO CREATE THUMBNAILS
-                        $.ajax({
-                          type      : "POST",
-                          url       : config["database"]["hook_thumbs"],
-                          data      : { ph_ids : ph_ids },
-                          dataType  : "JSON",
-                          success   : function(response){
-                            //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
-                            console.log(response);
-                          }
-                        });
-                    }).catch(function (werr) {
-                        app.log("syncLocalData error UPDATING USER DATA " + walk_id, Error);
-                        datastore.showError(werr);
-                    });
-
-                    // THE WALK JSON and ALL THE ATTACHMENTS HAVE RECURSIVELY SAVED TO THE SERVER!!!
-                    // NOW HIT UPLOAD PING TO ALERT THE ADMIN EMAIL
-                    var apiurl      = config["database"]["upload_ping"]; 
-                    $.ajax({
-                        type        : "POST",
-                        url         : apiurl,
-                        data        : { uploaded_walk_id: walk_id, project_email: app.cache.active_project["email"] },
-                        dataType    : "JSON",
-                        success   : function(response){
-                            console.log("upload_ping for walk meta succesffuly.. pinged");
-                            console.log(response);
-
-                            app.cache.localusersdb.allDocs({
-                              include_docs: true
-                            }).then(function (res) {
-                                var all_synced = true;
-                                var rows = res["rows"];
-                                for(var i in rows){
-                                    var r_d     = rows[i]["doc"];
-                                    var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
-                                    if(!synced){
-                                        all_synced = false;
-                                    }
-                                }
-                                
-                                //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
-                                if(all_synced){
-                                    console.log("its all synced man");
-                                    $("#datastatus i").addClass("synced");
-                                }else{
-                                    console.log("no its not all synced.. wut");
-                                }
-                            }).catch(function(err){
-                                app.log("error allDocs()" + err);
+                            //CHANGE SYNC INDICATOR TO THUMBS UP
+                            $("i[data-docid='"+walk_id+"']").addClass("uploaded");
+                            $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
+                            
+                            // AJAX HIT THE SERVER TO CREATE THUMBNAILS
+                            $.ajax({
+                              type      : "POST",
+                              url       : config["database"]["hook_thumbs"],
+                              data      : { walk_id : walk_id },
+                              dataType  : "JSON",
+                              success   : function(response){
+                                //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
+                                console.log(response);
+                              }
                             });
-                        },
-                        error     : function(err){
-                            console.log(err);
-                        }
-                    });
+                        }).catch(function (werr) {
+                            app.log("syncLocalData error UPDATING USER DATA " + walk_id, Error);
+                            datastore.showError(werr);
+                        });
 
-                    $(".alternate_upload.uploading a").html('&#8686;');
-                    $(".alternate_upload.uploading").removeClass("uploading");
+                        // THE WALK JSON and ALL THE ATTACHMENTS HAVE RECURSIVELY SAVED TO THE SERVER!!!
+                        // NOW HIT UPLOAD PING TO ALERT THE ADMIN EMAIL
+                        var apiurl      = config["database"]["upload_ping"]; 
+                        $.ajax({
+                            type        : "POST",
+                            url         : apiurl,
+                            data        : { uploaded_walk_id: walk_id, project_email: app.cache.active_project["email"] },
+                            dataType    : "JSON",
+                            success   : function(response){
+                                console.log("upload_ping for walk meta succesffuly.. pinged");
+                                console.log(response);
+
+                                app.cache.localusersdb.allDocs({
+                                  include_docs: true
+                                }).then(function (res) {
+                                    var all_synced = true;
+                                    var rows = res["rows"];
+                                    for(var i in rows){
+                                        var r_d     = rows[i]["doc"];
+                                        var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
+                                        if(!synced){
+                                            all_synced = false;
+                                        }
+                                    }
+                                    
+                                    //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
+                                    if(all_synced){
+                                        console.log("its all synced man");
+                                        $("#datastatus i").addClass("synced");
+                                    }else{
+                                        console.log("no its not all synced.. wut");
+                                    }
+                                }).catch(function(err){
+                                    app.log("error allDocs()" + err);
+                                });
+                            },
+                            error     : function(err){
+                                console.log(err);
+                            }
+                        });
+
+                        $(".alternate_upload.uploading a").html('&#8686;');
+                        $(".alternate_upload.uploading").removeClass("uploading");
+                    }
+                },
+                progressall: function (e, data) {
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    console.log("progress : " + progress + '%');
                 }
-            }).fail(function(msg){
-                console.log("error in ajaxing attachment?");
             });
+
+            blob['name'] = attach_id;
+            $('#fileupload').fileupload("send",{"files" : [blob] });
         });
     }
 
