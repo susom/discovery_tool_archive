@@ -716,10 +716,13 @@ var app = {
             //replace the upload icon with an animated gif circling a number that counts down!
             var attach_count = $(this).data("attach_count");
             $(this).parent().addClass("uploading");
-            $(this).html(attach_count);
+            // $(this).html(attach_count);
 
             console.log("there are " + attach_count + " attachements to upload");
-
+            
+            //SHOW PROGRESS BAR
+            $("#progressoverlay").addClass("uploading"); 
+            
             //pull data and prepare it to upload to some other fucking thing. 
             app.cache.localusersdb.get(doc_id).then(function (doc) {
                 var doc_rev = doc["_rev"];
@@ -885,28 +888,45 @@ var app = {
             fileupload.attr("multiple","");
             fileupload.css("opacity","0").css("position","absolute").css("left","-5000px");
 
+            // RESET PROGRESS BAR
+            var max_width       = 280;
+            $("#progressbar span").width(0);
+            $("#progressoverlay h3").text("Uploading " + attach_name);
+
             // THIS WORKS FOR THE JSON WALK META, BUT NOT ACTUAL FILES WTPHO
+            // multipart
+            // maxChunkSize
+            // uploadedBytes
+            // recalculateProgress
+            // .progress
+            // .chunksend
+            // .chunkdone
+            // .chunkfail
+            // .chunkalways
             $('#fileupload').fileupload({
                 url: apiurl + "?walk_id=" + walk_id,
                 dataType: 'JSON',
                 success : function(e, data){
-                    console.log(data);
-                    var current_count = parseInt($(".alternate_upload.uploading a").html());
-                    $(".alternate_upload.uploading a").html(current_count-1);        
+                    // NOW THIS MEANS CHUNKS NOT ENTIRE FILE
+                    console.log("UPLOAD PROCESS SUCCESS OR CHUNK SUCCESS?");
+                    // var current_count = parseInt($(".alternate_upload.uploading a").html());
+                    // $(".alternate_upload.uploading a").html(current_count-1);        
                 },
                 error : function(e, data){
-                    console.log("error");
-                    console.log(e);
-                    console.log(data);
+                    console.log("UPLOAD PROCESS ERROR OR CHUNK UPLOAD ERROR?");
+                    // console.log(e);
                 },
                 done: function (e, data) {
-                    console.log(data);
+                    console.log("UPLOAD PROCESS DONE? OR CHUNK DONE");
                     if(attachments_array.length){
                         // IF THERE ARE ATTACHMENTS LEFT KEEP GOING
                         app.recursiveUpload(walk_id, attachments_array);
                     }else{
                         console.log("done with all attachments");
                         
+                        // CLOSE PROGRESS BAR
+                        $("#cancel_upload").trigger("click");
+
                         // OK LETS MARK IT AS UPLOADED SO NO MORE ERRORS NEXT TIME
                         app.cache.localusersdb.get(walk_id).then(function (doc) {
                             doc.uploaded = true;
@@ -978,8 +998,86 @@ var app = {
                     }
                 },
                 progressall: function (e, data) {
+                    // THIS HAPPENS PERIODICALY DURING CHUNK UPLOAD
                     var progress = parseInt(data.loaded / data.total * 100, 10);
-                    console.log("progress : " + progress + '%');
+                    var current_width   = Math.round(max_width * (progress/100));
+                    $("#progressbar span").width(current_width);
+                    $("#percent_uploaded").text(progress);
+                    // console.log(data);
+                    // "recalculateProgress":true,
+                    // "progressInterval":100,
+                    // "bitrateInterval":500,
+                    // {"loaded":32687,"total":3891200,"bitrate":52299200} = 0%
+                    // {"loaded":100000,"total":3891200,"bitrate":52299200} = 2%
+                },
+                progress: function(e,data){
+                    // NOT SURE WHAT EXACTLY IS THE DIFFERENCE HERE
+                    // showlog(data);
+                },
+                chunkdone: function(e,data){
+                    // CHUNK UPLOAD SUCESS , SAME AS REGULAR success() WHEN IN CHUNK MODE
+                    // showlog(data);
+                },
+                chunkfail: function(e,data){
+                    // CHUNK UPLOAD FAIL
+                    // showlog(e);
+                    // showlog(data);
+                },
+                chunkalways: function(e,data){
+                    // CHUNK UPLOAD SUCCESS OR FAIL, FIRES EVERYTIME
+                    // showlog(data);
+                },
+                maxChunkSize: 100000,
+                maxRetries  : 3600,
+                retryTimeout: 1000,
+                add: function (e, data) {
+                    var that = this;
+                    $.getJSON(apiurl+ "?walk_id=" + walk_id, {file: data.files[0].name}, function (result) {
+                        console.log("hello add()");
+                        var file = result.file;
+                        data.uploadedBytes = file && file.size;
+                        $.blueimp.fileupload.prototype.options.add.call(that, e, data);
+                    });
+                },
+                fail: function (e, data) {
+                    console.log("UPLOAD PROCESS FAIL, WHY NOT RETRY?");
+                    var fu      = $(this).data('blueimp-fileupload') || $(this).data('fileupload');
+
+                    // IT IS FAILING HERE
+                    var retries = 0;//data.context.data('retries') || 0;
+
+                    var retry   = function () {
+                            $.getJSON(apiurl+ "?walk_id=" + walk_id, {file: data.files[0].name})
+                                .done(function (result) {
+                                    console.log("wait does this mean it completed?");
+                                    var file = result.file;
+                                    data.uploadedBytes = file && file.size;
+                                    // clear the previous data:
+                                    data.data = null;
+                                    data.submit();
+                                })
+                                .fail(function () {
+                                    console.log("retry failure?");
+                                    fu._trigger('fail', e, data);
+                                });
+                        };
+
+                    console.log("whats this info?");
+                    console.log(data.uploadedBytes);
+                    console.log(data.files[0].size);
+
+                    if (data.errorThrown !== 'abort' 
+                        && data.uploadedBytes < data.files[0].size 
+                        && retries < fu.options.maxRetries) {
+                        retries += 1;
+                        data.context.data('retries', retries);
+                        window.setTimeout(retry, retries * fu.options.retryTimeout);
+                        return;
+                    }
+
+                    data.context.removeData('retries');
+                    $.blueimp.fileupload.prototype.options.fail.call(this, e, data);
+                    console.log("bluimp proto ");
                 }
             });
 
@@ -1076,3 +1174,18 @@ var app = {
         console.log(msg);
     }
 };
+
+
+function showlog(obj){
+    var seen    = [];
+    var sheet   = JSON.stringify(obj, function(key, val) {
+       if (val != null && typeof val == "object") {
+            if (seen.indexOf(val) >= 0) {
+                return;
+            }
+            seen.push(val);
+        }
+        return val;
+    });
+    console.log(sheet);
+}
