@@ -10,9 +10,14 @@ var utils = {
     }
 
     ,pingNetwork  : function(){
-      var ping_int = setInterval(function(){
-        app.cache.online = navigator.onLine; 
-      }, 10000);
+      Offline.on("down", function(){
+          app.cache.online = navigator.onLine; 
+          console.log("network down!");
+      });
+      Offline.on("up", function(){
+          app.cache.online = navigator.onLine; 
+          console.log("network up!");
+      });
     }
 
     ,calculateDistance : function (lat1, lon1, lat2, lon2) {

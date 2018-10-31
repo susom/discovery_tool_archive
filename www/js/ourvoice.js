@@ -796,6 +796,7 @@ var ourvoice = {
     ,previewPhoto: function(_photo,fileurl){
         var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
         var goodbad = _photo["goodbad"];
+        var text_comment = _photo.hasOwnProperty("text_comment") ? _photo["text_comment"] : "";
 
         $("#pic_review a.vote").removeClass("on").removeClass("off");
         if(goodbad == 2){
@@ -817,6 +818,7 @@ var ourvoice = {
             $(".daction.audio").removeClass("hasAudio");
         }
 
+        $("#text_comment").data("photo_i",photo_i).val(text_comment);
         $("#pic_review a.trashit").data("photo_i",photo_i).attr("rel",photo_i);
         $("#pic_review a.vote").data("photo_i",photo_i).attr("rel",photo_i);
         $("#recent_pic").attr("src",fileurl);

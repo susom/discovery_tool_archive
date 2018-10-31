@@ -55,6 +55,8 @@ var app = {
         app.cache.uploadInProgress      = false;
         app.cache.audioPlayer 			= null;
         app.cache.versionCheck			= null;
+
+        app.cache.resumeUploads         = {};
     }
 
     ,bindEvents: function() {
@@ -69,6 +71,9 @@ var app = {
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
         // app.log("DEVICE PAUSING");
+        
+        // console.log("pausing device, what happens to uploads? will need to resume for");
+        // console.log(app.cache.resumeUploads);
     }
 
     ,onDeviceResume: function() {
@@ -87,6 +92,10 @@ var app = {
                 return false;
             }
         }); 
+
+        // app.showToast("unpausing device, resume uploads? are they still in cache memory?");
+        // BACK ONLINE, LETS SEE IF ANY UPLOADS NEED RESUMING
+        checkResumeUploads();
     }
 
     ,onDeviceReady: function() {
@@ -147,8 +156,11 @@ var app = {
                 if(!app.cache.versionCheck){
                 	app.cache.versionCheck = true;
                 	app.cache.localprojdb.get("all_projects").then(function (doc) {
-		                if(doc["version"] !== $("#loading_message b").text()){
-		                	app.showNotif("Newer Version Available", "There is a newer version of the app in the app store.  Please update the app to ensure optimal functionality.", function(){
+                        var doc_version = parseInt(doc["version"].replace(/./g,""));
+                        var cur_version = parseInt($("#loading_message b").text().replace(/./g,""));
+                        // only show if the app version is less than official one
+		                if(doc_version > cur_version){
+		                	app.showNotif("Please check for updates", "It is critical to use the latest version of the Discovery Tool.", function(){
 				            });
 		                }
 		            });	
@@ -157,6 +169,9 @@ var app = {
                 app.addDynamicCss();
                 ourvoice.getActiveProject();
             });
+
+            // BACK ONLINE, LETS SEE IF ANY UPLOADS NEED RESUMING
+            checkResumeUploads();
         }else{
             app.addDynamicCss();
             ourvoice.getActiveProject();
@@ -466,7 +481,19 @@ var app = {
             }
             return false;
         });
-		
+
+        $(".panel").on("focus","#text_comment",function(){
+            $(this).css("height","100px");
+            return false;
+        });
+        $(".panel").on("blur","#text_comment",function(){
+            $(this).css("height","initial");
+            //save it
+            var curPhoto = $(this).data("photo_i");
+            app.cache.user[app.cache.current_session].photos[curPhoto].text_comment  = $(this).val();
+            return false;
+        });
+
         $("#mediacaptured").on("click",".audiorec", function(){
             var attach_id   = $(this).data("attach_id");
             var file_i      = $(this).data("file_i");
@@ -871,7 +898,18 @@ var app = {
         // });
     }
 
-    ,recursiveUpload : function(walk_id , attachments_array){
+    ,recursiveUpload : function(walk_id , attachments_array, resuming){
+        if(resuming === undefined){
+            resuming = false;
+        }
+
+        // EVERY ROUND THROUGH THIS LETS UPDATE THE resumeArray
+        //SAVE current state of attachments_array && walk_id TO LOCAL STORAGE in resumeUploads
+        app.cache.resumeUploads[walk_id]  = attachments_array;
+        console.log("updateing needResuming array");
+        console.log(app.cache.resumeUploads[walk_id]);
+        localStorage.setItem("resumeUploads",JSON.stringify(app.cache.resumeUploads)); 
+
         var attachment  = attachments_array.pop();
         var attach_id   = attachment["_id"];
         var attach_name = attachment["name"]; 
@@ -879,14 +917,22 @@ var app = {
 
         app.cache.localattachmentdb.getAttachment(attach_id, attach_name).then(function(blob){
             // AM I DOING ALL THIS JUST TO HAVE A FILE INPUT ELEMENT TO USE FOR THE PLUGIN?
+            $("#fileform").remove();
             $("#fileupload").remove();
+            
+            var fileform   = $("<form>");
+            fileform.attr("id","fileform");
+            fileform.attr("action",apiurl + "?walk_id=" + walk_id);
+
             var fileupload = $("<input>");
-            $("#admin_view").append(fileupload);
             fileupload.attr("id","fileupload");
             fileupload.attr("type","file");
             fileupload.attr("name","files[]");
             fileupload.attr("multiple","");
             fileupload.css("opacity","0").css("position","absolute").css("left","-5000px");
+
+            fileform.append(fileupload);
+            $("#admin_view").append(fileform);
 
             // RESET PROGRESS BAR
             var max_width       = 280;
@@ -894,116 +940,31 @@ var app = {
             $("#progressoverlay h3").text("Uploading " + attach_name);
 
             // THIS WORKS FOR THE JSON WALK META, BUT NOT ACTUAL FILES WTPHO
-            // multipart
-            // maxChunkSize
-            // uploadedBytes
-            // recalculateProgress
-            // .progress
-            // .chunksend
-            // .chunkdone
-            // .chunkfail
-            // .chunkalways
             $('#fileupload').fileupload({
                 url: apiurl + "?walk_id=" + walk_id,
                 dataType: 'JSON',
+                maxChunkSize: 100000,
+                maxRetries  : 3600,
+                retryTimeout: 1000,
                 success : function(e, data){
                     // NOW THIS MEANS CHUNKS NOT ENTIRE FILE
-                    console.log("UPLOAD PROCESS SUCCESS OR CHUNK SUCCESS?");
+                    // console.log("UPLOAD PROCESS CHUNK SUCCESS?");
                     // var current_count = parseInt($(".alternate_upload.uploading a").html());
                     // $(".alternate_upload.uploading a").html(current_count-1);        
                 },
                 error : function(e, data){
-                    console.log("UPLOAD PROCESS ERROR OR CHUNK UPLOAD ERROR?");
-                    // console.log(e);
+                    // console.log("UPLOAD PROCESS ERROR OR CHUNK UPLOAD ERROR?");
                 },
                 done: function (e, data) {
-                    console.log("UPLOAD PROCESS DONE? OR CHUNK DONE");
-                    if(attachments_array.length){
-                        // IF THERE ARE ATTACHMENTS LEFT KEEP GOING
-                        app.recursiveUpload(walk_id, attachments_array);
-                    }else{
-                        console.log("done with all attachments");
-                        
-                        // CLOSE PROGRESS BAR
-                        $("#cancel_upload").trigger("click");
-
-                        // OK LETS MARK IT AS UPLOADED SO NO MORE ERRORS NEXT TIME
-                        app.cache.localusersdb.get(walk_id).then(function (doc) {
-                            doc.uploaded = true;
-                            app.cache.localusersdb.put(doc);
-
-                            //CHANGE SYNC INDICATOR TO THUMBS UP
-                            $("i[data-docid='"+walk_id+"']").addClass("uploaded");
-                            $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
-                            
-                            // AJAX HIT THE SERVER TO CREATE THUMBNAILS
-                            $.ajax({
-                              type      : "POST",
-                              url       : config["database"]["hook_thumbs"],
-                              data      : { walk_id : walk_id },
-                              dataType  : "JSON",
-                              success   : function(response){
-                                //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
-                                console.log(response);
-                              }
-                            });
-                        }).catch(function (werr) {
-                            app.log("syncLocalData error UPDATING USER DATA " + walk_id, Error);
-                            datastore.showError(werr);
-                        });
-
-                        // THE WALK JSON and ALL THE ATTACHMENTS HAVE RECURSIVELY SAVED TO THE SERVER!!!
-                        // NOW HIT UPLOAD PING TO ALERT THE ADMIN EMAIL
-                        var apiurl      = config["database"]["upload_ping"]; 
-                        $.ajax({
-                            type        : "POST",
-                            url         : apiurl,
-                            data        : { uploaded_walk_id: walk_id, project_email: app.cache.active_project["email"] },
-                            dataType    : "JSON",
-                            success   : function(response){
-                                console.log("upload_ping for walk meta succesffuly.. pinged");
-                                console.log(response);
-
-                                app.cache.localusersdb.allDocs({
-                                  include_docs: true
-                                }).then(function (res) {
-                                    var all_synced = true;
-                                    var rows = res["rows"];
-                                    for(var i in rows){
-                                        var r_d     = rows[i]["doc"];
-                                        var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
-                                        if(!synced){
-                                            all_synced = false;
-                                        }
-                                    }
-                                    
-                                    //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
-                                    if(all_synced){
-                                        console.log("its all synced man");
-                                        $("#datastatus i").addClass("synced");
-                                    }else{
-                                        console.log("no its not all synced.. wut");
-                                    }
-                                }).catch(function(err){
-                                    app.log("error allDocs()" + err);
-                                });
-                            },
-                            error     : function(err){
-                                console.log(err);
-                            }
-                        });
-
-                        $(".alternate_upload.uploading a").html('&#8686;');
-                        $(".alternate_upload.uploading").removeClass("uploading");
-                    }
+                    // console.log("UPLOAD PROCESS FILE DONE " + attach_name );
+                    attachmentUploadDone(attachments_array,walk_id,resuming);
                 },
                 progressall: function (e, data) {
                     // THIS HAPPENS PERIODICALY DURING CHUNK UPLOAD
-                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    var progress        = parseInt(data.loaded / data.total * 100, 10);
                     var current_width   = Math.round(max_width * (progress/100));
                     $("#progressbar span").width(current_width);
                     $("#percent_uploaded").text(progress);
-                    // console.log(data);
                     // "recalculateProgress":true,
                     // "progressInterval":100,
                     // "bitrateInterval":500,
@@ -1020,64 +981,54 @@ var app = {
                 },
                 chunkfail: function(e,data){
                     // CHUNK UPLOAD FAIL
-                    // showlog(e);
                     // showlog(data);
                 },
                 chunkalways: function(e,data){
                     // CHUNK UPLOAD SUCCESS OR FAIL, FIRES EVERYTIME
                     // showlog(data);
                 },
-                maxChunkSize: 100000,
-                maxRetries  : 3600,
-                retryTimeout: 1000,
-                add: function (e, data) {
-                    var that = this;
-                    $.getJSON(apiurl+ "?walk_id=" + walk_id, {file: data.files[0].name}, function (result) {
-                        console.log("hello add()");
-                        var file = result.file;
-                        data.uploadedBytes = file && file.size;
-                        $.blueimp.fileupload.prototype.options.add.call(that, e, data);
-                    });
-                },
                 fail: function (e, data) {
-                    console.log("UPLOAD PROCESS FAIL, WHY NOT RETRY?");
-                    var fu      = $(this).data('blueimp-fileupload') || $(this).data('fileupload');
+                    // console.log("UPLOAD PROCESS FAIL, WHY NOT RETRY?");
+                    var fu  = $(this).data('blueimp-fileupload') || $(this).data('fileupload');
 
                     // IT IS FAILING HERE
-                    var retries = 0;//data.context.data('retries') || 0;
+                    var retries = data.retries || 0;
+                    // console.log(retries);
 
                     var retry   = function () {
-                            $.getJSON(apiurl+ "?walk_id=" + walk_id, {file: data.files[0].name})
-                                .done(function (result) {
-                                    console.log("wait does this mean it completed?");
-                                    var file = result.file;
-                                    data.uploadedBytes = file && file.size;
-                                    // clear the previous data:
-                                    data.data = null;
-                                    data.submit();
-                                })
-                                .fail(function () {
-                                    console.log("retry failure?");
-                                    fu._trigger('fail', e, data);
-                                });
-                        };
+                        // console.log("retry function");
+                        $.getJSON(apiurl+ "?walk_id=" + walk_id, {file: data.files[0].name})
+                            .done(function (result) {
+                                console.log("retry done: succesful file upload");
+                                var file = result.file;
+                                data.uploadedBytes = file && file.size;
+                                // clear the previous data:
+                                data.data = null;
+                                data.submit();
 
-                    console.log("whats this info?");
-                    console.log(data.uploadedBytes);
-                    console.log(data.files[0].size);
+                                console.log("IF any files left to upload, continue recursively");
+                                attachmentUploadDone(attachments_array,walk_id,resuming);
+                            })
+                            .fail(function () {
+                                console.log("retry failure?");
+                                fu._trigger('fail', e, data);
+                            });
+                    };
 
+                    console.log("error thrown: " + data.errorThrown);
                     if (data.errorThrown !== 'abort' 
                         && data.uploadedBytes < data.files[0].size 
                         && retries < fu.options.maxRetries) {
+                        
                         retries += 1;
-                        data.context.data('retries', retries);
+                        console.log("retrying:" + retries);
+
+                        data.retries = retries;
                         window.setTimeout(retry, retries * fu.options.retryTimeout);
                         return;
                     }
 
-                    data.context.removeData('retries');
-                    $.blueimp.fileupload.prototype.options.fail.call(this, e, data);
-                    console.log("bluimp proto ");
+                    delete data["retries"];
                 }
             });
 
@@ -1173,8 +1124,138 @@ var app = {
         // datastore.writeDB(app.cache.locallogdb, log_obj);
         console.log(msg);
     }
+
+    ,showToast : function (text) {
+        setTimeout(function () {
+          window.plugins.toast.showShortBottom(text);
+        }, 500);
+    }
 };
 
+
+function checkResumeUploads(){
+    if (typeof(Storage) !== "undefined") {
+        // CHECK FOR localStorage
+        if(localStorage.getItem("resumeUploads")){
+            app.cache.resumeUploads = JSON.parse(localStorage.getItem("resumeUploads"));
+            for(var walk_id in app.cache.resumeUploads){
+                attachments_array = app.cache.resumeUploads[walk_id];
+                var resuming = true;
+
+                var abbrev_walkid = walk_id.substr(walk_id.length -4);
+                console.log("resuming upload for walkid:" + abbrev_walkid);
+                console.log(attachments_array);
+                app.showToast("resuming upload for walkid : " + abbrev_walkid);
+                attachmentUploadDone(attachments_array,walk_id,resuming);
+            }
+        }else{
+            console.log("no uploads need resuming");
+        }
+    } else {
+        // Sorry! No Web Storage support..
+        console.log("No local storage support");
+    }
+}
+
+
+function attachmentUploadDone(attachments_array,walk_id,resuming){
+    //IF WE ARE RESUMING DONT BOTHER DOING UI/PROGRESS BAR UPDATES
+    if (resuming === undefined){
+        resuming = false;
+    }
+
+    if(attachments_array.length){
+        // IF THERE ARE ATTACHMENTS LEFT KEEP GOING
+        app.recursiveUpload(walk_id, attachments_array, resuming);
+    }else{
+        console.log("done with all attachments");
+        
+        //TODO, REMOVE THE RESUMABLE UPLOADS STORED IN LOCALDB
+        // console.log("whats left in the attachments array for walkid:" + walk_id);
+        // console.log(app.cache.resumeUploads);
+        delete app.cache.resumeUploads[walk_id];
+        // console.log("after deleting walk id from resumeuploads");
+        // console.log(app.cache.resumeUploads);
+        localStorage.setItem("resumeUploads",JSON.stringify(app.cache.resumeUploads)); 
+        
+        if(resuming){
+            var abbrev_walkid = walk_id.substr(walk_id.length -4);
+            app.showToast("Uploads for " + abbrev_walkid + " complete.");
+        }
+
+        // CLOSE PROGRESS BAR
+        $("#cancel_upload").trigger("click");
+
+        // OK LETS MARK IT AS UPLOADED SO NO MORE ERRORS NEXT TIME
+        app.cache.localusersdb.get(walk_id).then(function (doc) {
+            doc.uploaded = true;
+            app.cache.localusersdb.put(doc);
+
+            //CHANGE SYNC INDICATOR TO THUMBS UP
+            $("i[data-docid='"+walk_id+"']").addClass("uploaded");
+            $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
+            
+            // AJAX HIT THE SERVER TO CREATE THUMBNAILS
+            $.ajax({
+              type      : "POST",
+              url       : config["database"]["hook_thumbs"],
+              data      : { walk_id : walk_id },
+              dataType  : "JSON",
+              success   : function(response){
+                //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
+                // console.log(response);
+              }
+            });
+        }).catch(function (werr) {
+            app.log("syncLocalData error UPDATING USER DATA " + walk_id, Error);
+            datastore.showError(werr);
+        });
+
+        // THE WALK JSON and ALL THE ATTACHMENTS HAVE RECURSIVELY SAVED TO THE SERVER!!!
+        // NOW HIT UPLOAD PING TO ALERT THE ADMIN EMAIL
+        var apiurl      = config["database"]["upload_ping"]; 
+        $.ajax({
+            type        : "POST",
+            url         : apiurl,
+            data        : { uploaded_walk_id: walk_id, project_email: app.cache.active_project["email"] },
+            dataType    : "JSON",
+            success   : function(response){
+                console.log("upload_ping for walk meta succesffuly.. pinged");
+                console.log(response);
+
+                app.cache.localusersdb.allDocs({
+                  include_docs: true
+                }).then(function (res) {
+                    var all_synced = true;
+                    var rows = res["rows"];
+                    for(var i in rows){
+                        var r_d     = rows[i]["doc"];
+                        var synced  = r_d.hasOwnProperty("uploaded") ? 1 : 0;
+                        if(!synced){
+                            all_synced = false;
+                        }
+                    }
+                    
+                    //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
+                    if(all_synced){
+                        console.log("its all synced man");
+                        $("#datastatus i").addClass("synced");
+                    }else{
+                        console.log("no its not all synced.. wut");
+                    }
+                }).catch(function(err){
+                    app.log("error allDocs()" + err);
+                });
+            },
+            error     : function(err){
+                console.log(err);
+            }
+        });
+
+        $(".alternate_upload.uploading a").html('&#8686;');
+        $(".alternate_upload.uploading").removeClass("uploading");
+    }
+}
 
 function showlog(obj){
     var seen    = [];
