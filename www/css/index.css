@@ -871,7 +871,13 @@ copyright{
     border-radius:5px;
     box-shadow:1px 1px 3px 1px #475464;
     background-color:#4dc2ff;
-    height:50px;
+    height:30px;
+}
+#text_comment{
+    width:86%;
+    height:30px;
+    padding:5px;
+    font-size:120%;
 }
 #pic_review .daction.hasAudio {
     background-color:tomato;
