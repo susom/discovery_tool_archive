@@ -178,7 +178,7 @@ var app = {
         }
 
         //ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
-        $(".button[data-next]").not(".audiorec,.camera,.finish").on("click",function(){
+        $(".button[data-next]").not(".audiorec,.camera,.keyboard,.finish").on("click",function(){
             //GET CURRENT PANEL
             var panel       = $(this).closest(".panel");
             var next        = $(this).data("next");
@@ -460,17 +460,20 @@ var app = {
             var next    = $(this).data("next");
 
             var savehistory = false;
-            if($(this).hasClass("camera")){
+            if($(this).hasClass("camera")) {
                 //GET CURRENT PANEL
-                ourvoice.takePhoto(function(){
+                ourvoice.takePhoto(function () {
                     //on success go to pic review
                     var panel = $("#loading");
                     app.closeCurrentPanel(panel);
-                    app.transitionToPanel($("#"+next),savehistory);
+                    app.transitionToPanel($("#" + next), savehistory);
                 });
-                app.transitionToPanel($("#loading"),savehistory);
+                app.transitionToPanel($("#loading"), savehistory);
                 app.closeCurrentPanel(panel);
                 // app.log("take photo");
+
+            }else if($(this).hasClass("keyboard")){
+                $(".text_comment").slideDown("fast");
             }else{
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i,function(){
@@ -482,10 +485,6 @@ var app = {
             return false;
         });
 
-        $(".panel").on("focus","#text_comment",function(){
-            $(this).css("height","100px");
-            return false;
-        });
         $(".panel").on("blur","#text_comment",function(){
             $(this).css("height","initial");
             //save it

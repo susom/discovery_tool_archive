@@ -810,8 +810,10 @@ copyright{
 }
 #pic_review .device_actions {
     text-align: left;
-    margin:0; padding:0;
+    margin:0;
     height:auto;
+    overflow:hidden;
+    padding:5px 0;
 }
 #pic_review .device_actions i {
     display:block;
@@ -849,20 +851,16 @@ copyright{
 #pic_review  #saved_audio a.record_another{
     /*background:#4dc2ff url(../img/icon_mic.png) 5px 3px no-repeat;*/
     background-size:10%;
-    padding:0 10px 0 25px;
     border-color:#4dc2ff;
     color:#333;
     text-shadow:none;
-    line-height:130%;
     width:auto;
-    margin-right:0;
-}
 
-.daction.audio{
-    /*background:#ff7fe5 url(../img/icon_mic.png) 50% 40% no-repeat;*/
-    line-height: 450%;
-    text-align:left;
-    text-indent:15px;
+    padding:0 3px 0 18px;
+    margin-left:3px;
+    line-height:150%;
+    margin-right:5px;
+    font-size:108%;
 }
 #pic_review .daction{
     float:none;
@@ -873,12 +871,43 @@ copyright{
     background-color:#4dc2ff;
     height:30px;
 }
+
+#pic_review .audiorec{
+    width:60px;
+    float:left;
+}
+#pic_review .keyboard{
+    width:60px;
+    float:left;
+    margin-left:40px;
+}
+
+#pic_review .daction.keyboard:before {
+    content:"or";
+    position:absolute;
+    left:-30px;
+}
+.text_comment{
+    display:none;
+    margin-top:10px;
+}
 #text_comment{
     width:86%;
-    height:30px;
+    height:100px;
     padding:5px;
     font-size:120%;
 }
+#pic_review .device_actions i{
+    margin-bottom:5px;
+}
+
+.daction.audio{
+    /*background:#ff7fe5 url(../img/icon_mic.png) 50% 40% no-repeat;*/
+    line-height: 450%;
+    text-align:left;
+    text-indent:15px;
+}
+
 #pic_review .daction.hasAudio {
     background-color:tomato;
     

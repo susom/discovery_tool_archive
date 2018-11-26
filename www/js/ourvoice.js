@@ -794,8 +794,10 @@ var ourvoice = {
     }
 
     ,previewPhoto: function(_photo,fileurl){
+
         var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
         var goodbad = _photo["goodbad"];
+        var textcom = _photo.hasOwnProperty("text_comment") ? _photo.hasOwnProperty("text_comment") : false;
         var text_comment = _photo.hasOwnProperty("text_comment") ? _photo["text_comment"] : "";
 
         $("#pic_review a.vote").removeClass("on").removeClass("off");
@@ -806,6 +808,12 @@ var ourvoice = {
         }else if(goodbad == 3){
             $("#pic_review a.vote.up").addClass("on");
             $("#pic_review a.vote.down").addClass("on");
+        }
+
+        if(textcom){
+            $("#text_comment").show().val(textcom);
+        }else{
+            $(".text_comment").hide();
         }
 
         $(".daction.audio, .record_another").data("photo_i",photo_i);

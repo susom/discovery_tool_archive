@@ -130,11 +130,15 @@ header:after {
 }
 
 #pic_review  #saved_audio a.record_another{
-    background:#4dc2ff url(../img/icon_mic.png) 5px 3px no-repeat;
+    background:#4dc2ff url(../img/icon_mic.png) 2px 4px no-repeat;
 }
 
 .daction.audio{
     background:#4dc2ff url(../img/icon_mic.png) 50% 40% no-repeat;
+}
+.daction.keyboard{
+    background:transparent url(../img/icon_keyboard.png) 50% no-repeat;
+    background-size:contain;
 }
 
 .votes a{

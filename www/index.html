@@ -135,7 +135,7 @@
             <input type="hidden" name="user_id" value="1"/>
 
             <!-- this .button converts to consent_0 if there are any consent forms -->
-            <a href="#" data-translation-key="letsgo" id='letsgo' data-next="step_one" class="button">Let's Go</a>
+            <a href="#" data-translation-key="letsgo" id='letsgo' data-next="pic_review" class="button">Let's Go</a>
             <a href="#" id="resetdevice" data-translation-key="reset_device">Reset Device?</a>
             <a href="#" id="datastatus"><span data-translation-key="sync_status">Upload Status</span>: <i class="synced"></i><!--  <b class="user_id"></b> --></a>
 
@@ -205,11 +205,12 @@
                             <a href="#" data-next="audio_record" class="button daction audiorec record_another" data-translation-key="record_more">Record More</a>
                         </div>
                     </i>
+
+                    <a href='#' data-next="text_record" class="button daction keyboard"></a>
                 </div>
-            </li>
-            <li class="text_comment">
-                <h4 data-translation-key="text_comment">And/Or Type out your thoughts</h4>
-                <textarea id="text_comment"></textarea>
+                <div class="text_comment">
+                    <textarea id="text_comment"></textarea>
+                </div>
             </li>
             <li class="good_or_bad">
                 <h4 data-translation-key="good_or_bad">Is this good or bad for the community?</h4>
