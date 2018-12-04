@@ -245,11 +245,18 @@ var ourvoice = {
             app.cache.participant_id            = (res["rows"].length + 1);
             app.cache.next_id                   = datastore.pouchCollate([ app.cache.active_project["proj_id"], app.cache.uuid,   app.cache.participant_id, time_stamp]);
             app.cache.proj_thumbs               = p["thumbs"];
+            app.cache.proj_textcomments         = p.hasOwnProperty("text_comments") ? p["text_comments"] : false;
 
             //Display This Info
             $("#step_zero b.proj_name").text(p["project_name"]);
             $("#step_zero b.user_id").text(app.cache.participant_id);
-           
+
+            if(!app.cache.proj_textcomments || app.cache.proj_textcomments < 1){
+                $("#pic_review .keyboard").hide();
+            }else{
+                $("#pic_review .keyboard").show();
+            }
+
             if(!app.cache.proj_thumbs || app.cache.proj_thumbs < 1){
                 $("#pic_review li.good_or_bad").hide();
             }else{
