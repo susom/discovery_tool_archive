@@ -196,7 +196,7 @@ var ourvoice = {
                 $("h3.loadfail").remove();
 
                 //CHECK TO SEE IF THERE IS AN "active_project" SET YET
-                if(app.cache.active_project.hasOwnProperty("i") && !app.cache.projectDataChanged){
+                if(app.cache.active_project.hasOwnProperty("i") && !app.cache.projectDataChanged && !app.cache.reset_active_project){
                     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                     ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
                     
@@ -294,13 +294,18 @@ var ourvoice = {
         var trans           = app.cache.projects["app_text"];
         var survey_trans    = project.hasOwnProperty("template_type") ? app.cache.projects["survey_text"][project["template_type"]]  : project["surveys"];
         var consent_trans   = project.hasOwnProperty("template_type") ? app.cache.projects["consent_text"][project["template_type"]] : project["consent"];
+        var include_surveys = app.cache.projects["project_list"][app.cache.active_project["i"]].hasOwnProperty("include_surveys") ? parseInt(app.cache.projects["project_list"][app.cache.active_project["i"]]["include_surveys"]) : true;
 
         //OK JUST REDO THE SURVEY EVERYTIME
         $("#survey fieldset").empty();
-        survey.build(survey_trans, lang);
+        if(include_surveys){
+            survey.build(survey_trans, lang);
+        }else{
+            $(".confirm.endwalk").data("next","finish");
+        }
+
         consent.build(consent_trans, lang);
-        
-        $("body").removeClass().addClass(lang); 
+        $("body").removeClass().addClass(lang);
 
         if(project["project_id"] == projid){
             for(var n in trans){
@@ -960,7 +965,7 @@ var ourvoice = {
         $(".mi_slideout").removeClass("reviewable");
         $(".nomedia").show();
         $(".delete_on_reset").remove();
-
+        app.cache.reset_active_project = false;
         app.log("RESETING DEVICE STATE");
         return;
     }

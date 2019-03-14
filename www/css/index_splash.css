@@ -244,3 +244,47 @@ header:after {
 .alternate_upload.uploading a{
     font-size:100%;
 }
+
+#main.blocking_notif:before{
+    content:"";
+    width:2000px;
+    height:2000px;
+    opacity:.5;
+    background:#333;
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:10000;
+}
+
+#main.blocking_notif #notice{
+    display:block;
+}
+#notice{
+    display:none;
+    position:absolute;
+    width:80%;
+    left:50%;
+    top:50%;
+    margin-left: -40%;
+    transform: translateY(-50%);
+
+    background:#efefef;
+    border-radius:8px;
+    z-index:10001;
+    text-align:center;
+    box-shadow:0 0 3px #333;
+}
+
+#notice h3{
+    background:#333;
+    color:#fff;
+    margin:0px;
+    padding:8px 20px;
+    border-radius:8px 8px 0 0;
+}
+#notice p{
+    margin:0;
+    padding:12px 20px 20px;
+    font-size:140%;
+}

@@ -55,8 +55,13 @@ var app = {
         app.cache.uploadInProgress      = false;
         app.cache.audioPlayer 			= null;
         app.cache.versionCheck			= null;
+        app.cache.versionOK             = true;
 
         app.cache.resumeUploads         = {};
+
+        app.cache.session               = false; //?
+        app.cache.reset_active_project  = false;
+        app.cache.dynamic_css           = false;
     }
 
     ,bindEvents: function() {
@@ -74,6 +79,12 @@ var app = {
         
         // console.log("pausing device, what happens to uploads? will need to resume for");
         // console.log(app.cache.resumeUploads);
+
+        app.cache.session = Date.now();
+        localStorage.setItem("session_pause_start", app.cache.session);
+
+        // console.log("session pause start : " + app.cache.session);
+        // console.log("does this fire on SWIPE CLOSE?");
     }
 
     ,onDeviceResume: function() {
@@ -84,16 +95,36 @@ var app = {
             console.log("Testing if Location Services On :");
             if(position){
                 app.cache.gps_on = true;
+                $("#main").removeClass("blocking_notif");
             }
         }, function(err){
             if(err.code == 1){
                 app.cache.gps_on = false;
-                app.showNotif("Location Services Required", "Please turn on location services so that the app works properly.",function(){});
+                app.blockingNotif("Location Services Required", "Please turn on location services in the 'Settings' or 'Privacy' menus to use the Discovery Tool.");
                 return false;
             }
         }); 
 
-        // app.showToast("unpausing device, resume uploads? are they still in cache memory?");
+        var now_now = Date.now();
+        app.cache.session = localStorage.getItem("session_pause_start") ? JSON.parse(localStorage.getItem("session_pause_start")) : 0;
+
+        if(app.cache.session && (now_now - app.cache.session < 86400000) ){
+            app.showToast("Welcome Back");
+            // console.log("THIS IS OK STILL WITHIN 24 HOURS");
+        }else{
+            // console.log("THIS IS OLDER THAN 24 hours now.  SO RESTART!");
+            // localStorage.removeItem("session_pause_start");
+            // ourvoice.resetDevice();
+            $("#resetdevice").click();
+
+            // app.cache.active_project  = null;
+            // app.onDeviceReady();
+            // return;
+        }
+
+        //REMOVE IT INCASE ITS A SWIPE CLOSE AND WONT RESUME
+        localStorage.removeItem("session_pause_start");
+
         // BACK ONLINE, LETS SEE IF ANY UPLOADS NEED RESUMING
         checkResumeUploads();
     }
@@ -103,8 +134,10 @@ var app = {
             // OnLOAD DO NOTHING gps on is DEFAULT TRUE
         }, function(err){
             if(err.code == 1){
-                console.log("ERROR PERMISSION DENIED LOCATION SERVICES");
+                // console.log("ERROR PERMISSION DENIED LOCATION SERVICES");
                 app.cache.gps_on = false;
+                app.blockingNotif("Location Services Required", "Please turn on location services in the 'Settings' or 'Privacy' menus to use the Discovery Tool.");
+                return false;
             }
         });
 
@@ -116,6 +149,13 @@ var app = {
 
         //sets up app.cache.current_session for use throughout the session
         ourvoice.newUserSession();
+
+        app.cache.session = localStorage.getItem("session_pause_start") ? JSON.parse(localStorage.getItem("session_pause_start")) : 0;
+        // console.log("on clean start should have 0 for session : " + app.cache.session);
+        if(!app.cache.session){
+            //if session is 0 then reset project, which will be the case if starting app fresh
+            app.cache.reset_active_project = true;
+        }
 
         // //START PINGING ONLINE STATE, AND FILL IN OTHER GLOBAL VARIABLES
         app.cache.online                = navigator.onLine;
@@ -152,20 +192,25 @@ var app = {
             datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(change){
                 //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
                 app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
-
                 if(!app.cache.versionCheck){
                 	app.cache.versionCheck = true;
                 	app.cache.localprojdb.get("all_projects").then(function (doc) {
-                        var doc_version = parseInt(doc["version"].replace(/./g,""));
-                        var cur_version = parseInt($("#loading_message b").text().replace(/./g,""));
+                        var doc_version = doc["version"];
+                        var cur_version = $("#loading_message").data("version");
+                        doc_version     = parseInt(doc_version.replace(/\./g,""));
+                        cur_version     = parseInt(cur_version.replace(/\./g,""));
+
                         // only show if the app version is less than official one
 		                if(doc_version > cur_version){
-		                	app.showNotif("Please check for updates", "It is critical to use the latest version of the Discovery Tool.", function(){
-				            });
+                            var store           = app.cache.platform == "iOS" ? "iOS App Store" : "Google Play Store";
+                            var notice_title    = "Please check the " +store+ " for updates";
+                            var notice_body     = "It is critical to use the latest version of the Discovery Tool.";
+
+                            app.blockingNotif(notice_title, notice_body);
 		                }
 		            });	
                 }
-
+                console.log("how many times will i see this otherfucker?");
                 app.addDynamicCss();
                 ourvoice.getActiveProject();
             });
@@ -178,7 +223,7 @@ var app = {
         }
 
         //ADD EVENTS TO VARIOUS BUTTONS/LINKS THROUGH OUT APP
-        $(".button[data-next]").not(".audiorec,.camera,.keyboard,.finish").on("click",function(){
+        $(".button[data-next]").not(".audiorec,.camera,.keyboard,.finish").off("click").on("click",function(){
             //GET CURRENT PANEL
             var panel       = $(this).closest(".panel");
             var next        = $(this).data("next");
@@ -225,9 +270,17 @@ var app = {
                 app.showNotif("Location Services Required", "Please turn on location services so that the app works properly.",function(){});
                 return false;
             }
-            
+
+            if(app.cache.versionOK){
+                console.log("versionOK!");
+            }else{
+                console.log("version not ok faggot");
+            }
+
+
             if(next == "step_zero"){
                 $("#main").removeClass("loaded");
+
 
                 var pid         = $("#admin_projid").val().toUpperCase();
                 var pid_correct = null;
@@ -248,7 +301,7 @@ var app = {
                     $("#main").removeClass("loaded"); 
                     $("#admin_pw").val(null);
                     $("#admin_projid").val(null);
-                    
+
                     ourvoice.resetDevice();
 
                     //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
@@ -335,7 +388,7 @@ var app = {
             return false;
         });
         
-        $("header .logo").click(function(){
+        $("header .logo").off("click").on("click",function(){
             var clickcount = $(this).data("clickcount");
             if(clickcount < 5){
                 var wtf = clickcount+1;
@@ -363,47 +416,7 @@ var app = {
             return false;
         });
 
-        $(".panel").on("click",".votes .vote", function(){
-            //VOTE GOOD AND/OR BAD
-            var curPhoto = $(this).data("photo_i");
-            
-            // ONLY REMOVE IF MUTUALLY EXCLUSIVE
-            // $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "'],.vote.meh[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
-            
-            var updown = "up";
-            // 0/null = no votes, 1 = bad vote, 2 = good vote, 3 = both votes WTF
-            if($(this).hasClass("up")){
-                $("a.up[rel='" + curPhoto + "']").toggleClass("on");
-                if($("a.up[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+2;
-                }else{
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-2;
-                }
-            }else if($(this).hasClass("meh")){
-                updown = "meh";
-                $("a.meh[rel='" + curPhoto + "']").toggleClass("on");
-                if($("a.meh[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+3;
-                }else{
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-3;
-                }
-            }else{
-                updown = "down";
-                $("a.down[rel='" + curPhoto + "']").toggleClass("on");
-                if($("a.down[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+1;
-                }else{
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-1;
-                }
-            } 
-            // app.log("voting on photo");
-
-            //RECORD THE VOTE
-            datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
-            return false;
-        });
-
-        $("#mediacaptured,#pic_review").on("click",".trashit", function(){
+        $("#mediacaptured,#pic_review").off("click").on("click",".trashit", function(){
             //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
             var thispic_i   = $(this).data("photo_i");
             var panel       = $(this).closest(".panel");
@@ -419,7 +432,7 @@ var app = {
             return false;
         });
 
-        $("#mediacaptured").on("click",".previewthumb",function(){
+        $("#mediacaptured").off("click").on("click",".previewthumb",function(){
             //OPEN UP PREVIEW PAGE FOR PHOTO
             var thispic_i   = $(this).data("photo_i");
             var fileurl     = $(this).find("img").attr("src");
@@ -437,14 +450,43 @@ var app = {
             app.transitionToPanel($("#"+next));
         });
 
-        $(".panel").on("click",".listen", function(){
+        $("#mediacaptured").off("click",".audiorec").on("click",".audiorec", function(){
+            var attach_id   = $(this).data("attach_id");
+            var file_i      = $(this).data("file_i");
+            var el 			= $(this);
+
+            if( el.hasClass("hasAudio") ){
+                el.addClass("playing");
+                app.cache.localattachmentdb.getAttachment(attach_id, file_i).then(function(blob){
+                    var tmpurl 	= window.URL.createObjectURL(blob);
+                    if(!app.cache.audioPlayer){
+                        app.cache.audioPlayer = new Audio();
+                    }
+                    var audio 	= app.cache.audioPlayer;
+                    audio.src 	= tmpurl;
+                    audio.play();
+                    setTimeout(function(){
+                        el.removeClass("playing");
+                    },1500);
+                });
+            }
+
+            return false;
+        });
+
+        $("#mediacaptured .slideclose").off("click").on("click",function(){
+            $("#mediacaptured").removeClass("preview").removeClass("review");
+            return false;
+        });
+
+        $(".panel").off("click",".listen").on("click",".listen", function(){
             var url = $(this).attr("href");
             var my_media = new Media(url,
-                 function () {  
-                    // console.log("playAudio():Audio Success"); 
+                function () {
+                    // console.log("playAudio():Audio Success");
                 }
-                ,function (err) { 
-                    app.log(err.message); 
+                ,function (err) {
+                    app.log(err.message);
                 }
             );
             // app.log("play audio");
@@ -454,8 +496,7 @@ var app = {
             return false;
         });
 
-        //ADD EVENTS TO device Actions
-        $(".panel").on("click",".daction,.record_another",function(){
+        $(".panel").off("click",".daction,.record_another").on("click",".daction,.record_another",function(){
             var panel   = $(this).closest(".panel");
             var next    = $(this).data("next");
 
@@ -485,7 +526,48 @@ var app = {
             return false;
         });
 
-        $(".panel").on("blur","#text_comment",function(){
+        $(".panel .votes").off("click",".vote").on("click",".vote", function(){
+            //VOTE GOOD AND/OR BAD
+            var curPhoto = $(this).data("photo_i");
+
+            console.log("what the fuck thumbs?");
+            // ONLY REMOVE IF MUTUALLY EXCLUSIVE
+            // $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "'],.vote.meh[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
+
+            var updown = "up";
+            // 0/null = no votes, 1 = bad vote, 2 = good vote, 3 = both votes WTF
+            if($(this).hasClass("up")){
+                $("a.up[rel='" + curPhoto + "']").toggleClass("on");
+                if($("a.up[rel='" + curPhoto + "']").hasClass("on")){
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+2;
+                }else{
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-2;
+                }
+            }else if($(this).hasClass("meh")){
+                updown = "meh";
+                $("a.meh[rel='" + curPhoto + "']").toggleClass("on");
+                if($("a.meh[rel='" + curPhoto + "']").hasClass("on")){
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+3;
+                }else{
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-3;
+                }
+            }else{
+                updown = "down";
+                $("a.down[rel='" + curPhoto + "']").toggleClass("on");
+                if($("a.down[rel='" + curPhoto + "']").hasClass("on")){
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+1;
+                }else{
+                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-1;
+                }
+            }
+            // app.log("voting on photo");
+
+            //RECORD THE VOTE
+            datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
+            return false;
+        });
+
+        $(".panel").off("blur").on("blur","#text_comment",function(){
             $(this).css("height","initial");
             //save it
             var curPhoto = $(this).data("photo_i");
@@ -493,31 +575,7 @@ var app = {
             return false;
         });
 
-        $("#mediacaptured").on("click",".audiorec", function(){
-            var attach_id   = $(this).data("attach_id");
-            var file_i      = $(this).data("file_i");
-            var el 			= $(this);
-            
-            if( el.hasClass("hasAudio") ){
-            	el.addClass("playing");
-            	app.cache.localattachmentdb.getAttachment(attach_id, file_i).then(function(blob){
-					var tmpurl 	= window.URL.createObjectURL(blob);
-					if(!app.cache.audioPlayer){
-						app.cache.audioPlayer = new Audio();
-					}
-					var audio 	= app.cache.audioPlayer;
-					audio.src 	= tmpurl;
-					audio.play();
-					setTimeout(function(){
-						el.removeClass("playing");
-					},1500);
-            	});
-            }
-
-            return false;
-        });
-
-        $("#audio_controls").on("click","a", function(){
+        $("#audio_controls").off("click","a").on("click","a", function(){
             var ctl_id  = $(this).attr("id");
             var photo_i = $(this).data("photo_i");
             var recordFileName = $(this).data("recordFileName");
@@ -543,7 +601,7 @@ var app = {
             return false;
         });
 
-        $("#walk_survey").on("change",":input",function(){
+        $("#walk_survey").off("change",":input").on("change",":input",function(){
             //STORE SURVEY ANSWERS
             var val = $(this).val();
             var nam = $(this).attr("name");
@@ -554,17 +612,17 @@ var app = {
             return;
         });
 
-        $("#resetdevice").click(function(){
+        $("#resetdevice").off("click").on("click",function(){
             //DITCH USER TOO
             $("#admin_null").show();
             $("#admin_passed").hide();
 
-            app.closeCurrentPanel($("#step_zero"));
+            app.closeCurrentPanel($(".panel").not("#step_setup"));
             ourvoice.adminSetup();
             return false;
         });
 
-        $("#datastatus").click(function(){
+        $("#datastatus").off("click").on("click", function(){
             app.closeCurrentPanel($("#step_zero"));
             $("#main").addClass("loaded");
 
@@ -582,14 +640,14 @@ var app = {
             return false;
         });
 
-        $("#progressoverlay").on("click","#cancel_upload", function(){
+        $("#progressoverlay").off("click","#cancel_upload").on("click","#cancel_upload", function(){
             $(".uploading").removeClass("uploading");
             $("#progressbar span").width(0);
             $("#progressoverlay b").text(0);
             return false;
         });
 
-        $("#list_data").on("click","a.resync", function(event){
+        $("#list_data").off("click","a.resync").on("click","a.resync", function(event){
             event.preventDefault();
             var doc_id  = $(this).data("docid");
 
@@ -672,7 +730,7 @@ var app = {
             return false;
         });
 
-        $("#list_data").on("click","a.trash", function(){
+        $("#list_data").off("click","a.trash").on("click","a.trash", function(){
             var doc_id  = $(this).data("docid");
 
             // FIND THE DATA IN disc_users AND ALL ATTACHMENTS in disc_attachment
@@ -734,7 +792,7 @@ var app = {
             return false;
         });
 
-        $("#list_data").on("click","a.ajaxup", function(){
+        $("#list_data").off("click","a.ajaxup").on("click","a.ajaxup", function(){
             // Update handlers are functions that clients can request to invoke server-side logic that will create or update a document
             var doc_id  = $(this).data("doc_id");
             var apiurl  = config["database"]["upload_endpoint"]; //or use update_handlers design document?
@@ -783,42 +841,35 @@ var app = {
             return false;
         });
 
-        $(".help").click(function(){
+        $(".help").off("click").on("click", function(){
             app.closeCurrentPanel($(".panel.loaded"));
             app.transitionToPanel($("#help"));
             return false;
         });
 
-        $(".back").click(function(){
+        $(".back").off("click").on("click",function(){
             app.goBack();
         });
 
-        $(".list").click(function(){
+        $(".list").off("click").on("click",function(){
             app.closeCurrentPanel($(".panel.loaded"));
             $("#admin_master").show();
             $("#list_data").css("opacity",0);
             app.transitionToPanel($("#admin_view"));
         });
 
-        //REVIEW PHOTOS SLIDEOUT
-        $(".mi_slideout").click(function(){
+        $(".mi_slideout").off("click").on("click",function(){
             $("#mediacaptured").addClass("preview");
             return false;
         });
 
-        $("#mediacaptured .slideclose").click(function(){
-            $("#mediacaptured").removeClass("preview").removeClass("review");
-            return false;
-        });
-
-        //DOCUMENT CLICKS FOR CLOSING POPUPS
-        $(document).on("click", function(event){
+        $(document).off("click").on("click", function(event){
             if (!$(event.target).closest('#mediacaptured').length) {
                 $("#mediacaptured").removeClass("preview").removeClass("review");
             }
         });
 
-        $("#end_session").click(function(){
+        $("#end_session").off("click").on("click",function(){
             //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
             ourvoice.resetDevice();   
             ourvoice.checkDirtyData();
@@ -840,7 +891,7 @@ var app = {
             return false;
         });
         
-        $("#reset_dbs").click(function(){
+        $("#reset_dbs").off("click").on("click",function(){
             var clickcount = $(this).data("clickcount");
             if(clickcount < 13){
                 var wtf = clickcount+1;
@@ -1037,16 +1088,21 @@ var app = {
     }
 
     ,addDynamicCss: function(){
-        app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
-            var blobURL = URL.createObjectURL(blobOrBuffer);
-            var cssTag  = $("<link>");
-            cssTag.attr("rel" , "stylesheet");
-            cssTag.attr("type", "text/css");
-            cssTag.attr("href", blobURL);
-            $("head").append(cssTag);
-        }).catch(function (err) {
-            console.log(err);
-        });
+        if(!$("link[rev='index.css']").length) {
+            console.log("adding dynamic css now");
+            app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
+                var blobURL = URL.createObjectURL(blobOrBuffer);
+                var cssTag = $("<link>");
+                cssTag.attr("rel", "stylesheet");
+                cssTag.attr("type", "text/css");
+                cssTag.attr("href", blobURL);
+                cssTag.attr("rev", "index.css")
+                $("head").append(cssTag);
+                app.cache.dynamic_css = true;
+            }).catch(function (err) {
+                console.log(err);
+            });
+        }
     }
 
     ,goBack : function(){
@@ -1129,8 +1185,13 @@ var app = {
           window.plugins.toast.showShortBottom(text);
         }, 500);
     }
-};
 
+    ,blockingNotif : function(title,body){
+        $("#main").addClass("blocking_notif");
+        $("#notice h3").text(title);
+        $("#notice p").text(body);
+    }
+};
 
 function checkResumeUploads(){
     if (typeof(Storage) !== "undefined") {
@@ -1155,7 +1216,6 @@ function checkResumeUploads(){
         console.log("No local storage support");
     }
 }
-
 
 function attachmentUploadDone(attachments_array,walk_id,resuming){
     //IF WE ARE RESUMING DONT BOTHER DOING UI/PROGRESS BAR UPDATES
