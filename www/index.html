@@ -24,271 +24,565 @@
     <meta charset="utf-8" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="msapplication-tap-highlight" content="no" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" /> -->
-    <!-- This is a wide open CSP declaration. To lock this down for production, see below. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
 
-    <!-- Good default declaration:
-    * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
-    * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
-    * Disables use of eval() and inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
-        * Enable inline JS: add 'unsafe-inline' to default-src
-        * Enable eval(): add 'unsafe-eval' to default-src
-    * Create your own at http://cspisawesome.com
-    -->
-    
     <!-- THIS NEEDS TO BE ACTIVE FOR ANDROID BUT COMMENTED OUT FOR IOS -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src * gap://ready file:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src * 'unsafe-inline' 'unsafe-eval'"> -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src * gap: file:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src * 'unsafe-inline' 'unsafe-eval'"> -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <!-- THIS STYLESHEET WILL NOW BE STORED AS AN ATTACHMENT IN COUCHDB AND INCLUDED via JS -->
-    <!-- <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap-reboot.min.css" />
-    <link rel="stylesheet" type="text/css" href="css/bootstrap-grid.min.css" />
-    -->
-    <link rel="stylesheet" type="text/css" href="css/index_splash.css" />
+    <link rel="stylesheet" type="text/css" href="css/mini-default.min.css" />
+    <link rel="stylesheet" type="text/css" href="css/index_rwd.css" />
+    <!--<link rel="stylesheet" type="text/css" href="css/index_splash.css" />-->
     <!-- index.css is in couch, and added in dynamically on loads -->
     <title>Our Voice Discovery Tool</title>
 </head>
 <body>
-<div id="main">
-    <header>
-        <div class="title">
-            <span class='logo' data-clickcount="0"></span>
-            <hgroup>
-                <h1 data-translation-key="main_title">The Discovery Tool</h1>
-                <span id="loading_message" data-translation-key="app_version" data-version="2.0.10">version <b></b></span>
-            </hgroup>
-        </div>
-    </header>
-    
-    <!-- SUMMARY OF USER DATA ON THE PHONE -->
-    <div id="admin_view" class="panel">
-        <div class="consent">
-            <h2 data-translation-key="current_upload">Current Upload Status of data on this device</h2>
-            <div id="list_data">
-                <table border="1" cellspacing="0">
-                    <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>PID</th>
-                        <th>ID</th>
-                        <th class='pics' data-translation-key="pics">Pics</th>
-                        <th class='audio' data-translation-key="audio">Audio</th>
-                        <th class='status' data-translation-key="status">Status</th>
-                        <th class='reset' data-translation-key="reset">Reset</th>
-                        <!-- <th data-translation-key="delete">Delete</th> -->
-                        <th class="alternate_upload" data-translation-key="altup">Upload</th>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-                <a href="#" data-next="admin_view" class="button uploadbtn"><i data-translation-key="upload_data">Upload Data</i><b data-translation-key="uploading_data" class='ing'>Uploading Data</b></a>
-            </div>
-        </div>
-        <div id='progressoverlay'>
-            <h3 data-translation-key="upload_progress">Upload Progress</h3>
-            <div id="progressbar">
-                <span></span>
-            </div>
-            <h4><b id="percent_uploaded">0</b>%</h4>
-            <a href="#" id="cancel_upload">Cancel</a>
+<div id="main" class="container">
+
+    <div class="row toplogo">
+        <div class="col-sm-12">
+            <h1 class="logo" data-clickcount="0" data-translation-key="main_title">Discovery Tool</h1>
         </div>
     </div>
 
-    <div id="step_setup" class="panel">
-        <div class="consent">
-            <h2 data-translation-key="thanks_interest">Thank you for your interest in the Stanford Healthy Neighborhood Discovery Tool™!</h2>
-            <h2 data-translation-key="more_info">The Discovery Tool is available for use only in approved projects. For more information please visit <a href="http://ourvoice.stanford.edu">http://ourvoice.stanford.edu</a></h2>
-            <h4 data-translation-key="for_auth">*For authorized projects*</h4>
-            <div id="admin_null">
-                <label><span data-translation-key="proj_id">Project Id</span>: <input type="text" id="admin_projid"/></label>
-                <label><span data-translation-key="pw">Password</span>: <input type="password" id="admin_pw"/></label>
-                <a href="#" data-next="step_zero" class="button adminbtn" data-translation-key="setup_proj">Setup Project on this Device</a>
-                
-                <a href="#" id="reset_dbs" data-clickcount="0" class="button danger" data-translation-key="reset_dbs">Reset/Erase Data?</a>
-            </div>
-        </div>
-    </div>
-    
-    <nav>
-        <a href="#" class="help" data-translation-key="help">Help</a>
-        <a href="#" class="back" data-translation-key="back">Back</a>
-        <a href="#" class="mi_slideout">
-            <span data-translation-key="review">Review</span>
-            (<b>0</b>)
-        </a>
-    </nav>
-    
-    <div id="step_zero" class="panel">
-        <form id='projid'>
-            <label>
-                <input type="hidden" name="project_id" value="1"/>
-                <span data-translation-key="project">Project:</span>
-                <b class="proj_name"></b>
-            </label>
-            <label>
-                <span data-translation-key="language">Language:</span>
-                <select name="language"></select>
-            </label>
-            <input type="hidden" name="user_id" value="1"/>
-
-            <!-- this .button converts to consent_0 if there are any consent forms -->
-            <a href="#" data-translation-key="letsgo" id='letsgo' data-next="pic_review" class="button">Let's Go</a>
-            <a href="#" id="resetdevice" data-translation-key="reset_device">Reset Device?</a>
-            <a href="#" id="datastatus"><span data-translation-key="sync_status">Upload Status</span>: <i class="synced"></i><!--  <b class="user_id"></b> --></a>
-
-            <copyright data-translation-key="copyright">© Stanford University 2017</copyright>
-        </form>
-    </div>
-    
-    <div id="project_about" class="panel">
-        <div class="consent">
-            <blockquote data-translation-key="project_about"></blockquote>
-            <a data-next="step_one" class="button" href="#" data-translation-key="next"></a>
-        </div>
-    </div>
-  
-    <div id="step_one" class="panel">
-        <div class="actions">
-            <h2 data-translation-key="step_1">Step 1</h2>
-            <a data-next="step_two" class="button" href="#"><i data-translation-key="start">Start</i></a>
-        </div>
-    </div>
-
-    <div id="step_two" class="panel">
-        <div class="actions">
-            <h2 data-translation-key="step_2">Step 2</h2>
-            <a data-next="pic_review" class="button daction camera" href='#'></a>
-        </div>
-        <div class="walk_actions">
-            <a data-next="step_three" class="button endwalk" href="#"><i data-translation-key="done_walk">Done with my walk</i></a>
-            
-        </div>
-    </div>
-    
-    <ol id="mediacaptured">
-        <li class="noli slideclose">X</li>
-        <li class="noli nobor"><h3 data-translation-key="review_pics">Review Photos</h3></li>
-        <li class="noli nomedia nobor"><i data-translation-key="photos_here">Your photos will show here...</i></li>
-    </ol>
-
-    <div id="step_three" class="panel">
-        <div id="walkmap">
-            <h3 data-translation-key="confirm_end">Are you done?</h3>
-            <div id="google_map"></div>
-            <p class="done_photos">
-                <span data-translation-key="you_took">You took</span> <b>0</b> <span data-translation-key="photos">Photos</span>
-            </p>
-        </div>
-        <div class="consent">
-            <a href='#' data-next="survey" class="button confirm endwalk" data-translation-key="yes_done">Yes, I am done with my walk</a>
-            <a href='#' data-next="step_two" class="button confirm continuewalk" data-translation-key="no_continue">No, I want to continue my walk</a>
-        </div>
-    </div>
-
-    <div id="pic_review" class="panel">
-        <div class="actions">
-            <h3 data-translation-key="photo_detail">Photo Preview</h3>
-            <a href="#" class="trashit">&#128465;</a>
-            <img id="recent_pic"/>
-        </div>
-        <ol>
-            <li class="why_audio">
-                <h4 data-translation-key="why_audio">Tell us why you took this photo.</h4>
-                <div class="device_actions">
-                    <a href='#' data-next="audio_record" class="button daction audiorec audio"></a>
-                    <i>
-                        <span data-translation-key="audio_recorded">Audio Recorded. Thanks!</span>
-                        <div id="saved_audio">
-                            <a href="#" data-next="audio_record" class="button daction audiorec record_another" data-translation-key="record_more">Record More</a>
-                        </div>
-                    </i>
-
-                    <a href='#' data-next="text_record" class="button daction keyboard"></a>
+    <div id="step_setup" class="panel row loaded">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 instruct"><span data-translation-key="thanks_interest">Thank you for your interest in the Stanford Healthy Neighborhood Discovery Tool™!</span></div>
                 </div>
-                <div class="text_comment">
-                    <textarea id="text_comment"></textarea>
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 instruct"><span data-translation-key="more_info">The Discovery Tool is available for use only in approved projects.</span></div>
                 </div>
-            </li>
-            <li class="good_or_bad">
-                <h4 data-translation-key="good_or_bad">Is this good or bad for the community?</h4>
-                <div class="votes">
-                    <a href="#" class="vote up" rel="1">vote up</a>
-                    <a href="#" class="vote down" rel="1">vote down</a>
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 instruct"><span data-translation-key="more_info">For more information please visit <a href="http://ourvoice.stanford.edu">http://ourvoice.stanford.edu</a></span></div>
                 </div>
-            </li>
-            <li class="consent">
-                <a href='#' class="button continuewalk" data-next="step_two" data-translation-key="review_done">Done with photo!</a>
-            </li>
-        </ol>
-    </div>
 
-    <div id="audio_record" class="panel">
-        <h3 class="record" data-translation-key="you_recording">You are recording...</h3>
-        <h3 class="play" data-translation-key="you_playing">Audio playback ...</h3>
-        <div id="soundwaves"></div>
-        <div id="audio_time">00:00</div>
-        <div id="audio_controls">
-            <ul>
-                <li><a id="ctl_stop" href="#"><i class="record" data-translation-key="done_recording">Done Recording</i><i class="play" data-translation-key="done_playing">End playback</i></a></li>
-            </ul>
-        </div>
-    </div>
+                <div id="admin_null" class="graybox">
+                    <div class="input-group ">
+                        <label data-translation-key="proj_id">Project Id</label> <input type="text" id="admin_projid"/>
+                    </div>
+                    <div class="input-group ">
+                        <label data-translation-key="pw">Password</label> <input type="password" id="admin_pw"/>
+                    </div>
+                </div>
 
-    <div id="survey" class="panel">
-        <form id="walk_survey" class="instructions consent">
-            <div id="survey_please">
-                <h2 data-translation-key="almost_there">Almost there...</h2>
-                <h4 data-translation-key="please_answer">Please answer a few questions.</h4>
+                <div class="row buttons">
+                    <div class="col-sm-12 col-md-6"><a href="#" data-next="step_zero" class="button adminbtn" data-translation-key="setup_proj">setup project on this device</a></div>
+                    <div class="col-sm-12 col-md-6"><a href="#" id="reset_dbs" data-clickcount="0" class="button danger" data-translation-key="reset_dbs">clear device</a></div>
+                </div>
             </div>
-            <fieldset>
-            </fieldset>
-            <!-- <a href="#" class="button" data-next="finish" data-translation-key="submit_answers"></a> -->
-        </form>
-    </div>
-
-    <div id="finish" class="panel">
-        <div class="instructions">
-            <ol>
-                <li id="walk_summ">
-                    <h4 data-translation-key="nice_work">Nice Work!</h4>  
-                    <dl class="pics">
-                        <dt data-translation-key="you_took">You took:</dt>
-                        <dd id='photos_took'><b>0</b> <span data-translation-key="photos">photos</span></dd>
-                    </dl>
-                    <dl class="audios">
-                        <dt data-translation-key="you_made">You made:</dt>
-                        <dd id='audios_recorded'><b>0</b> <span data-translation-key="recordings">recordings</span></dd>
-                    </dl>
-                    <p data-translation-key="please_sync">You will be able to upload your data the next time you are connected to wifi.</p>                      
-                </li>
-                <li><h3 data-translation-key="thank_you_participant">Thank you for sharing your community with us!</h3></li>
-                <li class="consent">
-                    <a href="#" id="end_session" data-next="step_zero" data-translation-key="finish_return" class="btn finish">Finish</a>
-                </li>
-            </ol>
         </div>
     </div>
 
-    <div id="loading" class="panel"></div>
-    <div id="notice">
-        <h3></h3>
-        <p></p>
+    <div id="step_zero" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row appver" data-translation-key="more_info">
+                    <div class="col-sm-8 col-sm-offset-2">
+                        <h2>Discovery Tool</h2><br>
+                        <ver>v 3.0.0</ver>
+                        <copyright>© Stanford University 2019</copyright>
+                    </div>
+                </div>
+
+                <form id='projid' class="graybox">
+                    <input type="hidden" name="user_id" value="1"/>
+                    <div class="row">
+                        <label class="col-sm-4" data-translation-key="proj_id">Project</label> <span class="col-sm-7 col-sm-offset-1 proj_name">[PROJECT_NAME]</span>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-4" data-translation-key="language">Language</label> <span class="col-sm-7  col-sm-offset-1"><select name="language"><option>English</option></option></select></span>
+                    </div>
+                </form>
+
+                <div class="row buttons">
+                    <div class="col-sm-12"><a href="#" id="letsgo" class="button letsgo" data-next="consent_0"  data-translation-key="letsgo">start</a></div>
+                    <div class="col-sm-12"><a href="#" id="resetdevice" class="button reset" data-next="step_zero" data-translation-key="reset_device">change project</a></div>
+                    <div class="col-sm-12"><a href="#" id="datastatus" class="button view" data-next="admin_view" data-translation-key="sync_status">view/upload data</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="consent_0" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect">Welcome to the Disovery Tool™!</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect">The Discovery Tool™ will make a map of your walk as you take pictures and record explanations of things you see in your community that affect healthy living.</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox">The information you collect will be stored securely and shared with Stanford University researchers and partners. The information will only be used for research purposes, and may be published or presented, but your identity will not be shared.</div>
+                </div>
+
+                <div class="row buttons">
+                    <div class="col-sm-12"><a href="#" id="letsgo" class="button letsgo" data-next="consent_1"  data-translation-key="letsgo">I understand and agree</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="consent_1" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox">Safety Tips</div>
+                </div>
+
+                <div class="row safteytip">
+                    <div class="col-sm-3 col-sm-offset-2"><span><img src="img/pic_walk_with_another.png"></span></div>
+                    <div class="col-sm-5 col-sm-offset-1"><span>Walk with another person if possible</span></div>
+                </div>
+
+                <div class="row safteytip">
+                    <div class="col-sm-3 col-sm-offset-2"><span><img src="img/pic_danger_2.png"></span></div>
+                    <div class="col-sm-5 col-sm-offset-1"><span>Pay attention and avoid dangerous situations</span></div>
+                </div>
+
+                <div class="row safteytip">
+                    <div class="col-sm-3 col-sm-offset-2"><span><img src="img/pic_no_faces.png"></span></div>
+                    <div class="col-sm-5 col-sm-offset-1"><span>Do not take pictures of peoples' faces</span></div>
+                </div>
+
+                <div class="row safteytip">
+                    <div class="col-sm-3 col-sm-offset-2"><span><img src="img/pic_ask_help.png"></span></div>
+                    <div class="col-sm-5 col-sm-offset-1"><span>Ask for helpf if you need it</span></div>
+                </div>
+
+                <div class="row buttons">
+                    <div class="col-sm-12"><a href="#" id="letsgo" class="button letsgo" data-next="step_two"  data-translation-key="letsgo">Start</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="step_two" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-4 col-sm-offset-4 consentbox">Take a photo</div>
+
+                    <div class="col-sm-12">
+                        <a href="#" data-next="pic_review" class="button action camera"></a>
+                    </div>
+                </div>
+
+                <div class="row buttons">
+                    <div class="col-sm-12"><a href="#" id="datastatus" class="button end" data-translation-key="sync_status">Done with my walk</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="pic_review" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-10 col-sm-offset-1"><img src="img/icon_walk.png" style="height:25vh"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-10 col-sm-offset-1 consentbox">1: Tell us why you took this photo</div>
+                </div>
+
+                <div class="row audio_text">
+                    <div class="col-sm-8 col-sm-offset-2"><a href="#" class="btn audio "></a> <a href="#" class="btn listen "></a> <a href="#" class="btn listen "></a></div>
+                </div>
+                <div class="row audio_text">
+                    <div class="col-sm-8 col-sm-offset-2"><a href="#" class="btn keyboard"></a></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-10 col-sm-offset-1 consentbox">2: Is this good or bad for the community?</div>
+                </div>
+
+                <div class="row goodbad">
+                    <div class="col-sm-2 col-sm-offset-2"><a href="#" class="smiley up"></a></div>
+                    <div class="col-sm-4 jointext">Chose one or Both</div>
+                    <div class="col-sm-2"><a href="#" class="smiley down"></a></div>
+                </div>
+
+                <div class="row buttons">
+                    <div class="col-sm-10 col-sm-offset-1 btns"></div>
+                    <div class="col-sm-2 col-sm-offset-2"><a href="#" id="resetdevice" class="btn stop" data-translation-key="delete">Delete</a></div>
+                    <div class="col-sm-2 col-sm-offset-3"><a href="#" id="letsgo" class="btn " data-next="step_two"  data-translation-key="save">Save</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="step_three" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect">You took 10 Photos</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect"><img src="img/map.png"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox">Are you done?</div>
+                </div>
+
+                <div class="row buttons">
+                    <div class="col-sm-12 col-md-6"><a href="#" id="letsgo" class="button" data-next="finish"  data-translation-key="letsgo">yes, i am done with my walk</a></div>
+                    <div class="col-sm-12 col-md-6"><a href="#" id="letsgo" class="button end" data-next="step_two"  data-translation-key="letsgo">no, i want to continue my walk</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="finish" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect bigpad">Good Job!</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect">Data can be uploaded from the home screen the next time this device is connected to wifi.</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 col-sm-offset-2 consentbox horizconnect"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-2 col-sm-offset-3 consentbox vertconnect nocontent"></div>
+                    <div class="col-sm-2 col-sm-offset-3 consentbox vertconnect nocontent"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-3 col-sm-offset-3 consentbox vertconnect">You took this many photos</div>
+                    <div class="col-sm-3 col-sm-offset-2 consentbox vertconnect">You made this many comments</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-2 col-sm-offset-3 consentbox vertconnect icon camera"></div>
+                    <div class="col-sm-2 col-sm-offset-3 consentbox vertconnect icon audiocomment"></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-2 col-sm-offset-3 consentbox  solidbg">2</div>
+                    <div class="col-sm-2 col-sm-offset-3 consentbox  solidbg">4</div>
+                </div>
+
+
+                <div class="row buttons">
+                    <div class="col-sm-12"><a href="#" id="letsgo" class="button letsgo" data-next="step_zero"  data-translation-key="letsgo">Finish</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin_view" class="panel row">
+        <div class="col-sm-12 content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-4 col-sm-offset-4 consentbox">your data</div>
+                </div>
+
+                <div class="row table_header">
+                    <div class="col-sm-2"><span>date</span></div>
+                    <div class="col-sm-2"><span>project id</span></div>
+                    <div class="col-sm-2"><span>walk id</span></div>
+                    <div class="col-sm-2"><span><img src="img/icon_camera_black.png"/></span></div>
+                    <div class="col-sm-2"><span><img src="img/icon_audio_comment_black.png"/></span></div>
+                    <div class="col-sm-2"><span>upload status</span></div>
+                </div>
+
+                <div class="upload_table">
+                    <div class="row table">
+                        <div class="col-sm-2">1/1/19</div>
+                        <div class="col-sm-2">AARP</div>
+                        <div class="col-sm-2">9876</div>
+                        <div class="col-sm-2">1</div>
+                        <div class="col-sm-2">1</div>
+                        <div class="col-sm-2">check</div>
+                    </div>
+                    <div class="row table">
+                        <div class="col-sm-2">1/1/19</div>
+                        <div class="col-sm-2">AARP</div>
+                        <div class="col-sm-2">9876</div>
+                        <div class="col-sm-2">1</div>
+                        <div class="col-sm-2">1</div>
+                        <div class="col-sm-2">check</div>
+                    </div>
+                    <div class="row table">
+                        <div class="col-sm-2">1/1/19</div>
+                        <div class="col-sm-2">AARP</div>
+                        <div class="col-sm-2">9876</div>
+                        <div class="col-sm-2">1</div>
+                        <div class="col-sm-2">1</div>
+                        <div class="col-sm-2">check</div>
+                    </div>
+                </div>
+
+                <div class="row buttons">
+                    <div class="col-sm-12 col-md-6"><a href="#" id="datastatus" class="button view" data-translation-key="sync_status">upload data</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bottomnav">
+        <div class="col-sm-12">
+            <a href="#" class="home">home</a>
+            <a href="#" class="preview mi_slideout">preview (<b>0</b>)</a>
+        </div>
+    </div>
+
+    <!--&lt;!&ndash; SUMMARY OF USER DATA ON THE PHONE &ndash;&gt;-->
+    <!--<div id="admin_view" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<div class="consent">-->
+                    <!--<h2 data-translation-key="current_upload">Current Upload Status of data on this device</h2>-->
+                    <!--<div id="list_data">-->
+                        <!--<table border="1" cellspacing="0">-->
+                            <!--<thead>-->
+                            <!--<tr>-->
+                                <!--<th>Date</th>-->
+                                <!--<th>PID</th>-->
+                                <!--<th>ID</th>-->
+                                <!--<th class='pics' data-translation-key="pics">Pics</th>-->
+                                <!--<th class='audio' data-translation-key="audio">Audio</th>-->
+                                <!--<th class='status' data-translation-key="status">Status</th>-->
+                                <!--<th class='reset' data-translation-key="reset">Reset</th>-->
+                                <!--&lt;!&ndash; <th data-translation-key="delete">Delete</th> &ndash;&gt;-->
+                                <!--<th class="alternate_upload" data-translation-key="altup">Upload</th>-->
+                            <!--</tr>-->
+                            <!--</thead>-->
+                            <!--<tbody></tbody>-->
+                        <!--</table>-->
+                        <!--<a href="#" data-next="admin_view" class="button uploadbtn"><i data-translation-key="upload_data">Upload Data</i><b data-translation-key="uploading_data" class='ing'>Uploading Data</b></a>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <!--<div id='progressoverlay'>-->
+                    <!--<h3 data-translation-key="upload_progress">Upload Progress</h3>-->
+                    <!--<div id="progressbar">-->
+                        <!--<span></span>-->
+                    <!--</div>-->
+                    <!--<h4><b id="percent_uploaded">0</b>%</h4>-->
+                    <!--<a href="#" id="cancel_upload">Cancel</a>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <!--<div id="step_setup" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<div class="consent">-->
+                    <!--<h2 data-translation-key="thanks_interest">Thank you for your interest in the Stanford Healthy Neighborhood Discovery Tool™!</h2>-->
+                    <!--<h2 data-translation-key="more_info">The Discovery Tool is available for use only in approved projects. For more information please visit <a href="http://ourvoice.stanford.edu">http://ourvoice.stanford.edu</a></h2>-->
+                    <!--<h4 data-translation-key="for_auth">*For authorized projects*</h4>-->
+                    <!--<div id="admin_null">-->
+                        <!--<label><span data-translation-key="proj_id">Project Id</span>: <input type="text" id="admin_projid"/></label>-->
+                        <!--<label><span data-translation-key="pw">Password</span>: <input type="password" id="admin_pw"/></label>-->
+                        <!--<a href="#" data-next="step_zero" class="button adminbtn" data-translation-key="setup_proj">Setup Project on this Device</a>-->
+
+                        <!--<a href="#" id="reset_dbs" data-clickcount="0" class="button danger" data-translation-key="reset_dbs">Reset/Erase Data?</a>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!---->
+    <!--<nav class="container">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<a href="#" class="help" data-translation-key="help">Help</a>-->
+                <!--<a href="#" class="back" data-translation-key="back">Back</a>-->
+                <!--<a href="#" class="mi_slideout">-->
+                    <!--<span data-translation-key="review">Review</span>-->
+                    <!--(<b>0</b>)-->
+                <!--</a>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</nav>-->
+    <!---->
+    <!--<div id="step_zero" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<form id='projid'>-->
+                    <!--<label>-->
+                        <!--<input type="hidden" name="project_id" value="1"/>-->
+                        <!--<span data-translation-key="project">Project:</span>-->
+                        <!--<b class="proj_name"></b>-->
+                    <!--</label>-->
+                    <!--<label>-->
+                        <!--<span data-translation-key="language">Language:</span>-->
+                        <!--<select name="language"></select>-->
+                    <!--</label>-->
+                    <!--<input type="hidden" name="user_id" value="1"/>-->
+
+                    <!--&lt;!&ndash; this .button converts to consent_0 if there are any consent forms &ndash;&gt;-->
+                    <!--<a href="#" data-translation-key="letsgo" id='letsgo' data-next="pic_review" class="button">Let's Go</a>-->
+                    <!--<a href="#" id="resetdevice" data-translation-key="reset_device">Reset Device?</a>-->
+                    <!--<a href="#" id="datastatus"><span data-translation-key="sync_status">Upload Status</span>: <i class="synced"></i>&lt;!&ndash;  <b class="user_id"></b> &ndash;&gt;</a>-->
+
+                    <!--<copyright data-translation-key="copyright">© Stanford University 2017</copyright>-->
+                <!--</form>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!---->
+    <!--<div id="step_two" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<div class="actions">-->
+                    <!--<h2 data-translation-key="step_2">Step 2</h2>-->
+                    <!--<a data-next="pic_review" class="button daction camera" href='#'></a>-->
+                <!--</div>-->
+                <!--<div class="walk_actions">-->
+                    <!--<a data-next="step_three" class="button endwalk" href="#"><i data-translation-key="done_walk">Done with my walk</i></a>-->
+
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!---->
+    <!--<ol id="mediacaptured">-->
+        <!--<li class="noli slideclose">X</li>-->
+        <!--<li class="noli nobor"><h3 data-translation-key="review_pics">Review Photos</h3></li>-->
+        <!--<li class="noli nomedia nobor"><i data-translation-key="photos_here">Your photos will show here...</i></li>-->
+    <!--</ol>-->
+
+    <!--<div id="step_three" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<div id="walkmap">-->
+                    <!--<h3 data-translation-key="confirm_end">Are you done?</h3>-->
+                    <!--<div id="google_map"></div>-->
+                    <!--<p class="done_photos">-->
+                        <!--<span data-translation-key="you_took">You took</span> <b>0</b> <span data-translation-key="photos">Photos</span>-->
+                    <!--</p>-->
+                <!--</div>-->
+                <!--<div class="consent">-->
+                    <!--<a href='#' data-next="survey" class="button confirm endwalk" data-translation-key="yes_done">Yes, I am done with my walk</a>-->
+                    <!--<a href='#' data-next="step_two" class="button confirm continuewalk" data-translation-key="no_continue">No, I want to continue my walk</a>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <!--<div id="pic_review" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<div class="actions">-->
+                    <!--<h3 data-translation-key="photo_detail">Photo Preview</h3>-->
+                    <!--<a href="#" class="trashit">&#128465;</a>-->
+                    <!--<img id="recent_pic"/>-->
+                <!--</div>-->
+                <!--<ol>-->
+                    <!--<li class="why_audio">-->
+                        <!--<h4 data-translation-key="why_audio">Tell us why you took this photo.</h4>-->
+                        <!--<div class="device_actions">-->
+                            <!--<a href='#' data-next="audio_record" class="button daction audiorec audio"></a>-->
+                            <!--<i>-->
+                                <!--<span data-translation-key="audio_recorded">Audio Recorded. Thanks!</span>-->
+                                <!--<div id="saved_audio">-->
+                                    <!--<a href="#" data-next="audio_record" class="button daction audiorec record_another" data-translation-key="record_more">Record More</a>-->
+                                <!--</div>-->
+                            <!--</i>-->
+
+                            <!--<a href='#' data-next="text_record" class="button daction keyboard"></a>-->
+                        <!--</div>-->
+                        <!--<div class="text_comment">-->
+                            <!--<textarea id="text_comment"></textarea>-->
+                        <!--</div>-->
+                    <!--</li>-->
+                    <!--<li class="good_or_bad">-->
+                        <!--<h4 data-translation-key="good_or_bad">Is this good or bad for the community?</h4>-->
+                        <!--<div class="votes">-->
+                            <!--<a href="#" class="vote up" rel="1">vote up</a>-->
+                            <!--<a href="#" class="vote down" rel="1">vote down</a>-->
+                        <!--</div>-->
+                    <!--</li>-->
+                    <!--<li class="consent">-->
+                        <!--<a href='#' class="button continuewalk" data-next="step_two" data-translation-key="review_done">Done with photo!</a>-->
+                    <!--</li>-->
+                <!--</ol>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <!--<div id="audio_record" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<h3 class="record" data-translation-key="you_recording">You are recording...</h3>-->
+                <!--<h3 class="play" data-translation-key="you_playing">Audio playback ...</h3>-->
+                <!--<div id="soundwaves"></div>-->
+                <!--<div id="audio_time">00:00</div>-->
+                <!--<div id="audio_controls">-->
+                    <!--<ul>-->
+                        <!--<li><a id="ctl_stop" href="#"><i class="record" data-translation-key="done_recording">Done Recording</i><i class="play" data-translation-key="done_playing">End playback</i></a></li>-->
+                    <!--</ul>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+    <!--<div id="finish" class="container panel">-->
+        <!--<div class="row">-->
+            <!--<div class="col-sm col-md col-lg">-->
+                <!--<div class="instructions">-->
+                    <!--<ol>-->
+                        <!--<li id="walk_summ">-->
+                            <!--<h4 data-translation-key="nice_work">Nice Work!</h4>-->
+                            <!--<dl class="pics">-->
+                                <!--<dt data-translation-key="you_took">You took:</dt>-->
+                                <!--<dd id='photos_took'><b>0</b> <span data-translation-key="photos">photos</span></dd>-->
+                            <!--</dl>-->
+                            <!--<dl class="audios">-->
+                                <!--<dt data-translation-key="you_made">You made:</dt>-->
+                                <!--<dd id='audios_recorded'><b>0</b> <span data-translation-key="recordings">recordings</span></dd>-->
+                            <!--</dl>-->
+                            <!--<p data-translation-key="please_sync">You will be able to upload your data the next time you are connected to wifi.</p>-->
+                        <!--</li>-->
+                        <!--<li><h3 data-translation-key="thank_you_participant">Thank you for sharing your community with us!</h3></li>-->
+                        <!--<li class="consent">-->
+                            <!--<a href="#" id="end_session" data-next="step_zero" data-translation-key="finish_return" class="btn finish">Finish</a>-->
+                        <!--</li>-->
+                    <!--</ol>-->
+                <!--</div>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+
+
+
+
+
+
+    <div id="loading" class="container panel"></div>
+    <div id="notice" class="container">
+        <div class="row">
+            <div class="col-sm col-md col-lg">
+                <h3></h3>
+                <p></p>
+            </div>
+        </div>
     </div>
 </div>
 <script type="text/javascript" src="js/jquery.min.js"></script>
 <script type="text/javascript" src="js/jquery.ui.widget.js"></script>
 <script type="text/javascript" src="js/jquery.fileupload.js"></script>
-<!-- <script thpe="text/javascript" src="js/bootstrap.min.js"></script>
-<script thpe="text/javascript" src="js/bootstrap.bundle.min.js"></script>
- -->
 <script type="text/javascript" src="cordova.js"></script>
+
 <script type="text/javascript" src="js/pouchdb.min.js"></script>
 <script type="text/javascript" src="js/pouchdb.cordova-sqlite.js"></script>
+
 <script type="text/javascript" src="js/offline.min.js"></script>
 <script thpe="text/javascript" src="js/fastclick.js"></script>
+
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyCn-w3xVV38nZZcuRtrjrgy4MUAW35iBOo"></script>
 <!-- <script thpe="text/javascript" src="js/hammer.min.js"></script> -->
 
@@ -297,7 +591,7 @@
 <script type="text/javascript" src="js/datastore.js"></script>
 <script type="text/javascript" src="js/ourvoice.js"></script>
 <script type="text/javascript" src="js/consent.js"></script>
-<script type="text/javascript" src="js/survey.js"></script>
+<!--<script type="text/javascript" src="js/survey.js"></script>-->
 <script type="text/javascript" src="js/index.js"></script>
 <script type="text/javascript">
 $(document).ready(function(){

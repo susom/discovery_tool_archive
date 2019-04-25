@@ -199,7 +199,6 @@ var ourvoice = {
                 if(app.cache.active_project.hasOwnProperty("i") && !app.cache.projectDataChanged && !app.cache.reset_active_project){
                     //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
                     ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
-                    
                     ourvoice.checkDirtyData();
                      // $("#main").addClass("loaded");
                     app.transitionToPanel($("#step_zero"));
@@ -248,8 +247,7 @@ var ourvoice = {
             app.cache.proj_textcomments         = p.hasOwnProperty("text_comments") ? p["text_comments"] : false;
 
             //Display This Info
-            $("#step_zero b.proj_name").text(p["project_name"]);
-            $("#step_zero b.user_id").text(app.cache.participant_id);
+            $("#step_zero .proj_name").text(p["project_name"]);
 
             if(!app.cache.proj_textcomments || app.cache.proj_textcomments < 1){
                 $("#pic_review .keyboard").hide();
@@ -964,6 +962,7 @@ var ourvoice = {
         $(".mi_slideout b").text(0);
         $(".mi_slideout").removeClass("reviewable");
         $(".nomedia").show();
+        $(".home").show();
         $(".delete_on_reset").remove();
         app.cache.reset_active_project = false;
         app.log("RESETING DEVICE STATE");

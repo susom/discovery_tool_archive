@@ -92,17 +92,17 @@ var app = {
         //SO NO DO NOT RELOAD PROJECT
         // app.log("DEVICE RESUMING"); 
         var GPS_TEST = navigator.geolocation.getCurrentPosition(function(position) {
-            console.log("Testing if Location Services On :");
-            if(position){
-                app.cache.gps_on = true;
-                $("#main").removeClass("blocking_notif");
-            }
-        }, function(err){
-            if(err.code == 1){
-                app.cache.gps_on = false;
-                app.blockingNotif("Location Services Required", "Please turn on location services in the 'Settings' or 'Privacy' menus to use the Discovery Tool.");
-                return false;
-            }
+                console.log("Testing if Location Services On :");
+                if(position){
+                    app.cache.gps_on = true;
+                    $("#main").removeClass("blocking_notif");
+                }
+            }, function(err){
+                if(err.code == 1){
+                    app.cache.gps_on = false;
+                    app.blockingNotif("Location Services Required", "Please turn on location services in the 'Settings' or 'Privacy' menus to use the Discovery Tool.");
+                    return false;
+                }
         }); 
 
         var now_now = Date.now();
@@ -114,12 +114,7 @@ var app = {
         }else{
             // console.log("THIS IS OLDER THAN 24 hours now.  SO RESTART!");
             // localStorage.removeItem("session_pause_start");
-            // ourvoice.resetDevice();
             $("#resetdevice").click();
-
-            // app.cache.active_project  = null;
-            // app.onDeviceReady();
-            // return;
         }
 
         //REMOVE IT INCASE ITS A SWIPE CLOSE AND WONT RESUME
@@ -210,15 +205,14 @@ var app = {
 		                }
 		            });	
                 }
-                console.log("how many times will i see this otherfucker?");
-                app.addDynamicCss();
+                // app.addDynamicCss();
                 ourvoice.getActiveProject();
             });
 
             // BACK ONLINE, LETS SEE IF ANY UPLOADS NEED RESUMING
             checkResumeUploads();
         }else{
-            app.addDynamicCss();
+            // app.addDynamicCss();
             ourvoice.getActiveProject();
         }
 
@@ -350,6 +344,8 @@ var app = {
             
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
                 $(".mi_slideout").addClass("reviewable");
+                $(".home").hide();
+
                 ourvoice.startWatch(8000);   
                 app.cache.history = [];
 
@@ -388,7 +384,7 @@ var app = {
             return false;
         });
         
-        $("header .logo").off("click").on("click",function(){
+        $(".logo").off("click").on("click",function(){
             var clickcount = $(this).data("clickcount");
             if(clickcount < 5){
                 var wtf = clickcount+1;
@@ -413,6 +409,21 @@ var app = {
                 return false;
             }
             
+            return false;
+        });
+
+        $(".home").off("click").on("click",function(){
+            if($(".panel.loaded").attr("id") == "step_setup" || $(".panel.loaded").attr("id") == "step_zero" ){
+                return false;
+            }
+
+            app.closeCurrentPanel($(".panel.loaded"));
+            if(app.cache.reset_active_project){
+                app.transitionToPanel($("#step_setup"));
+            }else{
+                app.transitionToPanel($("#step_zero"));
+            }
+
             return false;
         });
 
@@ -858,7 +869,7 @@ var app = {
             app.transitionToPanel($("#admin_view"));
         });
 
-        $(".mi_slideout").off("click").on("click",function(){
+         $(".mi_slideout").off("click").on("click",function(){
             $("#mediacaptured").addClass("preview");
             return false;
         });
@@ -1090,6 +1101,7 @@ var app = {
     ,addDynamicCss: function(){
         if(!$("link[rev='index.css']").length) {
             console.log("adding dynamic css now");
+            return;
             app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
                 var blobURL = URL.createObjectURL(blobOrBuffer);
                 var cssTag = $("<link>");
@@ -1135,6 +1147,13 @@ var app = {
             //SOME THINGS WE DONT WANT TO SAVE TO HISTORY
             app.cache.history.push(panel.attr("id"));
         }
+
+        if(panel.attr("id") !== "step_zero" && panel.attr("id") !== "step_setup"){
+            $(".home").addClass("on");
+        }else{
+            $(".home").removeClass("on");
+        }
+
         panel.show().delay(250).queue(function(next){
             $(this).addClass("loaded");
             $("nav").removeClass().addClass(panel.attr("id"));
