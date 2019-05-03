@@ -109,7 +109,10 @@ var app = {
         app.cache.session = localStorage.getItem("session_pause_start") ? JSON.parse(localStorage.getItem("session_pause_start")) : 0;
 
         if(app.cache.session && (now_now - app.cache.session < 86400000) ){
-            app.showToast("Welcome Back");
+            //androids time stamping is smaller by a factor of 1000)
+            if(now_now - app.cache.session > 3600000) {
+                app.showToast("Welcome Back");
+            }
             // console.log("THIS IS OK STILL WITHIN 24 HOURS");
         }else{
             // console.log("THIS IS OLDER THAN 24 hours now.  SO RESTART!");
@@ -266,15 +269,11 @@ var app = {
             }
 
             if(app.cache.versionOK){
-                console.log("versionOK!");
             }else{
-                console.log("version not ok faggot");
             }
-
 
             if(next == "step_zero"){
                 $("#main").removeClass("loaded");
-
 
                 var pid         = $("#admin_projid").val().toUpperCase();
                 var pid_correct = null;
@@ -316,9 +315,6 @@ var app = {
                 $("#main").addClass("loaded");
             }
 
-            //SPECIAL RULES ENTERING INTO DIFFERNT "PAGES"
-            if(next == "project_about"){}
-
             if(next == "consent_0"){
                 //THIS IS IMPORTANT
                 app.cache.user[app.cache.current_session].project_id    = app.cache.active_project.i;
@@ -339,7 +335,7 @@ var app = {
 
                 app.log("Starting consent process for User " + app.cache.user[app.cache.current_session]._id);
 		        $("#mediacaptured .mediaitem").remove();
-		        $(".mi_slideout b, .done_photos b").text(0);
+		        $(".mi_slideout b, .done_photos b, .done_audios_text b").text(0);
             }
             
             if(next == "step_two" && !$(this).hasClass("continuewalk")){
@@ -352,8 +348,8 @@ var app = {
                 var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
                 var b4      = $("<b>").html(last4); 
                 var i4      = $("<i>").addClass("delete_on_reset").html("walk id:").append(b4);
-                console.log("adding walk id to header");
-                $("header .title hgroup").append(i4);
+                // console.log("adding walk id to header");
+                // $("header .title hgroup").append(i4);
 
                 app.log("start  walk");
             }else if($(this).hasClass("continuewalk")){
@@ -361,7 +357,6 @@ var app = {
             }
 
             if(next == "step_three"){
-                $(".mi_slideout").addClass("reviewable");
                 if(utils.checkConnection()){
                     $("#google_map").show();
                     ourvoice.plotGoogleMap();
@@ -370,8 +365,24 @@ var app = {
                 }
             }
 
-            if(next == "survey"){
+            if(next == "finish"){
                 ourvoice.stopWatch();
+
+                var audio_text_count = 0;
+                for (var i in app.cache.user[app.cache.current_session]["photos"]){
+                    var p_obj = app.cache.user[app.cache.current_session]["photos"][i];
+
+                    if(p_obj.hasOwnProperty("audios")){
+                        audio_text_count += p_obj["audios"].length;
+                    }
+                    if(p_obj.hasOwnProperty("text_comment") && p_obj["text_comment"] != ""){
+                        audio_text_count += 1;
+                    }
+                }
+
+                $(".done_audios_text b").text(audio_text_count);
+                $(".mi_slideout").removeClass("reviewable");
+
 
                 //FREE UP THE MEMORY FOR THE MEDIA OBJECTS
                 // ourvoice.clearAllAudio();
@@ -476,6 +487,8 @@ var app = {
                     var audio 	= app.cache.audioPlayer;
                     audio.src 	= tmpurl;
                     audio.play();
+                    console.log("play!");
+                    console.log(tmpurl);
                     setTimeout(function(){
                         el.removeClass("playing");
                     },1500);
@@ -514,7 +527,7 @@ var app = {
             var savehistory = false;
             if($(this).hasClass("camera")) {
                 //GET CURRENT PANEL
-                ourvoice.takePhoto(function () {
+                ourvoice.takePhoto(function(){
                     //on success go to pic review
                     var panel = $("#loading");
                     app.closeCurrentPanel(panel);
@@ -537,41 +550,24 @@ var app = {
             return false;
         });
 
-        $(".panel .votes").off("click",".vote").on("click",".vote", function(){
+        $(".panel .votes").on("click",".vote", function(){
             //VOTE GOOD AND/OR BAD
             var curPhoto = $(this).data("photo_i");
 
-            console.log("what the fuck thumbs?");
-            // ONLY REMOVE IF MUTUALLY EXCLUSIVE
-            // $(".vote.up[rel='" + curPhoto + "'],.vote.down[rel='" + curPhoto + "'],.vote.meh[rel='" + curPhoto + "']").removeClass("on").removeClass("off");
-
             var updown = "up";
             // 0/null = no votes, 1 = bad vote, 2 = good vote, 3 = both votes WTF
+
             if($(this).hasClass("up")){
-                $("a.up[rel='" + curPhoto + "']").toggleClass("on");
-                if($("a.up[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+2;
-                }else{
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-2;
-                }
-            }else if($(this).hasClass("meh")){
-                updown = "meh";
-                $("a.meh[rel='" + curPhoto + "']").toggleClass("on");
-                if($("a.meh[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+3;
-                }else{
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-3;
-                }
-            }else{
-                updown = "down";
-                $("a.down[rel='" + curPhoto + "']").toggleClass("on");
-                if($("a.down[rel='" + curPhoto + "']").hasClass("on")){
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad+1;
-                }else{
-                    app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad-1;
-                }
+                $(".votes a.up[rel='" + curPhoto + "']").toggleClass("on");
+                var value = $(".votes a.up[rel='" + curPhoto + "']").hasClass("on") ? 2 : -2;
+                app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad + value;
             }
-            // app.log("voting on photo");
+            if($(this).hasClass("down")){
+                updown = "down";
+                $(".votes a.down[rel='" + curPhoto + "']").toggleClass("on");
+                var value = $(".votes a.down[rel='" + curPhoto + "']").hasClass("on") ? 1 : -1;
+                app.cache.user[app.cache.current_session].photos[curPhoto].goodbad = app.cache.user[app.cache.current_session].photos[curPhoto].goodbad + value;
+            }
 
             //RECORD THE VOTE
             datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
@@ -583,6 +579,7 @@ var app = {
             //save it
             var curPhoto = $(this).data("photo_i");
             app.cache.user[app.cache.current_session].photos[curPhoto].text_comment  = $(this).val();
+            $(".text_comment").slideUp("slow");
             return false;
         });
 
@@ -633,7 +630,7 @@ var app = {
             return false;
         });
 
-        $("#datastatus").off("click").on("click", function(){
+        $("#step_zero .datastatus").off("click").on("click", function(){
             app.closeCurrentPanel($("#step_zero"));
             $("#main").addClass("loaded");
 
@@ -735,9 +732,9 @@ var app = {
               console.log(err);
             });
 
-            $("#datastatus i").removeClass("synced");
-            $(this).closest("tr").removeClass("uploaded");
-            $("i[data-docid='"+doc_id+"']").removeClass("uploaded");
+            $("#datastatus").removeClass("synced");
+            $(this).closest(".row").removeClass("uploaded");
+            $("a[data-docid='"+doc_id+"']").removeClass("uploaded");
             return false;
         });
 
@@ -748,7 +745,6 @@ var app = {
             // HIDE THIS FUNCtionality for now
             if(1==2){
                 app.cache.localusersdb.get(doc_id).then(function (doc) {
-                    console.log("does the length work on empty array? #" + doc["photos"].length )
                     if(doc["photos"].length){
                         //DELETE PHOTOS AND AUDIO ATTACHMENTS
                         for(var p in doc["photos"]){
@@ -1156,7 +1152,7 @@ var app = {
 
         panel.show().delay(250).queue(function(next){
             $(this).addClass("loaded");
-            $("nav").removeClass().addClass(panel.attr("id"));
+            window.scrollTo(0,0);
             next();
         });
         return;
@@ -1317,7 +1313,7 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
                     //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
                     if(all_synced){
                         console.log("its all synced man");
-                        $("#datastatus i").addClass("synced");
+                        $(".datastatus").addClass("synced");
                     }else{
                         console.log("no its not all synced.. wut");
                     }

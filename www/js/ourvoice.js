@@ -15,7 +15,7 @@ var ourvoice = {
         }
 
         rows.reverse();
-        $("#list_data tbody").empty();
+        $("#list_data .upload_table").empty();
         var numwalks = rows.length;
         for(var i in rows){
             var r_d     = rows[i]["doc"];
@@ -25,12 +25,16 @@ var ourvoice = {
             var ts      = split[split.length-1];
             var truncid = ts.substr(ts.length - 4);
             var pid     = split[0];
-            
-            var picount = 0;
-            for(var p in r_d["photos"]){
-                var pic = r_d["photos"][p];
-                if(pic["audio"]){
-                    picount += parseInt(pic["audio"]);
+
+            var audio_text_count = 0;
+            for (var i in r_d["photos"]){
+                var p_obj = r_d["photos"][i];
+
+                if(p_obj.hasOwnProperty("audios")){
+                    audio_text_count += p_obj["audios"].length;
+                }
+                if(p_obj.hasOwnProperty("text_comment") && p_obj["text_comment"] != ""){
+                    audio_text_count += 1;
                 }
             }
 
@@ -38,31 +42,33 @@ var ourvoice = {
             date.setUTCSeconds(Math.round(ts/1000));
             var mon     = date.getMonth() + 1;
             var day     = date.getDate();
-            var tr      = $("<tr>")
-            var walkdate= $("<td>").text(mon+"/"+day);
-            pid         = $("<td>").text(pid);
-            var walkid  = $("<td>").addClass("walkid");
+
+            var tr      = $("<div>").addClass("row").addClass("table");
+            var walkdate= $("<div>").addClass("col-sm-2").text(mon+"/"+day);
+            pid         = $("<div>").addClass("col-sm-2").text(pid);
+            var walkid  = $("<div>").addClass("col-sm-2").addClass("walkid");
             walkid.text(truncid).data("walkid",r_id)
-            var pics    = $("<td>").text(r_d["photos"].length);
-            var audio   = $("<td>").text(picount);
-            var thumbs  = $("<i>").attr("data-docid",r_id);
-            var reset   = $("<td>").addClass("reset");
+            var pics    = $("<div>").addClass("col-sm-2").text(r_d["photos"].length);
+            var audio   = $("<div>").addClass("col-sm-2").text(audio_text_count);
+            // var thumbs  = $("<i>").attr("data-docid",r_id);
+
+            var reset   = $("<div>").addClass("col-sm-2").addClass("reset");
             reset.append($("<a>").addClass("resync").attr("data-docid",r_id).text('reset'));
             
             if(synced){
                 tr.addClass("uploaded");
-                thumbs.addClass("uploaded");
+                // thumbs.addClass("uploaded");
             }else{
                 // console.log("no 'sync flag'");
             }
-            var up = $("<td>").append(thumbs);
+            // var up = $("<div>").addClass("col-sm-2").append(thumbs);
 
             tr.append(walkdate);
             tr.append(pid);
             tr.append(walkid);
             tr.append(pics);
             tr.append(audio);
-            tr.append(up);
+            // tr.append(up);
             
             // SHOW EACH PHOTOS FOCKING SLIDE OUT PREVIEW THING
             walkid.click(function(){
@@ -105,21 +111,21 @@ var ourvoice = {
 
             // tr.append(trash);
             if(backdoor){
-                var altup   = $("<td>").addClass("alternate_upload").addClass("backdoor");
+                var altup   = $("<div>").addClass("col-sm-2").addClass("alternate_upload").addClass("backdoor");
                 altup.append($("<a>").addClass("ajaxup").data("doc_id",r_id).data("attach_count", (picount + r_d["photos"].length)).html('&#8686;'));//    &#10514;
                 tr.append(altup);
                 // var trash   = $("<td>");
                 // trash.append($("<a>").addClass("trash").attr("data-docid",r_id).html('&#128465;'));
+
+                $("#admin_view .buttons").addClass("backdoor");
             }else{
-                // FUCK IT
                 tr.append(reset);
             }
 
             $(tr).find().click(function(){
-                console.log("this");
                 console.log($(this));
             });
-            $("#list_data tbody").append(tr);
+            $("#list_data .upload_table").append(tr);
         }
         return;
     }
@@ -133,7 +139,7 @@ var ourvoice = {
             for(var i in rows){
                 var r_d     = rows[i]["doc"];
                 if(!r_d.hasOwnProperty("uploaded")){
-                  $("#datastatus i").removeClass("synced");
+                  $(".datastatus").removeClass("synced");
                   break;  
                 }
             }
@@ -272,6 +278,7 @@ var ourvoice = {
                 var l_option    = $("<option>").val(langoption["lang"]).text(langoption["language"]);
                  $("select[name='language']").append(l_option);
             }
+
             ourvoice.updateLanguage(app.cache.active_project["proj_id"],"en");
         }).then(function(){
             $("select[name='language']").change(function(){
@@ -290,19 +297,19 @@ var ourvoice = {
         lang                = !lang ? "en" :lang;
         var project         = app.cache.projects["project_list"][app.cache.active_project["i"]];
         var trans           = app.cache.projects["app_text"];
-        var survey_trans    = project.hasOwnProperty("template_type") ? app.cache.projects["survey_text"][project["template_type"]]  : project["surveys"];
-        var consent_trans   = project.hasOwnProperty("template_type") ? app.cache.projects["consent_text"][project["template_type"]] : project["consent"];
-        var include_surveys = app.cache.projects["project_list"][app.cache.active_project["i"]].hasOwnProperty("include_surveys") ? parseInt(app.cache.projects["project_list"][app.cache.active_project["i"]]["include_surveys"]) : true;
+        // var survey_trans    = project.hasOwnProperty("template_type") ? app.cache.projects["survey_text"][project["template_type"]]  : project["surveys"];
+        // var consent_trans   = project.hasOwnProperty("template_type") ? app.cache.projects["consent_text"][project["template_type"]] : project["consent"];
+        // var include_surveys = app.cache.projects["project_list"][app.cache.active_project["i"]].hasOwnProperty("include_surveys") ? parseInt(app.cache.projects["project_list"][app.cache.active_project["i"]]["include_surveys"]) : true;
 
         //OK JUST REDO THE SURVEY EVERYTIME
-        $("#survey fieldset").empty();
-        if(include_surveys){
-            survey.build(survey_trans, lang);
-        }else{
-            $(".confirm.endwalk").data("next","finish");
-        }
+        // $("#survey fieldset").empty();
+        // if(include_surveys){
+        //     survey.build(survey_trans, lang);
+        // }else{
+        //     $(".confirm.endwalk").data("next","finish");
+        // }
 
-        consent.build(consent_trans, lang);
+        // consent.build(consent_trans, lang);
         $("body").removeClass().addClass(lang);
 
         if(project["project_id"] == projid){
@@ -310,7 +317,10 @@ var ourvoice = {
                 var kvpair      = trans[n];
                 var translation = kvpair["val"].hasOwnProperty(lang) ? kvpair["val"][lang] : "";
                 var datakey     = kvpair["key"];
-                $("[data-translation-key='"+datakey+"']").text(translation);
+
+                if(translation !== "xxx" && translation !== ""){
+                    $("[data-translation-key='"+datakey+"']").text(translation);
+                }
             }   
         }
     }
@@ -365,6 +375,8 @@ var ourvoice = {
                     
                         //SAVE THE POINTS IN GOOGLE FORMAT
                         if(utils.checkConnection()){
+                            console.log("current walk map push"  + curLat + "," +  curLong);
+
                             app.cache.currentWalkMap.push(
                                 new google.maps.LatLng(curLat, curLong)
                             );
@@ -733,6 +745,7 @@ var ourvoice = {
                 return false;
             });
             $("#saved_audio").prepend(playlink);
+            $("#saved_audio").prepend(playlink);
         }
         return;
     }
@@ -809,6 +822,7 @@ var ourvoice = {
         var goodbad = _photo["goodbad"];
         var textcom = _photo.hasOwnProperty("text_comment") ? _photo.hasOwnProperty("text_comment") : false;
         var text_comment = _photo.hasOwnProperty("text_comment") ? _photo["text_comment"] : "";
+        $("#saved_audio").empty();
 
         $("#pic_review a.vote").removeClass("on").removeClass("off");
         if(goodbad == 2){
@@ -854,7 +868,7 @@ var ourvoice = {
 
         //NOW ADD THIS TO THE VIEW #mediacaptured
         var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
-        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>").text(tmstmp));
+        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>"));
         var newthum     = $("<img>").attr("src",fileurl);
         
         newlink.prepend(newthum);
@@ -862,7 +876,6 @@ var ourvoice = {
         
         var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#128465;");
         
-        console.log(_photo);
         if(_photo["audios"]){
             for(var a in _photo["audios"]){
                 var audio_file_i    = _photo["audios"][a];
@@ -892,6 +905,9 @@ var ourvoice = {
         var pic_count   = $(".mi_slideout b").text();
         pic_count       = parseInt(pic_count) + 1;
         $(".mi_slideout b, .done_photos b").text(pic_count);
+
+        $(".walk_actions").addClass("photostaken");
+        $(".photoaction").addClass("photostaken");
         return;
     }
 
@@ -962,6 +978,7 @@ var ourvoice = {
         $(".mi_slideout b").text(0);
         $(".mi_slideout").removeClass("reviewable");
         $(".nomedia").show();
+        $(".photostaken").removeClass("photostaken");
         $(".home").show();
         $(".delete_on_reset").remove();
         app.cache.reset_active_project = false;
@@ -970,7 +987,7 @@ var ourvoice = {
     }
 
     ,syncLocalData: function(needUpdating){
-        $("#datastatus i").removeClass("synced");
+        $(".datastatus").removeClass("synced");
         window.plugins.insomnia.keepAwake();
 
         datastore.localSyncDB(app.cache.localusersdb, app.cache.remoteusersdb, function(info){
@@ -1015,12 +1032,12 @@ var ourvoice = {
                 //THIS APPEARS AFTER THE onChange() BLOCK BELOW
                 
                 //CHANGE SYNC INDICATOR TO THUMBS UP
-                $("#datastatus i").addClass("synced");
+                $(".datastatus").addClass("synced");
 
                 app.cache.pbacutoff = true; //set to true to finish complete the upload animation
                 
-                $("i[data-docid]").addClass("uploaded");
-                $("i[data-docid]").closest("tr").addClass("uploaded");
+                $("a[data-docid]").addClass("uploaded");
+                $("a[data-docid]").closest(".row").addClass("uploaded");
 
                 //LET THE PHONE SLEEP AGAIN
                 window.plugins.insomnia.allowSleepAgain();

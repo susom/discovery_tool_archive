@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.stanford.discoverytool.ourvoice" version="3.0.0" versionCode="30000" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="edu.stanford.discoverytool.ourvoice" version="3.0.4" versionCode="30004" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>The Discovery Tool</name>
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
@@ -43,10 +43,16 @@
                     <string>The Discovery Tool app requires use of the microphone for recording observations of neighborhood features</string>
                     <key>NSPhotoLibraryUsageDescription</key>
                     <string>The Discovery Tool app may back up photos to the Photo Library</string>
+
+                    <key>NSLocationAlwaysUsageDescription</key>
+                    <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
                     <key>NSLocationWhenInUseUsageDescription</key>
-                    <value>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</value>
+                    <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
+                    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+                    <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
+
                     <key>NSPhotoLibraryAddUsageDescription</key>
-                    <value>The Discovery Tool app saves photos to your gallery as a back up and should be manually deleted</value>
+                    <string>The Discovery Tool app saves photos to your gallery as a back up and should be manually deleted</string>
                     <key>UIStatusBarHidden</key>
                     <true />
                     <key>UIFileSharingEnabled</key>
