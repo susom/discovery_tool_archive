@@ -876,15 +876,17 @@ h1:after{
 .ajaxup {
     font-size:200%;
     line-height:88%;
+    text_decoration:none;
 }
 .alternate_upload.uploading{
     background:url(../img/icon_spinner.gif) 50% no-repeat;
     background-size:contain;
-    text_decoration:nonw;
+    text_decoration:none;
 }
 
 .alternate_upload.uploading a{
-    font-size:100%;
+    font-size:200%;
+    text-decoration:none;
 }
 
 

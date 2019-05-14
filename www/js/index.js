@@ -227,6 +227,8 @@ var app = {
             var no_history  = false;
 
             if(next == "admin_view"){
+                return false;
+
                 if($(this).hasClass("uploadbtn")){
                     if(!$(this).hasClass("uploading")){
                         //UPLOAD BUTTON
