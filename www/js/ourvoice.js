@@ -112,12 +112,12 @@ var ourvoice = {
             // tr.append(trash);
             if(backdoor){
                 var altup   = $("<div>").addClass("col-sm-2").addClass("alternate_upload").addClass("backdoor");
-                altup.append($("<a>").addClass("ajaxup").data("doc_id",r_id).data("attach_count", (picount + r_d["photos"].length)).html('&#8686;'));//    &#10514;
+                altup.append($("<a>").addClass("ajaxup").data("doc_id",r_id).data("attach_count", (audio_text_count + r_d["photos"].length)).html('&#8686;'));//    &#10514;
                 tr.append(altup);
                 // var trash   = $("<td>");
                 // trash.append($("<a>").addClass("trash").attr("data-docid",r_id).html('&#128465;'));
 
-                $("#admin_view .buttons").addClass("backdoor");
+                // $("#admin_view .buttons").addClass("backdoor");
             }else{
                 tr.append(reset);
             }

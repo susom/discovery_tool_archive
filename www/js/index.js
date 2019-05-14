@@ -423,6 +423,76 @@ var app = {
             return false;
         });
 
+        $("#step_zero .datastatus").off("click").on("click", function(){
+            app.closeCurrentPanel($("#step_zero"));
+            $("#main").addClass("loaded");
+
+            //SHOW THE DATA ON LOCAL DEVICE
+            app.cache.localusersdb.allDocs({
+                include_docs: true
+            }).then(function (res) {
+                ourvoice.adminView(res["rows"], true);
+                $("#list_data").css("opacity",1);
+            }).catch(function(err){
+                app.log("error allDocs()" + err);
+            });
+
+            app.transitionToPanel($("#admin_view"));
+            return false;
+        });
+
+        $("#list_data").off("click","a.ajaxup").on("click","a.ajaxup", function(){
+            // Update handlers are functions that clients can request to invoke server-side logic that will create or update a document
+            var doc_id  = $(this).data("doc_id");
+            var apiurl  = config["database"]["upload_endpoint"]; //or use update_handlers design document?
+
+            //replace the upload icon with an animated gif circling a number that counts down!
+            var attach_count = $(this).data("attach_count");
+            $(this).parent().addClass("uploading");
+            // $(this).html(attach_count);
+
+            console.log("there are " + attach_count + " attachements to upload");
+            console.log(doc_id)
+            console.log(apiurl);
+
+            //SHOW PROGRESS BAR
+            $("#progressoverlay").addClass("uploading");
+
+            //pull data and prepare it to upload to some other fucking thing.
+            app.cache.localusersdb.get(doc_id).then(function (doc) {
+                var doc_rev = doc["_rev"];
+                if(doc["photos"].length){
+                    $.ajax({
+                        type      : "POST",
+                        url       : apiurl,
+                        data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
+                        dataType  : "JSON",
+                        success   : function(attachments){
+                            // console.log(attachments);
+                            // console.log("start recursive upload of " + attachments.length + " attachments");
+                            // var duplicateObject = JSON.parse(JSON.stringify( originalObject ));
+                            app.recursiveUpload(doc_id, attachments);
+                        },
+                        error     : function(err){
+                            // console.log("opposite of success, error");
+                            console.log(err);
+                        }
+                    }).fail(function(err){
+                        // console.log("ajax upload fail");
+                        console.log(err);
+                    });
+                }else{
+                    console.log("no photos, so no actions");
+                }
+            }).catch(function (err) {
+                console.log("error getting doc");
+                console.log(err);
+            });
+
+            return false;
+        });
+
+
         $(".home").off("click").on("click",function(){
             if($(".panel.loaded").attr("id") == "step_setup" || $(".panel.loaded").attr("id") == "step_zero" ){
                 return false;
@@ -630,24 +700,6 @@ var app = {
             return false;
         });
 
-        $("#step_zero .datastatus").off("click").on("click", function(){
-            app.closeCurrentPanel($("#step_zero"));
-            $("#main").addClass("loaded");
-
-            //SHOW THE DATA ON LOCAL DEVICE
-            app.cache.localusersdb.allDocs({
-              include_docs: true
-            }).then(function (res) {
-                ourvoice.adminView(res["rows"], false);
-                $("#list_data").css("opacity",1);
-            }).catch(function(err){
-                app.log("error allDocs()" + err);
-            });
-
-            app.transitionToPanel($("#admin_view"));
-            return false;
-        });
-
         $("#progressoverlay").off("click","#cancel_upload").on("click","#cancel_upload", function(){
             $(".uploading").removeClass("uploading");
             $("#progressbar span").width(0);
@@ -796,55 +848,6 @@ var app = {
 
                 $(this).closest("tr").remove();
             }
-            return false;
-        });
-
-        $("#list_data").off("click","a.ajaxup").on("click","a.ajaxup", function(){
-            // Update handlers are functions that clients can request to invoke server-side logic that will create or update a document
-            var doc_id  = $(this).data("doc_id");
-            var apiurl  = config["database"]["upload_endpoint"]; //or use update_handlers design document?
-
-            //replace the upload icon with an animated gif circling a number that counts down!
-            var attach_count = $(this).data("attach_count");
-            $(this).parent().addClass("uploading");
-            // $(this).html(attach_count);
-
-            console.log("there are " + attach_count + " attachements to upload");
-            
-            //SHOW PROGRESS BAR
-            $("#progressoverlay").addClass("uploading"); 
-            
-            //pull data and prepare it to upload to some other fucking thing. 
-            app.cache.localusersdb.get(doc_id).then(function (doc) {
-                var doc_rev = doc["_rev"];
-                if(doc["photos"].length){
-                    $.ajax({
-                      type      : "POST",
-                      url       : apiurl,
-                      data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
-                      dataType  : "JSON",
-                      success   : function(attachments){
-                        // console.log(attachments);
-                        // console.log("start recursive upload of " + attachments.length + " attachments");
-                        // var duplicateObject = JSON.parse(JSON.stringify( originalObject ));
-                        app.recursiveUpload(doc_id, attachments);
-                      },
-                      error     : function(err){
-                        // console.log("opposite of success, error");
-                        console.log(err);
-                      }
-                    }).fail(function(err){
-                        // console.log("ajax upload fail");
-                        console.log(err);
-                    });
-                }else{
-                    console.log("no photos, so no actions");
-                }
-            }).catch(function (err) {
-                console.log("error getting doc");
-              console.log(err);
-            });
-
             return false;
         });
 
