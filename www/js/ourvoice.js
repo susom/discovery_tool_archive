@@ -53,7 +53,8 @@ var ourvoice = {
             // var thumbs  = $("<i>").attr("data-docid",r_id);
 
             var reset   = $("<div>").addClass("col-sm-2").addClass("reset");
-            reset.append($("<a>").addClass("resync").attr("data-docid",r_id).text('reset'));
+            var resync  = $("<a>").addClass("resync").attr("data-docid",r_id).text('reset');
+            reset.append(resync);
             
             if(synced){
                 tr.addClass("uploaded");
@@ -112,12 +113,19 @@ var ourvoice = {
             // tr.append(trash);
             if(backdoor){
                 var altup   = $("<div>").addClass("col-sm-2").addClass("alternate_upload").addClass("backdoor");
-                altup.append($("<a>").addClass("ajaxup").data("doc_id",r_id).data("attach_count", (audio_text_count + r_d["photos"].length)).html('&#8686;'));//    &#10514;
+                var ajaxup  = $("<a>").addClass("ajaxup").data("doc_id",r_id).data("attach_count", (audio_text_count + r_d["photos"].length));
+                ajaxup.html('&#8686;')
+                altup.append(ajaxup);//    &#10514;
                 tr.append(altup);
                 // var trash   = $("<td>");
                 // trash.append($("<a>").addClass("trash").attr("data-docid",r_id).html('&#128465;'));
 
                 // $("#admin_view .buttons").addClass("backdoor");
+                if(synced){
+                    ajaxup.addClass("uploaded");
+                }else{
+                    // console.log("no 'sync flag'");
+                }
             }else{
                 tr.append(reset);
             }
@@ -981,6 +989,7 @@ var ourvoice = {
         $(".photostaken").removeClass("photostaken");
         $(".home").show();
         $(".delete_on_reset").remove();
+        $(".reset_later").removeClass("reset_later");
         app.cache.reset_active_project = false;
         app.log("RESETING DEVICE STATE");
         return;

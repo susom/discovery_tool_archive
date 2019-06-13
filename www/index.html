@@ -30,7 +30,9 @@
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src * gap://ready file:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src * 'unsafe-inline' 'unsafe-eval'"> -->
     <!-- <meta http-equiv="Content-Security-Policy" content="default-src * gap: file:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src * 'unsafe-inline' 'unsafe-eval'"> -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600" rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/css?family=Pacifico&display=swap" rel="stylesheet"> -->
+    <!-- <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css?family=Raleway&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="css/mini-default.min.css" />
     <link rel="stylesheet" type="text/css" href="css/index_rwd.css" />
     <!--<link rel="stylesheet" type="text/css" href="css/index_splash.css" />-->
@@ -113,7 +115,7 @@
 
                 <div class="row buttons">
                     <div class="col-sm-12 col-md-6"><a href="#" data-next="step_zero" class="button adminbtn" data-translation-key="setup_project">setup project on this device</a></div>
-                    <div class="col-sm-12 col-md-6"><a href="#" id="reset_dbs" data-clickcount="0" class="button danger" data-translation-key="clear_device">clear device</a></div>
+                    <div class="col-sm-12 col-md-6"><a href="#" id="reset_dbs" data-clickcount="0" class="button danger clear_device" data-translation-key="clear_device">clear device</a></div>
                 </div>
             </div>
         </div>
@@ -153,7 +155,7 @@
         <div class="col-sm-12 content">
             <div class="container">
                 <div class="row">
-                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect" data-translation-key="consent_greet">Welcome!</div>
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect green_man_speech" data-translation-key="consent_greet">Welcome!</div>
                 </div>
 
                 <div class="row">
@@ -209,10 +211,8 @@
         <div class="col-sm-12 content">
             <div class="container">
                 <div class="row photoaction">
-                    <div class="col-sm-6 col-sm-offset-3 consentbox"><b data-translation-key="take_photo">Take a photo</b></div>
-
                     <div class="col-sm-12 actions">
-                        <a href="#" data-next="pic_review" class="button action daction camera"></a>
+                        <a href="#" data-next="pic_review" class="button action daction camera"><b data-translation-key="take_photo">Take a photo</b><b data-translation-key="take_another">Take another photo</b></a>
                     </div>
                 </div>
 
@@ -299,7 +299,7 @@
         <div class="col-sm-12 content">
             <div class="container">
                 <div class="row">
-                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect done_photos" data-translation-key="you_took_n_photos">You took <b>0</b> photos</div>
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect done_photos" data-translation-key="your_route">Your Route</div>
                 </div>
 
                 <div id="walkmap" class="row">
@@ -322,7 +322,7 @@
         <div class="col-sm-12 content">
             <div class="container">
                 <div class="row">
-                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect bigpad" data-translation-key="finish_title">Great!</div>
+                    <div class="col-sm-8 col-sm-offset-2 consentbox vertconnect bigpad green_man_speech" data-translation-key="finish_title">Great!</div>
                 </div>
 
                 <div class="row">

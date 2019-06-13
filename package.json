@@ -29,7 +29,9 @@
       "cordova-plugin-ios-location-permissions": {
         "LOCATION_WHEN_IN_USAGE_DESCRIPTION": "This app needs contact access",
         "LOCATION_ALWAYS_AND_WHEN_IN_USAGE_DESCRIPTION": "This app needs contact access"
-      }
+      },
+      "cordova-plugin-screen-orientation": {},
+      "cordova-plugin-ios-disableshaketoedit": {}
     }
   },
   "dependencies": {
@@ -41,10 +43,12 @@
     "cordova-plugin-file": "^6.0.1",
     "cordova-plugin-geolocation": "^4.0.1",
     "cordova-plugin-insomnia": "https://github.com/EddyVerbruggen/Insomnia-PhoneGap-Plugin.git",
+    "cordova-plugin-ios-disableshaketoedit": "^1.0.0",
     "cordova-plugin-ios-location-permissions": "1.0.0",
     "cordova-plugin-media": "^5.0.2",
     "cordova-plugin-media-capture": "^3.0.2",
     "cordova-plugin-network-information": "^2.0.1",
+    "cordova-plugin-screen-orientation": "^3.0.1",
     "cordova-plugin-splashscreen": "^5.0.2",
     "cordova-plugin-sqlite-2": "^1.0.5",
     "cordova-plugin-statusbar": "^2.4.2",

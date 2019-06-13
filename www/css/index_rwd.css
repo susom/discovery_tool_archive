@@ -14,11 +14,20 @@ LIGHT GREY  : #E0E0E0
 
 html,body{
     height:100%;
-    font-family: 'Montserrat', sans-serif;
     font-size:4vw;
     background:#fff;
 }
 
+* {
+    /*font-family: 'Pacifico', cursive;*/
+    font-family: 'Raleway', sans-serif;
+    /*font-family: 'Montserrat', sans-serif;*/
+}
+
+body.iw * {
+    direction:rtl;
+    unicode-bidi: bidi-override;
+}
 .container{
     margin:0;
     padding:initial;
@@ -37,7 +46,6 @@ html,body{
     display:table-cell;
     vertical-align: middle;
 }
-
 .panel.row{
 }
 .panel.row .content{
@@ -63,9 +71,11 @@ h1:before{
     position:absolute;
     top:0;
     background:url(../img/logo.png) no-repeat;
-    left: -28%;
-    width: 100%;
-    height: 100%;
+    right:102%;
+    width: 7vw;
+    height: 7vw;
+    max-width:12vw;
+    max-height:12vw;
     background-size:contain;
 }
 h1 {
@@ -165,9 +175,17 @@ h1:after{
     background:#B40C27;
 }
 #main .danger{
-    background: #E0E0E0;
-    padding: 10px 15px;
+    /*background: #E0E0E0;*/
+    /*padding: 10px 15px;*/
 }
+#main .clear_device{
+    background: #fff url(../img/button_clear_device.png) 50% no-repeat;
+    background-size:contain;
+    padding: 10px 15px;
+    text-indent:-5000px;
+    box-shadow:none;
+}
+
 #main .resetdb{
     background: #105881;
     padding: 10px 15px;
@@ -180,8 +198,10 @@ h1:after{
     background: #B40C27;
 }
 
+
 #reset_dbs.active{
     background:red;
+    text-indent:initial;
 }
 
 #main .datastatus{
@@ -222,10 +242,22 @@ h1:after{
 #main .button.action{
     background:#105881 url(../img/icon_camera.png)  50% no-repeat;
     background-size:40%;
-    text-indent:-5000px;
+    text-indent:initial;
     width:100%;
     max-width:50vw;
     height:25vh;
+}
+#main .button.action b{
+    position: relative;
+    bottom: -23vh;
+    font-weight:bold;
+}
+#main .button.action b.reset_later,
+#main .button.action b + b{
+    display:none;
+}
+#main .button.action b.reset_later + b{
+    display:block;
 }
 
 /*splash*/
@@ -312,7 +344,10 @@ h1:after{
     padding:0;
 }
 
-
+h1.logo{
+    /*font-weight:normal;*/
+    /*font-family: 'Pacifico', cursive;*/
+}
 /*login*/
 #projid{
     color:initial;
@@ -874,10 +909,26 @@ h1:after{
     display:none;
 }
 .ajaxup {
-    font-size:200%;
+    font-size:250%;
     line-height:88%;
     text_decoration:none;
+    position:relative;
 }
+.ajaxup:after{
+    content:"";
+    position:absolute;
+    z-index:1;
+    top:8px; 
+    right:-5px;
+    width:10px; 
+    height:10px;
+    background:url(../img/icon_x.png) 50% no-repeat;
+    background-size:contain;
+}
+.ajaxup.uploaded:after{
+    background-image:url(../img/icon_check_green.png);
+}
+
 .alternate_upload.uploading{
     background:url(../img/icon_spinner.gif) 50% no-repeat;
     background-size:contain;
@@ -1037,4 +1088,31 @@ h1:after{
     margin:0;
     padding:12px 20px 20px;
     font-size:140%;
+}
+
+.green_man_speech{
+    position:relative;
+    z-index:0;
+}
+.green_man_speech:before{
+    content:"";
+    position:absolute;
+    width:30px; height:30px;
+    top:50%;
+    margin-top:-15px;
+    left:-40px;
+    background:url(../img/icon_green_person.png) 50% no-repeat;
+    background-size:contain;
+    z-index:1;
+}
+.green_man_speech:after{
+    content:"";
+    position:absolute;
+    width:10px; height:10px;
+    margin-top:-5px;
+    top:45%;
+    left:0;
+    background:url(../img/icon_speech_bubble.png) 50% no-repeat;
+    background-size:contain;
+    z-index: 1;
 }

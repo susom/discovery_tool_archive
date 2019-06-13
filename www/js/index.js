@@ -128,6 +128,9 @@ var app = {
     }
 
     ,onDeviceReady: function() {
+        // lock the device orientation
+        screen.orientation.lock('portrait');
+
         var GPS_TEST 	= navigator.geolocation.getCurrentPosition(function(position) {
             // OnLOAD DO NOTHING gps on is DEFAULT TRUE
         }, function(err){
@@ -227,39 +230,41 @@ var app = {
             var no_history  = false;
 
             if(next == "admin_view"){
-                return false;
 
                 if($(this).hasClass("uploadbtn")){
                     if(!$(this).hasClass("uploading")){
                         //UPLOAD BUTTON
                         $(this).addClass("uploading");
 
-                        var needUpdating = 0;
-                        app.cache.localattachmentdb.allDocs({
-                          include_docs: true
-                        }).then(function (res) {
-                            var rows = res["rows"];
-                            for(var i in rows){
-                                var r_d = rows[i]["doc"];
-                                if(!r_d.hasOwnProperty("uploaded")){
-                                  needUpdating++;
-                                }
-                            }
+                        $(".ajaxup").click();
 
-                            // app.showNotif("Uploading Data", "Please be patient and leave this app open until data upload is complete.",function(){
-                                
-                            $("#progressoverlay").addClass("uploading"); //start progress bar
-
-                            //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
-                            app.cache.pbacutoff = false;
-
-                            ourvoice.syncLocalData(needUpdating); 
-                            ourvoice.progressBarAnimationStart(needUpdating);
-                            // });
-                        }).catch(function(err){
-                            datastore.showError(err);
-                            app.showNotif("Error Uploading Data", "Please try again later.",function(){});
-                        });
+                        //OLD UPLOAD STYLE, STILL WOrKS MOSTLY
+                        // var needUpdating = 0;
+                        // app.cache.localattachmentdb.allDocs({
+                        //   include_docs: true
+                        // }).then(function (res) {
+                        //     var rows = res["rows"];
+                        //     for(var i in rows){
+                        //         var r_d = rows[i]["doc"];
+                        //         if(!r_d.hasOwnProperty("uploaded")){
+                        //           needUpdating++;
+                        //         }
+                        //     }
+                        //
+                        //     // app.showNotif("Uploading Data", "Please be patient and leave this app open until data upload is complete.",function(){
+                        //
+                        //     $("#progressoverlay").addClass("uploading"); //start progress bar
+                        //
+                        //     //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
+                        //     app.cache.pbacutoff = false;
+                        //
+                        //     ourvoice.syncLocalData(needUpdating);
+                        //     ourvoice.progressBarAnimationStart(needUpdating);
+                        //     // });
+                        // }).catch(function(err){
+                        //     datastore.showError(err);
+                        //     app.showNotif("Error Uploading Data", "Please try again later.",function(){});
+                        // });
                     }
                 }
                 return false;
@@ -294,8 +299,8 @@ var app = {
 
                 if(pid_correct != null && p_pw != null && ( $("#admin_pw").val() == p_pw || $("#admin_pw").val() == "annban" ) ){
                     $("#main").removeClass("loaded"); 
-                    $("#admin_pw").val(null);
-                    $("#admin_projid").val(null);
+                    $("#admin_pw").val("");
+                    $("#admin_projid").val("");
 
                     ourvoice.resetDevice();
 
@@ -347,13 +352,13 @@ var app = {
                 ourvoice.startWatch(8000);   
                 app.cache.history = [];
 
-                var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
-                var b4      = $("<b>").html(last4); 
-                var i4      = $("<i>").addClass("delete_on_reset").html("walk id:").append(b4);
+                // var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
+                // var b4      = $("<b>").html(last4);
+                // var i4      = $("<i>").addClass("delete_on_reset").html("walk id:").append(b4);
                 // console.log("adding walk id to header");
                 // $("header .title hgroup").append(i4);
 
-                app.log("start  walk");
+                app.log("start  walk why not record?");
             }else if($(this).hasClass("continuewalk")){
                 $("#recent_pic").attr("src","");
             }
@@ -470,9 +475,6 @@ var app = {
                         data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
                         dataType  : "JSON",
                         success   : function(attachments){
-                            // console.log(attachments);
-                            // console.log("start recursive upload of " + attachments.length + " attachments");
-                            // var duplicateObject = JSON.parse(JSON.stringify( originalObject ));
                             app.recursiveUpload(doc_id, attachments);
                         },
                         error     : function(err){
@@ -599,6 +601,7 @@ var app = {
             var savehistory = false;
             if($(this).hasClass("camera")) {
                 //GET CURRENT PANEL
+                $(this).find("b").first().addClass("reset_later");
                 ourvoice.takePhoto(function(){
                     //on success go to pic review
                     var panel = $("#loading");
@@ -610,7 +613,7 @@ var app = {
                 // app.log("take photo");
 
             }else if($(this).hasClass("keyboard")){
-                $(".text_comment").slideDown("fast");
+                $(".text_comment").slideDown("fast").focus();
             }else{
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i,function(){
@@ -1271,8 +1274,8 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
             app.cache.localusersdb.put(doc);
 
             //CHANGE SYNC INDICATOR TO THUMBS UP
-            $("i[data-docid='"+walk_id+"']").addClass("uploaded");
-            $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
+            // $("i[data-docid='"+walk_id+"']").addClass("uploaded");
+            // $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
             
             // AJAX HIT THE SERVER TO CREATE THUMBNAILS
             $.ajax({
@@ -1282,6 +1285,7 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
               dataType  : "JSON",
               success   : function(response){
                 //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
+                console.log("what is this hook_thumbs");
                 // console.log(response);
               }
             });
@@ -1292,15 +1296,20 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
 
         // THE WALK JSON and ALL THE ATTACHMENTS HAVE RECURSIVELY SAVED TO THE SERVER!!!
         // NOW HIT UPLOAD PING TO ALERT THE ADMIN EMAIL
-        var apiurl      = config["database"]["upload_ping"]; 
+        console.log("UPLOAD PING SSEMS TO BE THE PING THAT TELLS THE SERVER TO PUSH ALL THE UPLOADED STUFF TO COUCH");
+        var apiurl      = config["database"]["upload_ping"];
         $.ajax({
             type        : "POST",
             url         : apiurl,
             data        : { uploaded_walk_id: walk_id, project_email: app.cache.active_project["email"] },
-            dataType    : "JSON",
+            // dataType    : "JSON",
             success   : function(response){
                 console.log("upload_ping for walk meta succesffuly.. pinged");
                 console.log(response);
+
+
+                return;
+
 
                 app.cache.localusersdb.allDocs({
                   include_docs: true
@@ -1314,7 +1323,8 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
                             all_synced = false;
                         }
                     }
-                    
+
+                    console.log("does it get in here?");
                     //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
                     if(all_synced){
                         console.log("its all synced man");
@@ -1327,7 +1337,8 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
                 });
             },
             error     : function(err){
-                console.log(err);
+                console.log("An Error in Upload Ping?");
+                // console.log(err);
             }
         });
 
