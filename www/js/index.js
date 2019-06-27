@@ -1306,8 +1306,9 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
             success   : function(response){
                 console.log("upload_ping for walk meta succesffuly.. pinged");
                 console.log(response);
-
-
+                
+                $("a.ajaxup[data-doc_id='"+walk_id+"']").addClass("uploaded");
+                console.log($("a.ajaxup[data-doc_id='"+walk_id+"']").length);
                 return;
 
 

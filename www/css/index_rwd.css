@@ -15,6 +15,7 @@ LIGHT GREY  : #E0E0E0
 html,body{
     height:100%;
     font-size:4vw;
+    line-height:2vw;
     background:#fff;
 }
 
@@ -46,11 +47,16 @@ body.iw * {
     display:table-cell;
     vertical-align: middle;
 }
+
+.makepink{
+    background:pink !important;
+    border:1px solid red;
+}
 .panel.row{
 }
-.panel.row .content{
+.panel.row > .content{
 }
-.panel.row .container{
+.panel.row > .content > .container{
 }
 
 
@@ -138,7 +144,7 @@ h1:after{
 
 .content{
     width:100%;
-    margin:50px 0 40px;
+    margin:9vh 0;
     text-align:Center;
 }
 
@@ -150,8 +156,8 @@ h1:after{
     color: #fff;
     box-shadow: 3px 3px 0px 0px #57585A;
     width:auto;
-    min-width:220px;
-    max-width:300px;
+    min-width:20vw;
+    max-width:90vw;
 }
 
 
@@ -184,6 +190,7 @@ h1:after{
     padding: 10px 15px;
     text-indent:-5000px;
     box-shadow:none;
+    min-width:25vw;
 }
 
 #main .resetdb{
@@ -246,10 +253,16 @@ h1:after{
     width:100%;
     max-width:50vw;
     height:25vh;
+
+    position:relative;
 }
 #main .button.action b{
-    position: relative;
-    bottom: -23vh;
+    position: absolute;
+    width:300px;
+    left:50%;
+    margin-left:-150px;
+    bottom: 15px;
+    text-align:center;
     font-weight:bold;
 }
 #main .button.action b.reset_later,
@@ -307,6 +320,8 @@ h1:after{
 
 .instruct{
     font-size:4vw;
+    line-height:1vw;
+    padding:0 10px;
 }
 
 .panel {
@@ -392,7 +407,10 @@ h1.logo{
 }
 
 .appver{
-    margin:20px 0;
+    margin:0 0 20px;
+}
+.appver h2{
+    padding-top:0;
 }
 /*consent*/
 .consentbox{
@@ -400,6 +418,10 @@ h1.logo{
     border-radius:5px;
     margin:10px auto 10px;
     position:relative;
+
+    font-size:4vw;
+    line-height:5vw;
+    padding:5px auto;
 }
 .vertconnect:after{
     content:"";
@@ -418,10 +440,12 @@ h1.logo{
 }
 .safteytip div {
     display:table;
-    min-height:10vh;
+    min-height:9vh;
+    font-size:3.5vw;
+    line-height:3vw;
 }
 .safteytip img {
-    max-width:10vmax
+    max-width:10vmax;
     max-height:10vmax;
     display:block;
     margin:0 auto;
@@ -446,7 +470,7 @@ h1.logo{
 .walk_actions{
     border-top:1px solid #E0E0E0;
     position: fixed;
-    bottom: 50px;
+    bottom: 70px;
     padding-top: 5px;
     width: 98%;
     display:none;
@@ -500,7 +524,9 @@ h1.logo{
 
 .jointext{
     text-align:center;
-    padding:0 20px
+    padding:0 20px;
+    font-size:4vw;
+    line-height:3.5vw;
 }
 .audio_text,
 .goodbad{
@@ -772,7 +798,7 @@ h1.logo{
 
 /*finish*/
 .bigpad{
-    padding:20px 0;
+    padding:10px 0;
 }
 .horizconnect{
     height:12px;
@@ -834,6 +860,7 @@ h1.logo{
     display: table-cell;
     vertical-align: middle;
     margin:0 auto;
+    font-size:88%;
 }
 .table_header img{
     max-width:5vh;
@@ -843,6 +870,9 @@ h1.logo{
 .upload_table .walkid{
     text-decoration:underline;
     color:#105881;
+}
+.upload_table {
+    font-size:88%;
 }
 
 #list_data .resync{
@@ -857,7 +887,6 @@ h1.logo{
     background:url(../img/icon_check_green.png) 50% no-repeat;
     background-size:contain;
 }
-
 
 .button.uploadbtn{
     padding:30px 0;
@@ -1099,8 +1128,8 @@ h1.logo{
     position:absolute;
     width:30px; height:30px;
     top:50%;
-    margin-top:-15px;
-    left:-40px;
+    margin-top:-10px;
+    left:-33px;
     background:url(../img/icon_green_person.png) 50% no-repeat;
     background-size:contain;
     z-index:1;
