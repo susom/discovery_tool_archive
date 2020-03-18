@@ -29,6 +29,10 @@ body.iw * {
     direction:rtl;
     unicode-bidi: bidi-override;
 }
+body.iw #audio_time{
+    direction:initial;
+    unicode-bidi: initial;
+}
 .container{
     margin:0;
     padding:initial;
@@ -71,6 +75,14 @@ body.iw * {
     text-align:center;
     border-bottom:1px solid #E0E0E0;
     padding:10px 0;
+}
+.toplogo > div i{
+    position:absolute; 
+    width:100px;
+    text-align:center;
+    top:28px; left:50%;
+    margin-left:-50px;
+    font-style:normal;
 }
 h1:before{
     content:"";
@@ -155,7 +167,7 @@ h1:after{
     border-radius: 10px;
     color: #fff;
     box-shadow: 3px 3px 0px 0px #57585A;
-    width:auto;
+    width:80%;
     min-width:20vw;
     max-width:90vw;
 }
@@ -413,6 +425,16 @@ h1.logo{
     padding-top:0;
 }
 /*consent*/
+#consent_0 .consentbox , 
+#consent_1 .safteytip div{
+    font-size:130%;
+}
+#consent_0 .consentbox , 
+#consent_1 .consentbox{
+    padding-top:8px !important;
+    padding-bottom:8px !important;
+}
+
 .consentbox{
     border:1px solid #57585A;
     border-radius:5px;
@@ -679,7 +701,7 @@ h1.logo{
     color         : #333;
     font-size     : 180%;
     font-weight   : bold;
-    line-height   : 110%;
+    line-height   : 135%;
     text-align    : center;
     border        : 1px solid #888;
     border-radius : 3px;
@@ -750,7 +772,7 @@ h1.logo{
 }
 .mediaitem .trashit{
     position            : absolute;
-    z-index             : 11;
+    z-index             : 110;
     right               : 0px;
     top                 : 25px;
     width               : 30px;

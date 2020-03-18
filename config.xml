@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.stanford.discoverytool.ourvoice" version="3.0.10" versionCode="30010" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="edu.stanford.discoverytool.ourvoice" version="3.0.14" versionCode="30014" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>The Discovery Tool</name>
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
@@ -44,14 +44,12 @@
                     <string>The Discovery Tool app requires use of the microphone for recording observations of neighborhood features</string>
                     <key>NSPhotoLibraryUsageDescription</key>
                     <string>The Discovery Tool app may back up photos to the Photo Library</string>
-                    <key>NSLocationAlwaysUsageDescription</key>
-                    <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
                     <key>NSLocationWhenInUseUsageDescription</key>
-                    <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
-                    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
                     <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
                     <key>NSPhotoLibraryAddUsageDescription</key>
                     <string>The Discovery Tool app saves photos to your gallery as a back up and should be manually deleted</string>
+                    <key>NSLocationAlwaysUsageDescription</key>
+                    <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
                     <key>UIStatusBarHidden</key>
                     <true />
                     <key>UIFileSharingEnabled</key>
@@ -102,25 +100,22 @@
     <allow-intent href="sms:*" />
     <allow-intent href="mailto:*" />
     <allow-intent href="geo:*" />
-    <engine name="ios" spec="4.5.4" />
-    <plugin name="cordova-plugin-insomnia" spec="~4.3.0" />
-    <plugin name="cordova-plugin-media" spec="^5.0.2" />
-    <plugin name="cordova-plugin-file" spec="~6.0.1" />
-    <plugin name="cordova-plugin-dialogs" spec="~2.0.1" />
-    <plugin name="cordova-plugin-network-information" spec="~2.0.1" />
-    <plugin name="cordova-plugin-splashscreen" spec="~5.0.2" />
-    <plugin name="cordova-plugin-whitelist" spec="~1.3.3" />
     <plugin name="cordova-plugin-compat" spec="~1.2.0" />
-    <plugin name="cordova-plugin-geolocation" spec="~4.0.1">
-        <variable name="GEOLOCATION_USAGE_DESCRIPTION" value="The Our Voice Discovery Tool requires use of 'Location Services' on your device" />
-    </plugin>
-    <plugin name="cordova-plugin-camera" spec="~4.0.3" />
-    <plugin name="cordova-plugin-device" spec="~2.0.2" />
-    <plugin name="cordova-plugin-media-capture" spec="~3.0.2" />
-    <plugin name="cordova-plugin-sqlite-2" spec="~1.0.4" />
-    <plugin name="cordova-plugin-statusbar" spec="~2.4.2" />
-    <plugin name="cordova-plugin-x-toast" spec="^2.7.0" />
     <plugin name="cordova-plugin-ios-location-permissions" spec="~1.2.0" />
-    <plugin name="cordova-plugin-screen-orientation" spec="~3.0.1" />
     <plugin name="cordova-plugin-ios-disableshaketoedit" spec="~1.0.0" />
+    <plugin name="cordova-plugin-camera" spec="~4.1.0" />
+    <plugin name="cordova-plugin-device" spec="~2.0.3" />
+    <plugin name="cordova-plugin-dialogs" spec="~2.0.2" />
+    <plugin name="cordova-plugin-geolocation" spec="~4.0.2" />
+    <plugin name="cordova-plugin-network-information" spec="~2.0.2" />
+    <plugin name="cordova-plugin-screen-orientation" spec="~3.0.2" />
+    <plugin name="cordova-plugin-splashscreen" spec="~5.0.3" />
+    <plugin name="cordova-plugin-sqlite-2" spec="~1.0.6" />
+    <plugin name="cordova-plugin-x-toast" spec="~2.7.2" />
+    <plugin name="cordova-plugin-whitelist" spec="~1.3.4" />
+    <plugin name="cordova-plugin-file" spec="~6.0.2" />
+    <plugin name="cordova-plugin-media-capture" spec="~3.0.3" />
+    <plugin name="cordova-plugin-media" spec="~5.0.3" />
+    <plugin name="cordova-plugin-insomnia" spec="~4.3.0" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.4.3" />
 </widget>

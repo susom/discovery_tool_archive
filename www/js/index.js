@@ -352,11 +352,11 @@ var app = {
                 ourvoice.startWatch(8000);   
                 app.cache.history = [];
 
-                // var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
-                // var b4      = $("<b>").html(last4);
-                // var i4      = $("<i>").addClass("delete_on_reset").html("walk id:").append(b4);
-                // console.log("adding walk id to header");
-                // $("header .title hgroup").append(i4);
+                var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
+                var b4      = $("<b>").html(last4);
+                var i4      = $("<i>").addClass("delete_on_reset").html("ID : ").append(b4);
+                console.log("adding walk id to header");
+                $(".toplogo > div").append(i4);
 
                 app.log("start  walk why not record?");
             }else if($(this).hasClass("continuewalk")){
@@ -512,7 +512,7 @@ var app = {
             return false;
         });
 
-        $("#mediacaptured,#pic_review").off("click").on("click",".trashit", function(){
+        $("#pic_review").on("click",".trashit", function(){
             //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
             var thispic_i   = $(this).data("photo_i");
             var panel       = $(this).closest(".panel");
@@ -522,7 +522,7 @@ var app = {
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#"+next),1);
             }
-            // app.log("delete photo");
+            app.log("delete photo");
 
             ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
             return false;
@@ -791,7 +791,7 @@ var app = {
 
             $("#datastatus").removeClass("synced");
             $(this).closest(".row").removeClass("uploaded");
-            $("a[data-docid='"+doc_id+"']").removeClass("uploaded");
+            $("a[data-doc_id='"+doc_id+"']").removeClass("uploaded");
             return false;
         });
 
@@ -946,6 +946,8 @@ var app = {
                     'Reset Databases?',           // title
                     ['Cancel','Continue']     // buttonLabels
                 );
+
+                return false;
             }
         });
 
@@ -1274,7 +1276,8 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
             app.cache.localusersdb.put(doc);
 
             //CHANGE SYNC INDICATOR TO THUMBS UP
-            // $("i[data-docid='"+walk_id+"']").addClass("uploaded");
+            console.log("change x to check");
+            $("a.ajaxup[data-doc_id='"+walk_id+"']").addClass("uploaded");
             // $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
             
             // AJAX HIT THE SERVER TO CREATE THUMBNAILS
@@ -1307,8 +1310,8 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
                 console.log("upload_ping for walk meta succesffuly.. pinged");
                 console.log(response);
                 
-                $("a.ajaxup[data-doc_id='"+walk_id+"']").addClass("uploaded");
-                console.log($("a.ajaxup[data-doc_id='"+walk_id+"']").length);
+                // $("a.ajaxup[data-doc_id='"+walk_id+"']").addClass("uploaded");
+                // console.log($("a.ajaxup[data-doc_id='"+walk_id+"']").length);
                 return;
 
 

@@ -113,7 +113,8 @@ var ourvoice = {
             // tr.append(trash);
             if(backdoor){
                 var altup   = $("<div>").addClass("col-sm-2").addClass("alternate_upload").addClass("backdoor");
-                var ajaxup  = $("<a>").addClass("ajaxup").data("doc_id",r_id).data("attach_count", (audio_text_count + r_d["photos"].length));
+                var ajaxup  = $("<a>").addClass("ajaxup").attr("data-doc_id",r_id).data("attach_count", (audio_text_count + r_d["photos"].length));
+                console.log("MAKING ROW : ajax up doc_id : " + r_id + "  and attach count: "+ audio_text_count + r_d["photos"].length);
                 ajaxup.html('&#8686;')
                 altup.append(ajaxup);//    &#10514;
                 tr.append(altup);
@@ -883,7 +884,24 @@ var ourvoice = {
         newitem.append(newlink);
         
         var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#128465;");
-        
+        //why wont this work on the .on in index.js anymore?
+        trash.click(function(){
+            //reundant to code in index.js for "trashit" but wont work for some reason and spending too mjch time as it is
+            //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
+            var thispic_i   = $(this).data("photo_i");
+            var panel       = $(this).closest(".panel");
+
+            if(panel.attr("id") == "pic_review"){
+                var next    = "step_two";
+                app.closeCurrentPanel(panel);
+                app.transitionToPanel($("#"+next),1);
+            }
+            app.log("delete photo");
+
+            ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
+            return false;
+        });
+
         if(_photo["audios"]){
             for(var a in _photo["audios"]){
                 var audio_file_i    = _photo["audios"][a];
