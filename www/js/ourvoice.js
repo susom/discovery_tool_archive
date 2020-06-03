@@ -816,7 +816,7 @@ var ourvoice = {
                 app.transitionToPanel($("#step_two"),false);
             }
             ,{ 
-                 quality            : 25
+                 quality            : 15
                 ,destinationType    : Camera.DestinationType.DATA_URL
                 ,saveToPhotoAlbum   : app.cache.saveToAlbum
                 ,allowEdit          : false
