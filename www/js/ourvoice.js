@@ -849,7 +849,9 @@ var ourvoice = {
         }
 
         if(textcom){
-            $("#text_comment").show().val(textcom);
+            console.log();
+            $(".text_comment").show();
+            $("#text_comment").val(text_comment);
         }else{
             $(".text_comment").hide();
         }
@@ -892,7 +894,7 @@ var ourvoice = {
         newlink.prepend(newthum);
         newitem.append(newlink);
         
-        var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#x1F5D1;");
+        var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i);
         //why wont this work on the .on in index.js anymore?
         trash.click(function(){
             //reundant to code in index.js for "trashit" but wont work for some reason and spending too mjch time as it is
@@ -911,17 +913,28 @@ var ourvoice = {
             return false;
         });
 
+        var left_offset = 70;
         if(_photo["audios"]){
             for(var a in _photo["audios"]){
                 var audio_file_i    = _photo["audios"][a];
+
                 if(_photo.hasOwnProperty("_id")){
                     var attach_id = _photo["_id"] + "_" + audio_file_i;
                 }
                 var audiorec        = $("<a>").attr("href","#").addClass("audiorec").addClass("hasAudio").data("doc_id",doc_id).data("attach_id",attach_id).data("attach_name", audio_file_i).data("file_i", audio_file_i).html($("<span>").addClass("single_upload").html('&#8686;'));
+                audiorec.css("left",left_offset+"px");
+                left_offset = left_offset+70;
                 newitem.append(audiorec);
             }
         }
         
+        console.log("need to show icon for text comment");
+        console.log(_photo);
+        if(_photo.hasOwnProperty("text_comment")){
+            var text_comment  = $("<span>").addClass("mi_text");
+            text_comment.css("left", left_offset+"px");
+            newitem.append(text_comment);
+        }
         // if(app.cache.proj_thumbs ){
         //     var thumbs      = $("<div>").addClass("votes");
         //     var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i).attr("rel",photo_i);

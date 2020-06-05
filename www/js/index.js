@@ -546,9 +546,11 @@ var app = {
 
             app.closeCurrentPanel(panel);
             app.transitionToPanel($("#"+next));
+
+            return false;
         });
 
-        $("#mediacaptured").off("click").on("click", ".single_upload", function(){
+        $("#mediacaptured").on("click", ".single_upload", function(){
             // Update handlers are functions that clients can request to invoke server-side logic that will create or update a document
             var _this   = $(this).parent();
 
@@ -594,7 +596,7 @@ var app = {
         });
 
         $("#mediacaptured .slideclose").off("click").on("click",function(){
-            $("#mediacaptured").removeClass("preview").removeClass("review");
+            $("#mediacaptured").removeClass("preview").removeClass("review").removeClass("upload");;
             return false;
         });
 

@@ -769,23 +769,31 @@ h1.logo{
 .mediaitem .votes .down{
     background-position : -32px 0;
 }
-.mediaitem .trashit{
-    position            : absolute;
-    z-index             : 110;
-    right               : 0px;
-    top                 : 25px;
-    width               : 30px;
-    height              : 30px;
-    background          : #efefef;
-    line-height         : 100%;
-    text-align          : center;
-    border-radius       : 3px;
-    box-shadow          : 0 0 1px 1px lightgrey;
-}
 
+#mediacaptured.preview .trashit {
+    opacity:1;
+}
+#mediacaptured.preview.review .trashit{
+    opacity:0;
+}
+.mediaitem .trashit{
+    position: absolute;
+    z-index: 110;
+    right: 0px;
+    top: 15px;
+    width: 40px;
+    height: 40px;
+    background: url(../img/icon_trash_red.png) 50% no-repeat;
+    background-size: contain;
+    line-height: 100%;
+    text-align: center;
+    opacity:0;
+    transition:opacity .3s ease-in-out;
+}
+/*
 .review .mediaitem .trashit{
     display:none;
-}
+}*/
 .review .mediaitem .previewthumb {
     position:relative;
 }
@@ -794,15 +802,17 @@ h1.logo{
     display:none;   
 }
 .upload .mediaitem .single_upload {
-    position:absolute;
-    width:25px; height:25px;
-    top:-5px; left:40px;
-    background: #fff;
-    line-height: 50%;
-    color: purple;
-    font-weight: 650;
-    display:block;
-    font-size:120% ;
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    top: -5px;
+    left: 40px;
+    background: purple;
+    line-height: 70%;
+    color: #fff;
+    font-weight: 600;
+    display: block;
+    font-size: 100%;
     border: 1px solid #ccc;
     text-align: center;
     border-radius: 3px;
@@ -814,16 +824,16 @@ h1.logo{
 }
 .mediaitem .audiorec{
     position        : absolute;
-    top             : 20px;
+    top             : 10px;
     left            : 70px;
-    width           : 40px;
-    height          : 40px;
+    width           : 50px;
+    height          : 50px;
     border-radius   : 3px;
     box-shadow      : 0 0 1px 1px lightgrey;
 }
 .mediaitem .hasAudio{
     background          :#105881 url(../img/icon_listen.png) 50% 50% no-repeat;
-    background-size: 80% ;
+    background-size: 60% ;
     border:none;
     box-shadow:none;
 }
@@ -832,6 +842,17 @@ h1.logo{
     box-shadow:0 0 0 2px #888;
 }
 
+.mediaitem .mi_text{
+    position        : absolute;
+    top             : 10px;
+    left            : 70px;
+    width           : 50px;
+    height          : 50px;
+    border-radius   : 3px;
+    box-shadow      : 0 0 1px 1px lightgrey;
+    background      : #ccc url(../img/icon_keyboard.png) 50% 50% no-repeat;
+    background-size: contain;
+}
 
 /*endwalk*/
 #google_map {
