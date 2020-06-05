@@ -103,6 +103,11 @@ var ourvoice = {
                     });
                     
                     $("#mediacaptured").addClass("preview").addClass("review");
+                    if(doc.hasOwnProperty("uploaded" ) && doc["uploaded"]){
+                        $("#mediacaptured").addClass("upload");
+                    }else{
+                        $("#mediacaptured").removeClass("upload");
+                    }
                 }).catch(function (err) {
                     console.log("error getting doc");
                     console.log(err);
@@ -115,7 +120,7 @@ var ourvoice = {
                 var altup   = $("<div>").addClass("col-sm-2").addClass("alternate_upload").addClass("backdoor");
                 var ajaxup  = $("<a>").addClass("ajaxup").attr("data-doc_id",r_id).data("attach_count", (audio_text_count + r_d["photos"].length));
                 console.log("MAKING ROW : ajax up doc_id : " + r_id + "  and attach count: "+ audio_text_count + r_d["photos"].length);
-                ajaxup.html('&#8686;')
+                ajaxup.html('&#8686;');
                 altup.append(ajaxup);//    &#10514;
                 tr.append(altup);
                 // var trash   = $("<td>");
@@ -875,15 +880,19 @@ var ourvoice = {
             tmstmp          = "@ " + time;
         }
 
+        var doc_id      = _photo["_id"];
+        var attach_name = _photo["name"];
+        var attach_id   = doc_id + "_" + attach_name;
+
         //NOW ADD THIS TO THE VIEW #mediacaptured
         var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
-        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).attr("rel",photo_i).html($("<span>"));
+        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).data("doc_id",doc_id).data("attach_id",attach_id).data("attach_name",attach_name).attr("rel",photo_i).html($("<a>").addClass("single_upload").html('&#8686;'));
         var newthum     = $("<img>").attr("src",fileurl);
         
         newlink.prepend(newthum);
         newitem.append(newlink);
         
-        var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#128465;");
+        var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i).html("&#x1F5D1;");
         //why wont this work on the .on in index.js anymore?
         trash.click(function(){
             //reundant to code in index.js for "trashit" but wont work for some reason and spending too mjch time as it is
@@ -908,7 +917,7 @@ var ourvoice = {
                 if(_photo.hasOwnProperty("_id")){
                     var attach_id = _photo["_id"] + "_" + audio_file_i;
                 }
-                var audiorec        = $("<a>").attr("href","#").addClass("audiorec").addClass("hasAudio").data("attach_id",attach_id).data("file_i", audio_file_i);
+                var audiorec        = $("<a>").attr("href","#").addClass("audiorec").addClass("hasAudio").data("doc_id",doc_id).data("attach_id",attach_id).data("attach_name", audio_file_i).data("file_i", audio_file_i).html($("<span>").addClass("single_upload").html('&#8686;'));
                 newitem.append(audiorec);
             }
         }

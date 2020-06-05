@@ -80,9 +80,11 @@ body.iw #audio_time{
     position:absolute; 
     width:100px;
     text-align:center;
-    top:28px; left:50%;
+     left:50%;
     margin-left:-50px;
     font-style:normal;
+    bottom: 0;
+    font-size:16px;
 }
 h1:before{
     content:"";
@@ -684,7 +686,7 @@ h1.logo{
     background    : #fff;
     transition    : left .30s ease-in-out;
     box-shadow    : 0 0 1px 2px #888;
-    z-index       : 100;
+    z-index       : 1002;
     overflow      : auto;
     cursor        : pointer;
 }
@@ -699,7 +701,7 @@ h1.logo{
     width         : 30px;
     height        : 30px;
     color         : #333;
-    font-size     : 180%;
+    font-size     : 18px;
     font-weight   : bold;
     line-height   : 135%;
     text-align    : center;
@@ -731,10 +733,7 @@ h1.logo{
     text-decoration     : none;
     color               : #333;
 }
-.mediaitem span {
-    font-size           : 88%;
-    float               : right;
-}
+
 .mediaitem img {
     display             : inline-block;
     max-height          : 60px;
@@ -778,7 +777,7 @@ h1.logo{
     width               : 30px;
     height              : 30px;
     background          : #efefef;
-    line-height         : 180%;
+    line-height         : 100%;
     text-align          : center;
     border-radius       : 3px;
     box-shadow          : 0 0 1px 1px lightgrey;
@@ -787,14 +786,38 @@ h1.logo{
 .review .mediaitem .trashit{
     display:none;
 }
+.review .mediaitem .previewthumb {
+    position:relative;
+}
 
+.mediaitem .single_upload {
+    display:none;   
+}
+.upload .mediaitem .single_upload {
+    position:absolute;
+    width:25px; height:25px;
+    top:-5px; left:40px;
+    background: #fff;
+    line-height: 50%;
+    color: purple;
+    font-weight: 650;
+    display:block;
+    font-size:120% ;
+    border: 1px solid #ccc;
+    text-align: center;
+    border-radius: 3px;
+}
+.upload .mediaitem .audiorec .single_upload{
+    left: initial;
+    right: -15px;
+    top: -15px;
+}
 .mediaitem .audiorec{
     position        : absolute;
-    top             : 30px;
+    top             : 20px;
     left            : 70px;
-    width           : 30px;
-    height          : 30px;
-    background-size : 40%;
+    width           : 40px;
+    height          : 40px;
     border-radius   : 3px;
     box-shadow      : 0 0 1px 1px lightgrey;
 }
@@ -1008,6 +1031,7 @@ h1.logo{
     color:#fff;
     border-radius:5px;
     box-shadow:0 0 6px 6px #ccc;
+    z-index:1003;
 }
 #progressoverlay:before{
     z-index:-1;

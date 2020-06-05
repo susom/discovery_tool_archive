@@ -458,9 +458,9 @@ var app = {
             $(this).parent().addClass("uploading");
             // $(this).html(attach_count);
 
-            console.log("there are " + attach_count + " attachements to upload");
-            console.log(doc_id)
-            console.log(apiurl);
+            // console.log("there are " + attach_count + " attachements to upload");
+            // console.log(doc_id)
+            // console.log(apiurl);
 
             //SHOW PROGRESS BAR
             $("#progressoverlay").addClass("uploading");
@@ -475,6 +475,9 @@ var app = {
                         data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
                         dataType  : "JSON",
                         success   : function(attachments){
+                            console.log("uploaded the doc, here are the attachements to upload 1 by 1", doc);
+                            console.log(attachments);
+
                             app.recursiveUpload(doc_id, attachments);
                         },
                         error     : function(err){
@@ -495,7 +498,6 @@ var app = {
 
             return false;
         });
-
 
         $(".home").off("click").on("click",function(){
             if($(".panel.loaded").attr("id") == "step_setup" || $(".panel.loaded").attr("id") == "step_zero" ){
@@ -544,6 +546,25 @@ var app = {
 
             app.closeCurrentPanel(panel);
             app.transitionToPanel($("#"+next));
+        });
+
+        $("#mediacaptured").off("click").on("click", ".single_upload", function(){
+            // Update handlers are functions that clients can request to invoke server-side logic that will create or update a document
+            var _this   = $(this).parent();
+
+            var doc_id      = _this.data("doc_id");  //IRV_64f5ab9426bb455d_2_1591297088501
+            var attach_id   = _this.data("attach_id");
+            var attach_name = _this.data("attach_name");
+            var attachments = [{"_id": attach_id, "name": attach_name}];
+            
+            //SHOW PROGRESS BAR
+            _this.addClass("uploading");
+            $("#progressoverlay").addClass("uploading");
+
+            //recursive function but only passing in one item
+            console.log("upload single file " , attach_name, " to " , attach_id);
+            app.recursiveUpload(doc_id, attachments);
+            return false;
         });
 
         $("#mediacaptured").off("click",".audiorec").on("click",".audiorec", function(){
@@ -613,7 +634,8 @@ var app = {
                 // app.log("take photo");
 
             }else if($(this).hasClass("keyboard")){
-                $(".text_comment").slideDown("fast").focus();
+                $(".text_comment").slideDown("fast");
+                $("#text_comment").focus();
             }else{
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i,function(){
@@ -981,7 +1003,7 @@ var app = {
         var attach_id   = attachment["_id"];
         var attach_name = attachment["name"]; 
         var apiurl      = config["database"]["upload_endpoint"]; 
-
+        console.log("single attaachement to upload", attachment);
         app.cache.localattachmentdb.getAttachment(attach_id, attach_name).then(function(blob){
             // AM I DOING ALL THIS JUST TO HAVE A FILE INPUT ELEMENT TO USE FOR THE PLUGIN?
             $("#fileform").remove();
