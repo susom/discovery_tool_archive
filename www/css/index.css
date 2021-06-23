@@ -573,6 +573,7 @@ copyright{
     text-align      : center;
     padding         : 0 0;
     position        : relative;
+    border:1px solid red;
 }
 .actions h2{
     margin          : 15px 0;

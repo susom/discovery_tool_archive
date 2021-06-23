@@ -265,6 +265,8 @@ var ourvoice = {
             app.cache.next_id                   = datastore.pouchCollate([ app.cache.active_project["proj_id"], app.cache.uuid,   app.cache.participant_id, time_stamp]);
             app.cache.proj_thumbs               = p["thumbs"];
             app.cache.proj_textcomments         = p.hasOwnProperty("text_comments") ? p["text_comments"] : false;
+            app.cache.proj_audiocomments        = p.hasOwnProperty("audio_comments") ? p["audio_comments"] : false;
+            app.cache.proj_customtakephototxt   = p.hasOwnProperty("custom_takephoto_text") ? p["custom_takephoto_text"] : null;
 
             //Display This Info
             $("#step_zero .proj_name").text(p["project_name"]);
@@ -273,6 +275,19 @@ var ourvoice = {
                 $("#pic_review .keyboard").hide();
             }else{
                 $("#pic_review .keyboard").show();
+            }
+
+            if(!app.cache.proj_audiocomments || app.cache.proj_audiocomments < 1){
+                $("#pic_review .record_audio").hide();
+            }else{
+                $("#pic_review .record_audio").show();
+            }
+
+            if(!app.cache.proj_customtakephototxt){
+                $(".custom_takephoto_text").hide();
+            }else{
+                $(".custom_takephoto_text").show();
+                $(".custom_takephoto_text h5").html(app.cache.proj_customtakephototxt);
             }
 
             if(!app.cache.proj_thumbs || app.cache.proj_thumbs < 1){
@@ -390,9 +405,9 @@ var ourvoice = {
                         //SAVE THE POINTS IN GOOGLE FORMAT
                         if(utils.checkConnection()){
                             console.log("current walk map push"  + curLat + "," +  curLong);
-
+                            var current_goog_lat = new google.maps.LatLng(curLat, curLong);
                             app.cache.currentWalkMap.push(
-                                new google.maps.LatLng(curLat, curLong)
+                                current_goog_lat
                             );
                         } 
                     }
@@ -849,7 +864,6 @@ var ourvoice = {
         }
 
         if(textcom){
-            console.log();
             $(".text_comment").show();
             $("#text_comment").val(text_comment);
         }else{

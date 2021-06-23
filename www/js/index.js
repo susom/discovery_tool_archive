@@ -458,9 +458,7 @@ var app = {
             $(this).parent().addClass("uploading");
             // $(this).html(attach_count);
 
-            // console.log("there are " + attach_count + " attachements to upload");
-            // console.log(doc_id)
-            // console.log(apiurl);
+            console.log("there are " + attach_count + " attachements to upload");
 
             //SHOW PROGRESS BAR
             $("#progressoverlay").addClass("uploading");
