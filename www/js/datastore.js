@@ -74,36 +74,6 @@ var datastore = {
           // handle result
           app.cache.attachment["_rev"] = result.rev;
           console.log("attachment "+attachmentId+" attached to " + _id + " with rev : " + result.rev);
-
-          // if(!_rev && content_type.indexOf("audio") > -1){
-          //       // FIRST pass THE ID TO GET IT FROM THE attch DB in fullsize
-          //       // then in web worker, compress the file and reput into the attach db
-          //       console.log("worker time");       
-          //       var w;
-          //       if(typeof(Worker) !== "undefined") {
-          //           if(typeof(w) == "undefined") {
-          //               w = new Worker("js/testworker.js");
-          //           }
-
-          //           //on message from webworker ( callback)
-          //           w.onmessage = function(event) {
-          //               var msg = event.data.msg;
-          //               console.log("message from worker: " + msg);
-          //               w.terminate();
-          //               w = undefined;  
-          //           };
-
-          //           worker.onerror = function(e){
-          //               console.log("Worker error: ", e);
-          //           };
-
-          //           w.postMessage({   "attach_id" : _id
-          //                           , "file_i" : attachmentId
-          //                           , "rev" : result.rev});
-          //       } else {
-          //           console.log("Sorry, your browser does not support Web Workers...");
-          //       }
-          // }
         }).catch(function (err) {
           console.log(err);
         });
@@ -212,8 +182,5 @@ var datastore = {
         return component_array.join("_");
     }
 
-    // ,pouchDeCollate : function(_id){
-    //     return window.pouchCollate.parseIndexableString(_id);
-    // }    
 };
 

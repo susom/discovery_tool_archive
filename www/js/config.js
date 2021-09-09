@@ -17,6 +17,7 @@ var config = {
 
         ,"upload_endpoint"      : "https://ourvoice-projects.med.stanford.edu/attachment_upload.php"
         ,"upload_ping"          : "https://ourvoice-projects.med.stanford.edu/upload_ping.php"
+        ,"app_login"            : "https://ourvoice-projects.med.stanford.edu/app_login.php"
         ,"hook_thumbs"          : "https://ourvoice-projects.med.stanford.edu/process_thumbs.php"
     }
 };

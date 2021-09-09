@@ -183,37 +183,35 @@ var app = {
         // ourvoice.deleteLocalDB();
 
         //Once DB loads, it will cleartimeout (if less than 12 seconds that is)
-        app.cache.db_fail_timeout = setTimeout(function(){
-            $("#loading_message").text("Could not reach database, try again later");
-            $("#main").addClass("failed");
-        },12000);
+        // app.cache.db_fail_timeout = setTimeout(function(){
+        //     $("#loading_message").text("Could not reach database, try again later");
+        //     $("#main").addClass("failed");
+        // },12000);
 
         //iff app online then goahead and try to pull an updated (if exists) copy of project data
         if(app.cache.online){
-            datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(change){
-                //REFRESH REFERENCE TO LOCAL DB AFTER REMOTE SYNC, SINCE NOT ALWAYS RELIABLE ("Null object error")
-                app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
-                if(!app.cache.versionCheck){
-                	app.cache.versionCheck = true;
-                	app.cache.localprojdb.get("all_projects").then(function (doc) {
-                        var doc_version = doc["version"];
-                        var cur_version = $("#loading_message").data("version");
-                        doc_version     = parseInt(doc_version.replace(/\./g,""));
-                        cur_version     = parseInt(cur_version.replace(/\./g,""));
+            app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
 
-                        // only show if the app version is less than official one
-		                if(doc_version > cur_version){
-                            var store           = app.cache.platform == "iOS" ? "iOS App Store" : "Google Play Store";
-                            var notice_title    = "Please check the " +store+ " for updates";
-                            var notice_body     = "It is critical to use the latest version of the Discovery Tool.";
-
-                            app.blockingNotif(notice_title, notice_body);
-		                }
-		            });	
-                }
-                // app.addDynamicCss();
-                ourvoice.getActiveProject();
-            });
+            if(!app.cache.versionCheck){
+                app.cache.versionCheck = true;
+                // app.cache.localprojdb.get("all_projects").then(function (doc) {
+                //     var doc_version = doc["version"];
+                //     var cur_version = $("#loading_message").data("version");
+                //     doc_version     = parseInt(doc_version.replace(/\./g,""));
+                //     cur_version     = parseInt(cur_version.replace(/\./g,""));
+                //
+                //     // only show if the app version is less than official one
+                //     if(doc_version > cur_version){
+                //         var store           = app.cache.platform == "iOS" ? "iOS App Store" : "Google Play Store";
+                //         var notice_title    = "Please check the " +store+ " for updates";
+                //         var notice_body     = "It is critical to use the latest version of the Discovery Tool.";
+                //
+                //         app.blockingNotif(notice_title, notice_body);
+                //     }
+                // });
+            }
+            // app.addDynamicCss();
+            ourvoice.getActiveProject();
 
             // BACK ONLINE, LETS SEE IF ANY UPLOADS NEED RESUMING
             checkResumeUploads();
@@ -237,34 +235,6 @@ var app = {
                         $(this).addClass("uploading");
 
                         $(".ajaxup").click();
-
-                        //OLD UPLOAD STYLE, STILL WOrKS MOSTLY
-                        // var needUpdating = 0;
-                        // app.cache.localattachmentdb.allDocs({
-                        //   include_docs: true
-                        // }).then(function (res) {
-                        //     var rows = res["rows"];
-                        //     for(var i in rows){
-                        //         var r_d = rows[i]["doc"];
-                        //         if(!r_d.hasOwnProperty("uploaded")){
-                        //           needUpdating++;
-                        //         }
-                        //     }
-                        //
-                        //     // app.showNotif("Uploading Data", "Please be patient and leave this app open until data upload is complete.",function(){
-                        //
-                        //     $("#progressoverlay").addClass("uploading"); //start progress bar
-                        //
-                        //     //TODO FIRE FAKE PROGRESS BAR ANIMATION, THESE PARAMTERS ARE TBD
-                        //     app.cache.pbacutoff = false;
-                        //
-                        //     ourvoice.syncLocalData(needUpdating);
-                        //     ourvoice.progressBarAnimationStart(needUpdating);
-                        //     // });
-                        // }).catch(function(err){
-                        //     datastore.showError(err);
-                        //     app.showNotif("Error Uploading Data", "Please try again later.",function(){});
-                        // });
                     }
                 }
                 return false;
@@ -283,40 +253,42 @@ var app = {
                 $("#main").removeClass("loaded");
 
                 var pid         = $("#admin_projid").val().toUpperCase();
-                var pid_correct = null;
+                var inp_pw      = $("#admin_pw").val();
                 var p_pw        = null;
 
                 ourvoice.checkDirtyData();
 
-                for(var i in app.cache.projects["project_list"]){
-                    var p = app.cache.projects["project_list"][i];
-                    if(pid == p.project_id){
-                        p_pw        = app.cache.projects["project_list"][i]["project_pass"]; 
-                        pid_correct = i;
-                        break;
-                    }
-                }
+                var project_snap_ok = app.appLogin(pid, inp_pw , function(response){
+                        p_pw = response["project_pass"];
 
-                if(pid_correct != null && p_pw != null && ( $("#admin_pw").val() == p_pw || $("#admin_pw").val() == "annban" ) ){
-                    $("#main").removeClass("loaded"); 
-                    $("#admin_pw").val("");
-                    $("#admin_projid").val("");
+                        $("#main").removeClass("loaded");
+                        $("#admin_pw").val("");
+                        $("#admin_projid").val("");
 
-                    ourvoice.resetDevice();
+                        ourvoice.resetDevice();
 
-                    //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
-                    //RECORD THE ACTIVE PROJECT
-                    app.cache.active_project["i"]   = pid_correct;
-                    datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
-                    app.cache.projectDataChanged    = false;
+                        //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                        //RECORD THE ACTIVE PROJECT
+                        app.cache.localprojdb.get("active_project", function(err,resp){
+                            if(!err){
+                                app.cache.projects                  = response["ov_meta"];
+                                app.cache.active_project            = response["active_project"];
+                                app.cache.active_project["_id"]     = resp["_id"]; //"active_project"
+                                app.cache.active_project["_rev"]    = resp["_rev"]; //"need this to push a new save revision
+                                datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
 
-                    //LETS RELOAD THE LOCAL DB AT THIS POINT
-                    ourvoice.getAllProjects();
-                }else{
+                                //LETS RELOAD THE LOCAL DB AT THIS POINT
+                                ourvoice.getAllProjects();
+                                app.closeCurrentPanel(panel);
+                                app.transitionToPanel($("#"+next),no_history);
+                            }
+                        })
+                }, function(){
                     $("#main").addClass("loaded");
                     app.showNotif("Please Try Again","Wrong ProjectID or Password", function(){});
-                    return false;
-                }
+                });
+
+                return;
             }else{
                 //ONE TIME DEAL if NOT STEP ZERO
                 $("#main").addClass("loaded");
@@ -895,7 +867,7 @@ var app = {
             app.transitionToPanel($("#admin_view"));
         });
 
-         $(".mi_slideout").off("click").on("click",function(){
+        $(".mi_slideout").off("click").on("click",function(){
             $("#mediacaptured").addClass("preview");
             return false;
         });
@@ -911,12 +883,7 @@ var app = {
             ourvoice.resetDevice();   
             ourvoice.checkDirtyData();
 
-            //PULL PROJECT DATA AGAIN
-            datastore.remoteSyncDB(app.cache.localprojdb, app.cache.remoteprojdb, function(){
-                //MAY NOT BE ONLINE SO DONT MAKE ANYTHING DEPENDENT ON THIS
-            });
-
-            ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
+            ourvoice.loadProject(app.cache.active_project);
 
             $("#pic_review li.good_or_bad").show();
 
@@ -964,6 +931,7 @@ var app = {
                             $("#list_data tbody").empty();
                         });
 
+                        localStorage.clear();
                      },            // callback to invoke with index of button pressed
                     'Reset Databases?',           // title
                     ['Cancel','Continue']     // buttonLabels
@@ -1237,6 +1205,29 @@ var app = {
         $("#main").addClass("blocking_notif");
         $("#notice h3").text(title);
         $("#notice p").text(body);
+    }
+
+    ,appLogin : function(pcode, ppass, _cb_success, _cb_fail){
+        var apiurl      = config["database"]["app_login"];
+
+        $.ajax({
+            type        : "POST",
+            url         : apiurl,
+            data        : { proj_id: pcode, proj_pw: ppass },
+            dataType    : "json",
+            success   : function(response){
+                if(response.hasOwnProperty("active_project") && response["active_project"].hasOwnProperty("code")) {
+                    console.log("pcode found!", pcode);
+                    _cb_success(response);
+                }else{
+                    console.log("pcode or ppass wrong", pcode, ppass);
+                    _cb_fail();
+                }
+            },
+            error     : function(err){
+                console.log("something wrong happened with app_login");
+            }
+        });
     }
 };
 

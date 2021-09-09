@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="edu.stanford.discoverytool.ourvoice" version="3.0.20" versionCode="30020" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="edu.stanford.discoverytool.ourvoice" version="3.0.23" versionCode="30023" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
     <name>The Discovery Tool</name>
     <description>The Discovery Tool facilitates neighborhood-level data collection by residents for the purposes of informing improvements in community health.</description>
     <author email="irvins@stanford.edu" href="http://med.stanford.edu">Stanford Research IT</author>
@@ -50,7 +50,7 @@
                     <key>NSPhotoLibraryUsageDescription</key>
                     <string>The Discovery Tool app may back up photos to the Photo Library</string>
                     <key>NSLocationWhenInUseUsageDescription</key>
-                    <string>The Discovery Tool app requires use of the geolocation api for recording walks around the neighborhood</string>
+                    <string>The Discovery Tool app requires use of the geolocation api for recording walk maps around the neighborhood</string>
                     <key>NSPhotoLibraryAddUsageDescription</key>
                     <string>The Discovery Tool app saves photos to your gallery as a back up and should be manually deleted</string>
                     <key>NSLocationAlwaysUsageDescription</key>

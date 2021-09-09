@@ -186,16 +186,15 @@ var ourvoice = {
 
     ,getActiveProject : function(){
         app.cache.localprojdb.get("active_project", function(err,resp){
+            //i,proj_id,email,_id,_rev
             if(err){
                 if(err.status == '404'){
-                    ourvoice.getAllProjects();
                     clearTimeout(app.cache.db_fail_timeout);
                 }
             }
         }).then(function (doc) {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
             app.cache.active_project = doc;
-            console.log(doc);
         }).catch(function (err) {
             console.log(err);
             app.log("get active_project error : ");
@@ -211,30 +210,37 @@ var ourvoice = {
         //LOAD UP PROJECTS FROM LOCAL DB
         try{
             // PouchDB.debug.disable();
-            app.cache.localprojdb.get("all_projects").then(function (doc) {
-                app.cache.projects = doc;
-                $("h3.loadfail").remove();
+            console.log("dont need getAllProjects anymore so what do now?");
 
-                //CHECK TO SEE IF THERE IS AN "active_project" SET YET
-                if(app.cache.active_project.hasOwnProperty("i") && !app.cache.projectDataChanged && !app.cache.reset_active_project){
-                    //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
-                    ourvoice.loadProject(app.cache.projects["project_list"][app.cache.active_project.i]);
-                    ourvoice.checkDirtyData();
-                     // $("#main").addClass("loaded");
-                    app.transitionToPanel($("#step_zero"));
-                }else{
-                    //SHOW ADMIN DEVICE SET UP 
-                    ourvoice.adminSetup();
-                    app.cache.history = [];
-                }
-            }).catch(function (err) {
-                // ALL ERRORS (EVEN FROM .then() PROMISES) FLOW THROUGH TO BE CAUGHT HERE     
-                app.log("NO PROJECTS IN LOCALDB, NOT SYNCING FROM REMOTE","ERROR");      
+            $("h3.loadfail").remove();
 
-                //IF NO PROJECTS THEN PUT UP THIS LOADING ERROR
-                var cantconnect = $("<h3>").addClass("loadfail").addClass("delete_on_reset").text("Sorry, unable to connect to server.  Please close the app and try later.");
-                $(".title hgroup").append(cantconnect);
-            });
+            //CHECK TO SEE IF THERE IS AN "active_project" SET YET
+            if(app.cache.active_project.hasOwnProperty("code") && !app.cache.projectDataChanged && !app.cache.reset_active_project){
+                //THIS DEVICE HAS BEEN SET UP TO USE A PROJECT
+                ourvoice.loadProject(app.cache.active_project);
+                ourvoice.checkDirtyData();
+                $("#main").addClass("loaded");
+                app.transitionToPanel($("#step_zero"));
+            }else{
+                //SHOW ADMIN DEVICE SET UP
+                ourvoice.adminSetup();
+                app.cache.history = [];
+            }
+
+            // "179":{"project_id":"STOP"
+            //     ,"project_name":"Rotary Stop Project"
+            //     ,"project_pass":"Rotary"
+            //     ,"summ_pass":"Rotary"
+            //     ,"project_email":"banchoff@stanford.edu"
+            //     ,"template_type":"0"
+            //     ,"text_comments":"0"
+            //     ,"include_surveys":"0"
+            //     ,"thumbs":"2"
+            //     ,"app_lang":[
+            //         {"lang":"en","language":"English"}
+            //         ,{"lang":"es","language":"Spanish"}
+            //     ]}
+
         }catch(err){
             app.showNotif("This is embaressing", "Error during database syncronization.  Close this alert to try again.", function(){
                 app.log("db sync failed, refreshing app to try again");
@@ -250,26 +256,30 @@ var ourvoice = {
 
         //SEARCH LOCAL USERS DB FOR USERS WITH PARTIAL COLLATED uuid + project_id
         //MAKE SURE TO UPDATE THIS , IF CHANGE THE ORDER OF INDEXING
-        var partial_id  = datastore.pouchCollate([ app.cache.active_project["proj_id"], app.cache.uuid ]);
+        var partial_id  = datastore.pouchCollate([ app.cache.active_project["code"], app.cache.uuid ]);
         var partial_end = partial_id + "\uffff";
+
+        console.log("attempting to Load Project and any saved walks");
         app.cache.localusersdb.allDocs({
             // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
              startkey   : partial_id
             ,endkey     : partial_end
         }).then(function (res) {
+            console.log(res);
+
             //SET THE NEXT AVAILABLE USER OBJECT _id
             var time_stamp                      = Date.now();
-            app.cache.active_project["proj_id"] = p["project_id"];
+            app.cache.active_project["code"]    = p["code"];
             app.cache.active_project["email"]   = p.hasOwnProperty("project_email") ? p["project_email"] : "";
             app.cache.participant_id            = (res["rows"].length + 1);
-            app.cache.next_id                   = datastore.pouchCollate([ app.cache.active_project["proj_id"], app.cache.uuid,   app.cache.participant_id, time_stamp]);
+            app.cache.next_id                   = datastore.pouchCollate([ app.cache.active_project["code"], app.cache.uuid,   app.cache.participant_id, time_stamp]);
             app.cache.proj_thumbs               = p["thumbs"];
             app.cache.proj_textcomments         = p.hasOwnProperty("text_comments") ? p["text_comments"] : false;
             app.cache.proj_audiocomments        = p.hasOwnProperty("audio_comments") ? p["audio_comments"] : false;
             app.cache.proj_customtakephototxt   = p.hasOwnProperty("custom_takephoto_text") ? p["custom_takephoto_text"] : null;
 
             //Display This Info
-            $("#step_zero .proj_name").text(p["project_name"]);
+            $("#step_zero .proj_name").text(p["name"]);
 
             if(!app.cache.proj_textcomments || app.cache.proj_textcomments < 1){
                 $("#pic_review .keyboard").hide();
@@ -302,30 +312,33 @@ var ourvoice = {
             }
 
             $("select[name='language']").empty();
-            for(var l in p["app_lang"]){
-                var langoption  = p["app_lang"][l];
+            for(var l in p["languages"]){
+                var langoption  = p["languages"][l];
                 var l_option    = $("<option>").val(langoption["lang"]).text(langoption["language"]);
                  $("select[name='language']").append(l_option);
             }
 
-            ourvoice.updateLanguage(app.cache.active_project["proj_id"],"en");
+            console.log("why isnt update langauge working ?" , app.cache.active_project["code"]);
+            ourvoice.updateLanguage(app.cache.active_project["code"],"en");
         }).then(function(){
             $("select[name='language']").change(function(){
                 //REAL TIME LANGUAGE TRANSLATION UPDATES
                 var lang_id = $(this).val();
-                ourvoice.updateLanguage(app.cache.active_project["proj_id"],lang_id);
+                ourvoice.updateLanguage(app.cache.active_project["code"],lang_id);
                 return false;
             });
         }).catch(function(err){
-            app.log("loadProject allDocs", "Error");
+            console.log(err);
+            app.log("why the fuck catch? loadProject allDocs", "Error");
             datastore.showError(err);
         });
     }
 
     ,updateLanguage : function(projid,lang){
         lang                = !lang ? "en" :lang;
-        var project         = app.cache.projects["project_list"][app.cache.active_project["i"]];
+        var project         = app.cache.active_project;
         var trans           = app.cache.projects["app_text"];
+
         // var survey_trans    = project.hasOwnProperty("template_type") ? app.cache.projects["survey_text"][project["template_type"]]  : project["surveys"];
         // var consent_trans   = project.hasOwnProperty("template_type") ? app.cache.projects["consent_text"][project["template_type"]] : project["consent"];
         // var include_surveys = app.cache.projects["project_list"][app.cache.active_project["i"]].hasOwnProperty("include_surveys") ? parseInt(app.cache.projects["project_list"][app.cache.active_project["i"]]["include_surveys"]) : true;
@@ -341,16 +354,16 @@ var ourvoice = {
         // consent.build(consent_trans, lang);
         $("body").removeClass().addClass(lang);
 
-        if(project["project_id"] == projid){
+        if(project["code"] == projid){
             for(var n in trans){
                 var kvpair      = trans[n];
-                var translation = kvpair["val"].hasOwnProperty(lang) ? kvpair["val"][lang] : "";
-                var datakey     = kvpair["key"];
-
+                var translation = kvpair.hasOwnProperty(lang) ? kvpair[lang] : "";
+                var datakey     = n;
+                console.log("what the fuck is happening here", datakey,translation);
                 if(translation !== "xxx" && translation !== ""){
                     $("[data-translation-key='"+datakey+"']").text(translation);
                 }
-            }   
+            }
         }
     }
 
@@ -1041,7 +1054,7 @@ var ourvoice = {
         $(".mi_slideout").removeClass("reviewable");
         $(".nomedia").show();
         $(".photostaken").removeClass("photostaken");
-        $(".home").show();
+        $(".home").show().trigger("click");
         $(".delete_on_reset").remove();
         $(".reset_later").removeClass("reset_later");
         app.cache.reset_active_project = false;
