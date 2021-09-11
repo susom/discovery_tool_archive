@@ -284,9 +284,6 @@ var app = {
                             ourvoice.getAllProjects();
                             app.closeCurrentPanel(panel);
                             app.transitionToPanel($("#"+next),no_history);
-
-                            console.log("FML android 10 you bitch");
-                            console.log(resp);
                         })
                 }, function(){
                     $("#main").addClass("loaded");
@@ -301,7 +298,10 @@ var app = {
 
             if(next == "consent_0"){
                 //THIS IS IMPORTANT
-                app.cache.user[app.cache.current_session].project_id    = app.cache.active_project.i;
+                console.log("active project, will need to revisit this to add diy tagging");
+                console.log(app.cache.active_project);
+
+                app.cache.user[app.cache.current_session].project_id    = app.cache.active_project["code"];
                 app.cache.user[app.cache.current_session].lang          = $("select[name='language']").val();
                 app.cache.user[app.cache.current_session].user_id       = app.cache.participant_id;
                 app.cache.user[app.cache.current_session]._id           = app.cache.next_id; //COLLATED
@@ -332,10 +332,7 @@ var app = {
                 var last4   = app.cache.user[app.cache.current_session]._id.substr(app.cache.user[app.cache.current_session]._id.length - 4);
                 var b4      = $("<b>").html(last4);
                 var i4      = $("<i>").addClass("delete_on_reset").html("ID : ").append(b4);
-                console.log("adding walk id to header");
                 $(".toplogo > div").append(i4);
-
-                app.log("start  walk why not record?");
             }else if($(this).hasClass("continuewalk")){
                 $("#recent_pic").attr("src","");
             }

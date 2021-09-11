@@ -74,7 +74,7 @@ var ourvoice = {
             // SHOW EACH PHOTOS FOCKING SLIDE OUT PREVIEW THING
             walkid.click(function(){
                 var doc_id = $(this).data("walkid");
-
+                console.log("slideout in upload data page", doc_id);
                 app.cache.localusersdb.get(doc_id).then(function (doc) {
                     var photos      = doc["photos"];
                     var attachments = {};
@@ -196,8 +196,7 @@ var ourvoice = {
             //LOCAL DB ONLY, SET CURRENT ACTIVE PROJECT ARRAY KEY
             app.cache.active_project = doc;
         }).catch(function (err) {
-            console.log(err);
-            app.log("get active_project error : ");
+            app.log("get active_project error");
             app.log(err);
         }).then(function(){
             //THIS WORKS AS A "FINALLY"
@@ -210,7 +209,7 @@ var ourvoice = {
         //LOAD UP PROJECTS FROM LOCAL DB
         try{
             // PouchDB.debug.disable();
-            console.log("dont need getAllProjects anymore so what do now?");
+            // console.log("dont need getAllProjects anymore so what do now?");
 
             $("h3.loadfail").remove();
 
@@ -265,8 +264,6 @@ var ourvoice = {
              startkey   : partial_id
             ,endkey     : partial_end
         }).then(function (res) {
-            console.log(res);
-
             //SET THE NEXT AVAILABLE USER OBJECT _id
             var time_stamp                      = Date.now();
             app.cache.active_project["code"]    = p["code"];
@@ -318,7 +315,6 @@ var ourvoice = {
                  $("select[name='language']").append(l_option);
             }
 
-            console.log("why isnt update langauge working ?" , app.cache.active_project["code"]);
             ourvoice.updateLanguage(app.cache.active_project["code"],"en");
         }).then(function(){
             $("select[name='language']").change(function(){
@@ -416,7 +412,6 @@ var ourvoice = {
                     
                         //SAVE THE POINTS IN GOOGLE FORMAT
                         if(utils.checkConnection()){
-                            console.log("current walk map push"  + curLat + "," +  curLong);
                             var current_goog_lat = new google.maps.LatLng(curLat, curLong);
                             app.cache.currentWalkMap.push(
                                 current_goog_lat
@@ -439,13 +434,8 @@ var ourvoice = {
         //GEOLOCATION
         // ILL JUST SET IT TO THE PREVIOUS ONE FIRST, THEN IF THIS CALLBACK DOESNT ERROR, IT WILL SET ITS OWN GEOTAG?
         add_to["geotag"]    = app.cache.user[app.cache.current_session].geotags[app.cache.user[app.cache.current_session].geotags.length - 1];
-        console.log("default geo tag for foto will be most recent from the walk");
-        console.log(app.cache.user[app.cache.current_session].geotags[app.cache.user[app.cache.current_session].geotags.length - 1]);
         curpos              = {}
         navigator.geolocation.getCurrentPosition(function(position) {
-            console.log("this will be the position of the photo?");
-            console.log(position);
-
             if(position){
                 curpos.longitude    = position.coords.longitude;
                 curpos.latitude     = position.coords.latitude;
@@ -509,16 +499,12 @@ var ourvoice = {
 
         for(var i = 1; i < geopoints; i++) {
 
-            if(app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"] > 50){
-                console.log("no good accuracy: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
+            if(app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"] > 30){
+                console.log("no good accuracy 30+: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
                 continue;
-            }else{
-                console.log("accuracy < 50?: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
             }
 
             latLngBounds.extend(app.cache.currentWalkMap[i]);
-            console.log("ltlngbounds");
-            console.log(app.cache.currentWalkMap[i]);
 
             // Place the marker
             new google.maps.Marker({
@@ -710,13 +696,12 @@ var ourvoice = {
             app.cache.audioObj[recordFileName] = new Media( actualFileName
                 ,function(){
                     //FINISHED RECORDING
-                    // console.log("MEDIA FINISHED RECORDING, NOW USE FILE SYSTEM TO GET THE FILE?");
-                    // console.log(this);
 
+                    //FOR THis to work in Android 10+ devices, needed to add following to AndroidManifest.xml android:grantUriPermissions="true" android:name="org.apache.cordova.camera.FileProvider"
                     window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
                         dir.getFile(actualFileName, {} 
                             ,function(fileEntry) {
-
+                                // console.log("AndroidManifest.xml update fixed this...");
                                 fileEntry.file(function(file) {
                                         var cdvpath = file["localURL"];
 
@@ -728,24 +713,32 @@ var ourvoice = {
                                                                 ,recordFileName
                                                                 ,file
                                                                 ,"audio/" + app.cache.audioformat );
-                                        app.cache.user[app.cache.current_session].photos[photo_i]["audios"].push(recordFileName);
+
+                                        if(app.cache.user[app.cache.current_session].photos[photo_i]["audios"].indexOf(recordFileName) === -1){
+                                            app.cache.user[app.cache.current_session].photos[photo_i]["audios"].push(recordFileName);
+                                        }
                                     }
-                                    ,function(err){ console.log(err); }
+                                    ,function(err){ 
+                                        console.log("android file error");
+                                        console.log(err); 
+                                    }
                                 );
                             }
-                            ,function(){ console.log("cordova.file.externalRootDirectory crap file not found or created"); }
+                            ,function(){ 
+                                console.log("cordova.file.externalRootDirectory crap file not found or created"); 
+                            }
                         );
                     });
                 }
                 ,function(err){
                     //RECORDING EROR
+                    console.log("android recording error");
                     console.log(err.code +  " : " + err.message);
                 }
                 ,function(){
                     // STATUS CHANGE
                 }); //of new Media
             
-            console.log(app.cache.audioObj[recordFileName]);
             //FILE CREATED, AVAIALBLE TO RECORD
             ourvoice.startRecording(photo_i,recordFileName);
         }
@@ -943,7 +936,6 @@ var ourvoice = {
         if(_photo["audios"]){
             for(var a in _photo["audios"]){
                 var audio_file_i    = _photo["audios"][a];
-
                 if(_photo.hasOwnProperty("_id")){
                     var attach_id = _photo["_id"] + "_" + audio_file_i;
                 }
@@ -951,11 +943,10 @@ var ourvoice = {
                 audiorec.css("left",left_offset+"px");
                 left_offset = left_offset+70;
                 newitem.append(audiorec);
+                console.log("new audio file should be in slide out?" , attach_id);
             }
         }
-        
-        console.log("need to show icon for text comment");
-        console.log(_photo);
+
         if(_photo.hasOwnProperty("text_comment")){
             var text_comment  = $("<span>").addClass("mi_text");
             text_comment.css("left", left_offset+"px");
