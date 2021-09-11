@@ -359,7 +359,6 @@ var ourvoice = {
                 var kvpair      = trans[n];
                 var translation = kvpair.hasOwnProperty(lang) ? kvpair[lang] : "";
                 var datakey     = n;
-                console.log("what the fuck is happening here", datakey,translation);
                 if(translation !== "xxx" && translation !== ""){
                     $("[data-translation-key='"+datakey+"']").text(translation);
                 }

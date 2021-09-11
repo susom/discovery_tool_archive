@@ -160,7 +160,8 @@ var app = {
 
         // //START PINGING ONLINE STATE, AND FILL IN OTHER GLOBAL VARIABLES
         app.cache.online                = navigator.onLine;
-        utils.pingNetwork();
+        // utils.pingNetwork();
+        console.log("do i need this fucker oFFline thing?", navigator.onLine);
 
         app.cache.uuid                  = device.uuid;
         app.cache.platform              = device.platform;
@@ -270,18 +271,22 @@ var app = {
                         //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
                         //RECORD THE ACTIVE PROJECT
                         app.cache.localprojdb.get("active_project", function(err,resp){
+                            app.cache.projects                  = response["ov_meta"];
+                            app.cache.active_project            = response["active_project"];
+
                             if(!err){
-                                app.cache.projects                  = response["ov_meta"];
-                                app.cache.active_project            = response["active_project"];
                                 app.cache.active_project["_id"]     = resp["_id"]; //"active_project"
                                 app.cache.active_project["_rev"]    = resp["_rev"]; //"need this to push a new save revision
-                                datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
-
-                                //LETS RELOAD THE LOCAL DB AT THIS POINT
-                                ourvoice.getAllProjects();
-                                app.closeCurrentPanel(panel);
-                                app.transitionToPanel($("#"+next),no_history);
                             }
+                            datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
+
+                            //LETS RELOAD THE LOCAL DB AT THIS POINT
+                            ourvoice.getAllProjects();
+                            app.closeCurrentPanel(panel);
+                            app.transitionToPanel($("#"+next),no_history);
+
+                            console.log("FML android 10 you bitch");
+                            console.log(resp);
                         })
                 }, function(){
                     $("#main").addClass("loaded");
