@@ -75,7 +75,7 @@ var app = {
     ,onDevicePause: function() {
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
-        // app.log("DEVICE PAUSING");
+        app.log("DEVICE PAUSING");
         
         // console.log("pausing device, what happens to uploads? will need to resume for");
         // console.log(app.cache.resumeUploads);
@@ -90,7 +90,7 @@ var app = {
     ,onDeviceResume: function() {
         //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
         //SO NO DO NOT RELOAD PROJECT
-        // app.log("DEVICE RESUMING"); 
+        app.log("DEVICE RESUMING");
         var GPS_TEST = navigator.geolocation.getCurrentPosition(function(position) {
                 console.log("Testing if Location Services On :");
                 if(position){
@@ -128,7 +128,17 @@ var app = {
     }
 
     ,onDeviceReady: function() {
+
+        // var i = 0;
+        // setInterval(function(){
+        //     i++;
+        //     $("body").html("<h1>"+i+"</h1>");
+        // },1000);
+        //
+        // return;
+
         // lock the device orientation
+        console.log("ONDEVICE READY KICKED OFF AGAIN?");
         screen.orientation.lock('portrait');
 
         var GPS_TEST 	= navigator.geolocation.getCurrentPosition(function(position) {
@@ -338,11 +348,10 @@ var app = {
             }
 
             if(next == "step_three"){
+                $("#google_map").show();
+
                 if(utils.checkConnection()){
-                    $("#google_map").show();
                     ourvoice.plotGoogleMap();
-                }else{
-                    $("#google_map").hide();
                 }
             }
 
@@ -1212,6 +1221,15 @@ var app = {
     ,appLogin : function(pcode, ppass, _cb_success, _cb_fail){
         var apiurl      = config["database"]["app_login"];
 
+        //
+        var prevlogins  = localStorage.getItem("previousLogins") ?  JSON.parse(localStorage.getItem("previousLogins")) : {};
+
+        //
+        if(prevlogins && prevlogins.hasOwnProperty(pcode) && prevlogins[pcode]["pass"] == ppass){
+            _cb_success(prevlogins[pcode]["meta"]);
+            return;
+        }
+
         $.ajax({
             type        : "POST",
             url         : apiurl,
@@ -1220,6 +1238,10 @@ var app = {
             success   : function(response){
                 if(response.hasOwnProperty("active_project") && response["active_project"].hasOwnProperty("code")) {
                     console.log("pcode found!", pcode);
+
+                    prevlogins[pcode] = {"pass" : ppass, "meta" : response};
+                    localStorage.setItem("previousLogins",JSON.stringify(prevlogins));
+
                     _cb_success(response);
                 }else{
                     console.log("pcode or ppass wrong", pcode, ppass);

@@ -1243,10 +1243,12 @@ copyright{
 
 #walkmap {
     width: 90%;
-    margin: 0 auto
+    margin: 0 auto;
+    background:#fff;
+    min-height:200px;
 }
 #google_map {
-    border:1px solid #475464; 
+    border:1px solid #475464;
     min-height:200px;
     max-width:calc(100%);
 }
