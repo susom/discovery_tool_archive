@@ -219,6 +219,20 @@ nav .list{
     text-indent:-5000px;
     background-size:40%;
 }
+#admin_view .uploaded .resync, #admin_view .legend_upload.resync{
+    display:inline-block;
+}
+#admin_view .resync{
+    text-indent:-5000px;
+    background-size:65%;
+    display:none;
+    width:30px;
+    height:30px;
+    vertical-align:top;
+    margin:3px 0;
+
+    border:1px solid red;
+}
 
 #list_data .uploaded .resync{
     display:inline-block;
@@ -231,6 +245,8 @@ nav .list{
     height:30px;
     vertical-align:top;
     margin:3px 0;
+
+    border:1px solid red;
 }
 #list_data .trash{
     text-indent:-5000px;
@@ -292,6 +308,7 @@ nav .list{
 
 .ajaxup {
     font-size:200%;
+    border:1px solid red;
 }
 
 #admin_master label{
@@ -843,6 +860,10 @@ copyright{
     width:calc(100%-30px);
     height:200px;
 }
+#pic_review {
+    border:1px solid red;
+}
+
 #pic_review .device_actions {
     text-align: left;
     margin:0;

@@ -193,6 +193,9 @@ header:after {
 #list_data .resync{
     background:url(../img/icon_reset.png) 50% no-repeat;
 }
+#admin_view .resync{
+    background:url(../img/icon_reset.png) 50% no-repeat;
+}
 
 .trash {
     background:url(../img/icon_trash.png) 50% 20% no-repeat;

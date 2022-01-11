@@ -49,6 +49,7 @@
     <div id="admin_view" class="panel row">
         <div class="col-sm-12 content">
             <div class="container">
+                <p class="instructions_upload"><span class="legend_upload ajaxup">&#8686;</span> <span data-translation-key="instructions_upload">Click purple button to upload all walk data</span></p>
                 <div class="row table_header">
                     <div class="col-sm-2"><span data-translation-key="date">Date</span></div>
                     <div class="col-sm-2"><span data-translation-key="project">Project</span></div>
@@ -79,12 +80,6 @@
                     <h4><b id="percent_uploaded">0</b>%</h4>
                     <a href="#" id="cancel_upload" data-translation-key="cancel">Cancel</a>
                 </div>
-
-                <!-- <div class="row buttons">
-                    <div class="col-sm-12 col-md-6">
-                        <a href="#" data-next="admin_view" class="button uploadbtn view"><i data-translation-key="upload_data">Upload data</i><b data-translation-key="uploading_data" class='ing'>Uploading data</b></a>
-                    </div>
-                </div> -->
             </div>
         </div>
     </div>
@@ -125,8 +120,8 @@
                 <div class="row appver">
                     <div class="col-sm-10 col-sm-offset-1">
                         <h2 data-translation-key="discovery_tool">Discovery Tool</h2>
-                        <ver id="loading_message" data-version="3.0.30">v. <b></b></ver>
-                        <copyright data-translation-key="copyright">© Stanford University 2019</copyright>
+                        <ver id="loading_message" data-version="3.0.35">v. <b></b></ver>
+                        <copyright data-translation-key="copyright">© Stanford University 2021</copyright>
                     </div>
                 </div>
 
@@ -235,18 +230,29 @@
                     <div class="col-sm-10 col-sm-offset-1 consentbox" data-translation-key="why_this_photo">Why did you take this photo?</div>
                 </div>
 
-                <div class="row audio_text record_audio">
-                    <div class="col-sm-4 col-sm-offset-2"><a href="#" data-next="audio_record"  class="btn daction audiorec audio "></a></div>
-                    <div id="saved_audio" class="col-sm-6">
+                <div class="row audio_text">
+                    <div class="col-sm-3 col-sm-offset-1 text_text">
+                        <a href="#" class="btn daction keyboard"></a>
+                    </div>
+                    <div class="col-sm-3 record_audio">
+                        <a href="#" data-next="audio_record"  class="btn daction audiorec audio "></a>
+                    </div>
+                    <div id="saved_audio" class="col-sm-5">
+
                     </div>
                 </div>
-                <div class="row audio_text text_text">
-                    <div class="col-sm-8 col-sm-offset-2">
-                        <a href="#" class="btn daction keyboard"></a>
-                        <div class="text_comment">
-                            <textarea id="text_comment"></textarea>
-                        </div>
+                <div class="row">
+                    <div class="col-sm-10 col-sm-offset-1 text_comment">
+                        <textarea id="text_comment"></textarea>
                     </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-10 col-sm-offset-1 consentbox" data-translation-key="project_tags">Tag this photo - multiple tags OK</div>
+                </div>
+                <div class="row project_tags">
+                    <p id="no_tags"><em data-translation-key="no_project_tags">No Tags Currently Available</em></p>
+                    <div id="project_tags" class="col-sm-10 col-sm-offset-1"></div>
                 </div>
 
                 <div class="row">

@@ -64,6 +64,8 @@ body.iw #audio_time{
 }
 
 
+
+
 /*global*/
 .toplogo {
     position:fixed;
@@ -240,7 +242,7 @@ h1:after{
     background-size:20%;
     display:inline-block;
     width:auto;
-    min-width: 20vw;
+    min-width: 15vw;
     min-height: 3vh;
     height:20px;
     margin-top:0;
@@ -543,6 +545,33 @@ h1.logo{
 #pic_review .consentbox{
     text-align:left;
 }
+#no_tags {
+    display:none;
+}
+#project_tags {
+    text-align:left;
+}
+.project_tag{
+    white-space:nowrap;
+    position:relative;
+    margin:0 3px 5px 0px;
+    displaY:inline-block;
+    border-radius: 3px;
+    padding:0 5px;
+    background:#E8EDF0;
+    border: 1px solid #C7D2D4;
+    color:#666;
+    font-size:85%;
+    color:#333 !important;
+    text-decoration:none;
+}
+.project_tag.on{
+    background:#eee;
+    color:#333;
+    font-weight:bold;
+    text-decoration:none;
+}
+
 .smiley {
     display:inline-block;
     min-width: 15vw;
@@ -564,6 +593,10 @@ h1.logo{
     font-size:4vw;
     line-height:3.5vw;
 }
+
+.audio_text{
+}
+
 .audio_text,
 .goodbad{
     margin-bottom:5px;
@@ -579,7 +612,7 @@ h1.logo{
 }
 #text_comment{
     width:100%;
-    height:100px;
+    height:80px;
     padding:5px;
     font-size:120%;
 }
@@ -983,6 +1016,9 @@ h1.logo{
     background-size:contain;
 }
 
+
+
+
 .button.uploadbtn{
     padding:30px 0;
 
@@ -1032,25 +1068,55 @@ h1.logo{
 #admin_view .buttons.backdoor{
     display:none;
 }
-.ajaxup {
+
+.instructions_upload {
+    border:1px solid #ccc;
+    border-radius:3px;
+    padding:5px 8px;
+    margin-bottom:25px;
+}
+
+.instructions_upload .legend_upload.ajaxup{
+    vertical-align:middle;
+    text-align:center;
+    display:inline-block;
+    margin:0; padding:0;
+}
+
+.ajaxup:not(.uploaded) {
+    text-align:center;
     font-size:250%;
-    line-height:88%;
+    line-height:65%;
     text_decoration:none;
     position:relative;
+    display:inline-block;
+    background-color: #6D007C;
+    color:#fff;
+
+    width: 30px; height:30px;
+    border:1px solid #333;
+    border-radius:3px;
 }
-.ajaxup:after{
-    content:"";
-    position:absolute;
-    z-index:1;
-    top:8px; 
-    right:-5px;
-    width:10px; 
-    height:10px;
-    background:url(../img/icon_x.png) 50% no-repeat;
-    background-size:contain;
-}
-.ajaxup.uploaded:after{
+
+/*.ajaxup:after{*/
+/*    content:"";*/
+/*    position:absolute;*/
+/*    z-index:1;*/
+/*    top:8px;*/
+/*    right:-5px;*/
+/*    width:10px;*/
+/*    height:10px;*/
+/*    background-size:contain;*/
+/*}*/
+
+.ajaxup.uploaded{
+    display:inline-block;
+    text-indent:-5000px;
+    width:30px; height:30px;
+    background-repeat:no-repeat;
+    background-color:transparent;
     background-image:url(../img/icon_check_green.png);
+    background-size:contain;
 }
 
 .alternate_upload.uploading{

@@ -511,6 +511,26 @@ var app = {
             return false;
         });
 
+        $("#project_tags").on("click",".project_tag", function(e){
+            e.preventDefault();
+            var tag = $(this).data("tag");
+
+            if($(this).hasClass("on")){
+                //remove class and remove tag from photo
+                $(this).removeClass("on");
+            }else{
+                //add class on and add tag to photo
+                $(this).addClass("on");
+                var thispic_i   = $(this).data("photo_i");
+
+                var photo_i_rel = $(this).attr("rel");
+                var photo_i_pic = $("#recent_pic").data("photo_i");
+
+                app.cache.user[app.cache.current_session].photos[thispic_i]["tags"].push(tag)
+            }
+
+        });
+
         $("#mediacaptured").off("click").on("click",".previewthumb",function(){
             //OPEN UP PREVIEW PAGE FOR PHOTO
             var thispic_i   = $(this).data("photo_i");
@@ -617,8 +637,14 @@ var app = {
                 // app.log("take photo");
 
             }else if($(this).hasClass("keyboard")){
-                $(".text_comment").slideDown("fast");
-                $("#text_comment").focus();
+
+                if($(".text_comment").is(":visible")){
+                    $(".text_comment").slideUp("medium");
+                    $("#text_comment").blur();
+                }else{
+                    $(".text_comment").slideDown("fast");
+                    $("#text_comment").focus();
+                }
             }else{
                 var photo_i = $(this).data("photo_i");
                 ourvoice.recordAudio(photo_i,function(){
@@ -655,11 +681,11 @@ var app = {
         });
 
         $(".panel").off("blur").on("blur","#text_comment",function(){
-            $(this).css("height","initial");
+            // $(this).css("height","initial");
             //save it
             var curPhoto = $(this).data("photo_i");
             app.cache.user[app.cache.current_session].photos[curPhoto].text_comment  = $(this).val();
-            $(".text_comment").slideUp("slow");
+            // $(".text_comment").slideUp("slow");
             return false;
         });
 
@@ -1219,39 +1245,47 @@ var app = {
     }
 
     ,appLogin : function(pcode, ppass, _cb_success, _cb_fail){
+        //If NOt online, then try cache, but otherwise always check online and refresh cache.
+        var is_online   = navigator.onLine;
         var apiurl      = config["database"]["app_login"];
-
-        //
         var prevlogins  = localStorage.getItem("previousLogins") ?  JSON.parse(localStorage.getItem("previousLogins")) : {};
 
-        //
-        if(prevlogins && prevlogins.hasOwnProperty(pcode) && prevlogins[pcode]["pass"] == ppass){
-            _cb_success(prevlogins[pcode]["meta"]);
-            return;
-        }
+        if(!is_online){
+            console.log("navigator! not online!!");
+            if(prevlogins && prevlogins.hasOwnProperty(pcode) && prevlogins[pcode]["pass"] == ppass){
+                _cb_success(prevlogins[pcode]["meta"]);
+                return;
+            }else{
+                //either cache not exist or passcode wrong, notif alert
+                _cb_fail();
+                return;
+            }
+        }else{
+            console.log("navigator.online! online!!");
+            $.ajax({
+                type        : "POST",
+                url         : apiurl,
+                data        : { proj_id: pcode, proj_pw: ppass },
+                dataType    : "json",
+                success   : function(response){
+                    if(response.hasOwnProperty("active_project") && response["active_project"].hasOwnProperty("code")) {
+                        console.log("pcode found!", pcode);
 
-        $.ajax({
-            type        : "POST",
-            url         : apiurl,
-            data        : { proj_id: pcode, proj_pw: ppass },
-            dataType    : "json",
-            success   : function(response){
-                if(response.hasOwnProperty("active_project") && response["active_project"].hasOwnProperty("code")) {
-                    console.log("pcode found!", pcode);
+                        prevlogins[pcode] = {"pass" : ppass, "meta" : response};
+                        localStorage.setItem("previousLogins",JSON.stringify(prevlogins));
 
-                    prevlogins[pcode] = {"pass" : ppass, "meta" : response};
-                    localStorage.setItem("previousLogins",JSON.stringify(prevlogins));
-
-                    _cb_success(response);
-                }else{
-                    console.log("pcode or ppass wrong", pcode, ppass);
+                        _cb_success(response);
+                    }else{
+                        console.log("pcode or ppass wrong", pcode, ppass);
+                        _cb_fail();
+                    }
+                },
+                error     : function(err){
+                    console.log("something wrong happened with app_login");
                     _cb_fail();
                 }
-            },
-            error     : function(err){
-                console.log("something wrong happened with app_login");
-            }
-        });
+            });
+        }
     }
 };
 

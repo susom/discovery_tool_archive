@@ -274,6 +274,7 @@ var ourvoice = {
             app.cache.proj_textcomments         = p.hasOwnProperty("text_comments") ? p["text_comments"] : false;
             app.cache.proj_audiocomments        = p.hasOwnProperty("audio_comments") ? p["audio_comments"] : false;
             app.cache.proj_customtakephototxt   = p.hasOwnProperty("custom_takephoto_text") ? p["custom_takephoto_text"] : null;
+            app.cache.proj_tags                 = p.hasOwnProperty("tags") ? p["tags"] : null;
 
             //Display This Info
             $("#step_zero .proj_name").text(p["name"]);
@@ -295,6 +296,13 @@ var ourvoice = {
             }else{
                 $(".custom_takephoto_text").show();
                 $(".custom_takephoto_text h5").html(app.cache.proj_customtakephototxt);
+            }
+
+            if(!app.cache.proj_tags){
+                $("#no_tags").show();
+                $("#project_tags").hide();
+            }else{
+                ourvoice.displayProjectTags(app.cache.proj_tags);
             }
 
             if(!app.cache.proj_thumbs || app.cache.proj_thumbs < 1){
@@ -328,6 +336,18 @@ var ourvoice = {
             app.log("why the fuck catch? loadProject allDocs", "Error");
             datastore.showError(err);
         });
+    }
+
+    ,displayProjectTags : function(tags){
+        $("#project_tags").empty();
+        for(var i in tags){
+            var tag     = tags[i];
+            var taglink = $("<a>").attr("href","#").addClass("project_tag").data("tag", tag).text(tag);
+            $("#project_tags").append(taglink);
+        }
+
+        $("#project_tags").show();
+        return;
     }
 
     ,updateLanguage : function(projid,lang){
@@ -809,6 +829,7 @@ var ourvoice = {
                         ,"geotag"   : null 
                         ,"goodbad"  : null
                         ,"name"     : attref
+                        ,"tags"     : []
                         ,"audios"   : []
                     });
                 var geotag      = ourvoice.tagLocation(app.cache.user[app.cache.current_session].photos[thispic_i]);
@@ -841,7 +862,7 @@ var ourvoice = {
                 app.transitionToPanel($("#step_two"),false);
             }
             ,{ 
-                 quality            : 15
+                 quality            : 10
                 ,destinationType    : Camera.DestinationType.DATA_URL
                 ,saveToPhotoAlbum   : app.cache.saveToAlbum
                 ,allowEdit          : false
@@ -888,7 +909,10 @@ var ourvoice = {
         $("#text_comment").data("photo_i",photo_i).val(text_comment);
         $("#pic_review a.trashit").data("photo_i",photo_i).attr("rel",photo_i);
         $("#pic_review a.vote").data("photo_i",photo_i).attr("rel",photo_i);
-        $("#recent_pic").attr("src",fileurl);
+        $("#recent_pic").attr("src",fileurl).data("photo_i",photo_i);
+
+        $(".project_tag").removeClass("on");
+        $(".project_tag").data("photo_i",photo_i).attr("rel",photo_i);
         return;
     }
 
