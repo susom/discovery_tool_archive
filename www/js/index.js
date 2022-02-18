@@ -171,10 +171,11 @@ var app = {
         // //START PINGING ONLINE STATE, AND FILL IN OTHER GLOBAL VARIABLES
         app.cache.online                = navigator.onLine;
         // utils.pingNetwork();
-        console.log("do i need this fucker oFFline thing?", navigator.onLine);
-
+        console.log("TELL ME DEVICE INFO");
+        console.log(device);
         app.cache.uuid                  = device.uuid;
         app.cache.platform              = device.platform;
+        app.cache.version               = device.version;
         app.cache.audioformat           = app.cache.platform == "iOS" ? "wav" : "amr";
         // app.cache.saveToAlbum           = app.cache.platform == "iOS" ? true : false;
 
@@ -193,11 +194,45 @@ var app = {
         // localStorage.clear();
         // ourvoice.deleteLocalDB();
 
-        //Once DB loads, it will cleartimeout (if less than 12 seconds that is)
-        // app.cache.db_fail_timeout = setTimeout(function(){
-        //     $("#loading_message").text("Could not reach database, try again later");
-        //     $("#main").addClass("failed");
-        // },12000);
+        //AUTO LOGIN IF COMING BACK IN SAME 24 HOUR PERIOD
+        var prevlogins  = localStorage.getItem("previousLogins") ?  JSON.parse(localStorage.getItem("previousLogins")) : {};
+        if(prevlogins){
+            var keys = Object.keys(prevlogins);
+            if(keys.length){
+                var pcode = keys.pop();
+
+                var today       = new Date();
+                var dd          = String(today.getDate()).padStart(2, '0');
+
+                var sameday     = prevlogins[pcode] && prevlogins[pcode].hasOwnProperty("date") && prevlogins[pcode]["date"] == dd ? true : false;
+
+                if(sameday){
+                    var response = prevlogins[pcode]["meta"];
+                    $("#main").removeClass("loaded");
+                    $("#admin_pw").val("");
+                    $("#admin_projid").val("");
+
+                    ourvoice.resetDevice();
+
+                    //THIS WILL SET THE device (local DB) TO USE THIS PROJECT
+                    //RECORD THE ACTIVE PROJECT
+                    app.cache.localprojdb.get("active_project", function(err,resp){
+                        app.cache.projects                  = response["ov_meta"];
+                        app.cache.active_project            = response["active_project"];
+
+                        if(!err){
+                            app.cache.active_project["_id"]     = resp["_id"]; //"active_project"
+                            app.cache.active_project["_rev"]    = resp["_rev"]; //"need this to push a new save revision
+                        }
+                        datastore.writeDB(app.cache.localprojdb, app.cache.active_project);
+
+                        //LETS RELOAD THE LOCAL DB AT THIS POINT
+                        ourvoice.getAllProjects();
+                    })
+                }
+            }
+        }
+
 
         //iff app online then goahead and try to pull an updated (if exists) copy of project data
         if(app.cache.online){
@@ -685,7 +720,13 @@ var app = {
             //save it
             var curPhoto = $(this).data("photo_i");
             app.cache.user[app.cache.current_session].photos[curPhoto].text_comment  = $(this).val();
-            // $(".text_comment").slideUp("slow");
+            $(".text_comment").slideUp("slow");
+
+            if($("#text_comment").val()){
+                $("a.keyboard").addClass("edit");
+            }else{
+                $("a.keyboard").removeClass("edit");
+            }
             return false;
         });
 
@@ -1250,8 +1291,13 @@ var app = {
         var apiurl      = config["database"]["app_login"];
         var prevlogins  = localStorage.getItem("previousLogins") ?  JSON.parse(localStorage.getItem("previousLogins")) : {};
 
+
+        var today   = new Date();
+        var dd      = String(today.getDate()).padStart(2, '0');
+
+        var sameday = prevlogins[pcode] && prevlogins[pcode].hasOwnProperty("date") && prevlogins[pcode]["date"] == dd ? true : false;
+
         if(!is_online){
-            console.log("navigator! not online!!");
             if(prevlogins && prevlogins.hasOwnProperty(pcode) && prevlogins[pcode]["pass"] == ppass){
                 _cb_success(prevlogins[pcode]["meta"]);
                 return;
@@ -1270,8 +1316,12 @@ var app = {
                 success   : function(response){
                     if(response.hasOwnProperty("active_project") && response["active_project"].hasOwnProperty("code")) {
                         console.log("pcode found!", pcode);
+                        var today   = new Date();
+                        var dd      = String(today.getDate()).padStart(2, '0');
 
-                        prevlogins[pcode] = {"pass" : ppass, "meta" : response};
+                        var prevlogins = {};
+                        prevlogins[pcode] = {"pass" : ppass, "meta" : response, "date" : dd};
+                        console.log("success login over network",prevlogins[pcode]);
                         localStorage.setItem("previousLogins",JSON.stringify(prevlogins));
 
                         _cb_success(response);

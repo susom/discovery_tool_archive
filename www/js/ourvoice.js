@@ -275,6 +275,7 @@ var ourvoice = {
             app.cache.proj_audiocomments        = p.hasOwnProperty("audio_comments") ? p["audio_comments"] : false;
             app.cache.proj_customtakephototxt   = p.hasOwnProperty("custom_takephoto_text") ? p["custom_takephoto_text"] : null;
             app.cache.proj_tags                 = p.hasOwnProperty("tags") ? p["tags"] : null;
+            app.cache.show_proj_tags            = p.hasOwnProperty("show_project_tags") ? p["show_project_tags"] : null;
 
             //Display This Info
             $("#step_zero .proj_name").text(p["name"]);
@@ -285,7 +286,8 @@ var ourvoice = {
                 $("#pic_review .keyboard").show();
             }
 
-            if(!app.cache.proj_audiocomments || app.cache.proj_audiocomments < 1){
+            if(!app.cache.proj_audiocomments || app.cache.proj_audiocomments < 1 || (app.cache.platform == "Android" && app.cache.version == "11")){
+                console.log("if android 11 then hide audio regardless of configurator");
                 $("#pic_review .record_audio").hide();
             }else{
                 $("#pic_review .record_audio").show();
@@ -298,11 +300,17 @@ var ourvoice = {
                 $(".custom_takephoto_text h5").html(app.cache.proj_customtakephototxt);
             }
 
-            if(!app.cache.proj_tags){
-                $("#no_tags").show();
-                $("#project_tags").hide();
+            if(!app.cache.show_proj_tags || app.cache.show_proj_tags < 1 ){
+                $("#pic_review .project_tags").hide();
             }else{
-                ourvoice.displayProjectTags(app.cache.proj_tags);
+                $("#pic_review .project_tags").show();
+                if(!app.cache.proj_tags || !app.cache.proj_tags.length){
+                    $("#no_tags").show();
+                    $("#project_tags").hide();
+                }else{
+                    $("#no_tags").hide();
+                    ourvoice.displayProjectTags(app.cache.proj_tags);
+                }
             }
 
             if(!app.cache.proj_thumbs || app.cache.proj_thumbs < 1){
@@ -573,6 +581,23 @@ var ourvoice = {
         //THIS STARTS RECORDING ON THE MEDIA OBJECT
         app.cache.audioStatus = "recording";
         app.cache.audioObj[recordFileName].startRecord();
+
+        // // capture callback
+        // var captureSuccess = function(mediaFiles) {
+        //     var i, path, len;
+        //     for (i = 0, len = mediaFiles.length; i < len; i += 1) {
+        //         path = mediaFiles[i].fullPath;
+        //         console.log(path);
+        //     }
+        // };
+        //
+        // // capture error callback
+        // var captureError = function(error) {
+        //    console.log('Error code: ' + error.code, null, 'Capture Error');
+        // };
+        //
+        // // start audio capture
+        // navigator.device.capture.captureAudio(captureSuccess, captureError, {limit:2});
     
         //THIS IS FOR THAT FAKE RECORDING TIMER ON THE PAGE
         app.cache.audioTimer = setInterval(function(){
@@ -716,8 +741,9 @@ var ourvoice = {
             app.cache.audioObj[recordFileName] = new Media( actualFileName
                 ,function(){
                     //FINISHED RECORDING
+                    console.log("this fucking doesnt work after android 11 cordova.file.externalRootDirectory :", cordova.file.externalRootDirectory);
 
-                    //FOR THis to work in Android 10+ devices, needed to add following to AndroidManifest.xml android:grantUriPermissions="true" android:name="org.apache.cordova.camera.FileProvider"
+                    //FOR THis to work in Android 10 devices, needed to add following to AndroidManifest.xml android:grantUriPermissions="true" android:name="org.apache.cordova.camera.FileProvider"
                     window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
                         dir.getFile(actualFileName, {} 
                             ,function(fileEntry) {
@@ -816,7 +842,6 @@ var ourvoice = {
     ,takePhoto: function(_callback){
         // take pic
         // save pic filename + geotag location
-        
         navigator.camera.getPicture( 
             function(imageData){
                 var fileurl = "data:image/jpeg;base64," + imageData;
@@ -872,11 +897,12 @@ var ourvoice = {
     }
 
     ,previewPhoto: function(_photo,fileurl){
+        var photo_i         = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
+        var goodbad         = _photo["goodbad"];
+        var textcom         = _photo.hasOwnProperty("text_comment") ? _photo.hasOwnProperty("text_comment") : false;
+        var text_comment    = _photo.hasOwnProperty("text_comment") ? _photo["text_comment"] : "";
+        var pic_tags        = app.cache.user[app.cache.current_session].photos[photo_i].hasOwnProperty("tags") ? app.cache.user[app.cache.current_session].photos[photo_i]["tags"] : [];
 
-        var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
-        var goodbad = _photo["goodbad"];
-        var textcom = _photo.hasOwnProperty("text_comment") ? _photo.hasOwnProperty("text_comment") : false;
-        var text_comment = _photo.hasOwnProperty("text_comment") ? _photo["text_comment"] : "";
         $("#saved_audio").empty();
 
         $("#pic_review a.vote").removeClass("on").removeClass("off");
@@ -906,13 +932,23 @@ var ourvoice = {
             $(".daction.audio").removeClass("hasAudio");
         }
 
+        if(!text_comment){
+            $("a.keyboard").removeClass("edit");
+        }
         $("#text_comment").data("photo_i",photo_i).val(text_comment);
         $("#pic_review a.trashit").data("photo_i",photo_i).attr("rel",photo_i);
         $("#pic_review a.vote").data("photo_i",photo_i).attr("rel",photo_i);
+
         $("#recent_pic").attr("src",fileurl).data("photo_i",photo_i);
+
 
         $(".project_tag").removeClass("on");
         $(".project_tag").data("photo_i",photo_i).attr("rel",photo_i);
+        for(var i in pic_tags){
+            var tag = pic_tags[i];
+            $(".project_tag:contains('"+tag+"')").addClass("on");
+        }
+
         return;
     }
 
@@ -1071,6 +1107,9 @@ var ourvoice = {
         $(".home").show().trigger("click");
         $(".delete_on_reset").remove();
         $(".reset_later").removeClass("reset_later");
+        $("#no_tags").hide();
+        $("a.keyboard").removeClass("edit");
+
         app.cache.reset_active_project = false;
         app.log("RESETING DEVICE STATE");
         return;
