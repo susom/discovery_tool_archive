@@ -217,8 +217,12 @@ h1:after{
     background: #90268F;
     padding: 10px 15px;
 }
+
+#main .continuewalk{
+    background: #105881;
+}
 #main .endwalk{
-    background: #B40C27;
+    background: #CC751C;
 }
 
 
@@ -250,6 +254,15 @@ h1:after{
 #main .keyboard{
     background-image:url(../img/icon_keyboard.png);
     background-size:40%;
+    position:relative;
+}
+#main .keyboard.edit:after{
+    content:"";
+    position:absolute;
+    right:-5px; top:-5px;
+    width:20px; height:20px;
+    background-image:url(../img/icon_edit.png);
+    background-size:contain;
 }
 
 #main .listen{
@@ -558,7 +571,7 @@ h1.logo{
     displaY:inline-block;
     border-radius: 3px;
     padding:0 5px;
-    background:#E8EDF0;
+    background:#ccc;
     border: 1px solid #C7D2D4;
     color:#666;
     font-size:85%;
@@ -566,9 +579,8 @@ h1.logo{
     text-decoration:none;
 }
 .project_tag.on{
-    background:#eee;
-    color:#333;
-    font-weight:bold;
+    background: #e79319;
+    color:#fff !important;
     text-decoration:none;
 }
 
@@ -853,11 +865,10 @@ h1.logo{
     top: -5px;
     left: 40px;
     background: purple;
-    line-height: 70%;
+    line-height: 55%;
     color: #fff;
-    font-weight: 600;
     display: block;
-    font-size: 100%;
+    font-size: 250%;
     border: 1px solid #ccc;
     text-align: center;
     border-radius: 3px;
