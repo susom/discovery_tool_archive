@@ -48,7 +48,7 @@ var datastore = {
             // ,key : 'id01'
             // ,keys : ['id01','id02']
         }).then(function (res) {
-            console.log(res["rows"]);
+            // console.log(res["rows"]);
             // utils.dump(res["rows"]);
         }).catch(function(err){
             app.log("ERROR getAll()", "Error");
@@ -84,7 +84,7 @@ var datastore = {
           // handle result
           app.cache.attachment["_rev"] = result.rev;
           _callback(db, _id, result.rev);
-          console.log("attachment "+attachmentId+" removed from " + _id + " with rev : " + result.rev);
+          // console.log("attachment "+attachmentId+" removed from " + _id + " with rev : " + result.rev);
         }).catch(function (err) {
           console.log(err);
         });
@@ -123,14 +123,14 @@ var datastore = {
         localdb_obj.replicate.from(remotedb_str,{
             // live: true
         }).on('complete', function (wut) {
-            console.log("REPLICATION (COMPLETE) FROM " + remotedb_str);
+            // console.log("REPLICATION (COMPLETE) FROM " + remotedb_str);
             _callBack();
         }).on('change',function(change){
-            console.log("REPLICATION (CHANGE) FROM " + remotedb_str);
+            // console.log("REPLICATION (CHANGE) FROM " + remotedb_str);
             app.cache.projectDataChanged = true;
             _callBack(change);
         }).on('uptodate',function(update){
-            console.log("REPLICATION (UPTODATE) FROM " + remotedb_str);
+            // console.log("REPLICATION (UPTODATE) FROM " + remotedb_str);
             _callBack();
         }).catch(function (err) {
             // However, there is one gotcha with live replication: 

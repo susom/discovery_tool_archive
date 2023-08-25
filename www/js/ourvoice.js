@@ -74,7 +74,7 @@ var ourvoice = {
             // SHOW EACH PHOTOS FOCKING SLIDE OUT PREVIEW THING
             walkid.click(function(){
                 var doc_id = $(this).data("walkid");
-                console.log("slideout in upload data page", doc_id);
+                // console.log("slideout in upload data page", doc_id);
                 app.cache.localusersdb.get(doc_id).then(function (doc) {
                     var photos      = doc["photos"];
                     var attachments = {};
@@ -109,7 +109,6 @@ var ourvoice = {
                         $("#mediacaptured").removeClass("upload");
                     }
                 }).catch(function (err) {
-                    console.log("error getting doc");
                     console.log(err);
                 });
                 return false;
@@ -137,7 +136,7 @@ var ourvoice = {
             }
 
             $(tr).find().click(function(){
-                console.log($(this));
+                // console.log($(this));
             });
             $("#list_data .upload_table").append(tr);
         }
@@ -258,7 +257,7 @@ var ourvoice = {
         var partial_id  = datastore.pouchCollate([ app.cache.active_project["code"], app.cache.uuid ]);
         var partial_end = partial_id + "\uffff";
 
-        console.log("attempting to Load Project and any saved walks");
+        // console.log("attempting to Load Project and any saved walks");
         app.cache.localusersdb.allDocs({
             // IF NO OPTION, RETURN JUST _id AND _rev (FASTER)
              startkey   : partial_id
@@ -286,8 +285,7 @@ var ourvoice = {
                 $("#pic_review .keyboard").show();
             }
 
-            if(!app.cache.proj_audiocomments || app.cache.proj_audiocomments < 1 || (app.cache.platform == "Android" && app.cache.version == "11")){
-                console.log("if android 11 then hide audio regardless of configurator");
+            if(!app.cache.proj_audiocomments || app.cache.proj_audiocomments  < 1){
                 $("#pic_review .record_audio").hide();
             }else{
                 $("#pic_review .record_audio").show();
@@ -341,7 +339,6 @@ var ourvoice = {
             });
         }).catch(function(err){
             console.log(err);
-            app.log("why the fuck catch? loadProject allDocs", "Error");
             datastore.showError(err);
         });
     }
@@ -482,7 +479,7 @@ var ourvoice = {
             }
         }, function(err){
             // if timed out use the the latest WAtchPostiion?
-            console.log("TagLocation either it timed out or errored out? " + err);
+            // console.log("TagLocation either it timed out or errored out? " + err);
         },{ 
               enableHighAccuracy: true
              ,maximumAge        : 100
@@ -528,7 +525,7 @@ var ourvoice = {
         for(var i = 1; i < geopoints; i++) {
 
             if(app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"] > 30){
-                console.log("no good accuracy 30+: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
+                // console.log("no good accuracy 30+: " + app.cache.user[app.cache.current_session].geotags[i+1]["accuracy"]);
                 continue;
             }
 
@@ -582,23 +579,6 @@ var ourvoice = {
         app.cache.audioStatus = "recording";
         app.cache.audioObj[recordFileName].startRecord();
 
-        // // capture callback
-        // var captureSuccess = function(mediaFiles) {
-        //     var i, path, len;
-        //     for (i = 0, len = mediaFiles.length; i < len; i += 1) {
-        //         path = mediaFiles[i].fullPath;
-        //         console.log(path);
-        //     }
-        // };
-        //
-        // // capture error callback
-        // var captureError = function(error) {
-        //    console.log('Error code: ' + error.code, null, 'Capture Error');
-        // };
-        //
-        // // start audio capture
-        // navigator.device.capture.captureAudio(captureSuccess, captureError, {limit:2});
-    
         //THIS IS FOR THAT FAKE RECORDING TIMER ON THE PAGE
         app.cache.audioTimer = setInterval(function(){
             var curtime = $("#audio_time").text();
@@ -628,10 +608,10 @@ var ourvoice = {
 
         if (app.cache.audioStatus == 'recording') {
             app.cache.audioObj[recordFileName].stopRecord();
-            console.log("Recording stopped");
+            // console.log("Recording stopped");
         } else if (app.cache.audioStatus == 'playing') {
             app.cache.audioObj[recordFileName].stop();            
-            console.log("Play stopped");
+            // console.log("Play stopped");
             app.cache.audioObj[recordFileName].release();
         } else if (app.cache.audioStatus == "stop_release"){
             //STOPS RECORDING ON MEDIA OBJECT
@@ -741,44 +721,42 @@ var ourvoice = {
             app.cache.audioObj[recordFileName] = new Media( actualFileName
                 ,function(){
                     //FINISHED RECORDING
-                    console.log("this fucking doesnt work after android 11 cordova.file.externalRootDirectory :", cordova.file.externalRootDirectory);
+                    var android_storage = cordova.file.externalDataDirectory;
 
-                    //FOR THis to work in Android 10 devices, needed to add following to AndroidManifest.xml android:grantUriPermissions="true" android:name="org.apache.cordova.camera.FileProvider"
-                    window.resolveLocalFileSystemURL(cordova.file.externalRootDirectory, function(dir) {
-                        dir.getFile(actualFileName, {} 
+                    //FOR THis to work in Android 10- devices, needed to add following to AndroidManifest.xml android:grantUriPermissions="true" android:name="org.apache.cordova.camera.FileProvider"
+                    window.resolveLocalFileSystemURL(android_storage, function(dir) {
+                        dir.getFile(actualFileName, {}
                             ,function(fileEntry) {
                                 // console.log("AndroidManifest.xml update fixed this...");
                                 fileEntry.file(function(file) {
                                         var cdvpath = file["localURL"];
 
                                         //NOW GET A HANDLE ON THE FILE AND SAVE IT TO POUCH
-                                        //RECORD AUDIO ATTACHMENT 
+                                        //RECORD AUDIO ATTACHMENT
                                         datastore.addAttachment( app.cache.localattachmentdb
-                                                                ,app.cache.attachment["_id"] + "_" + recordFileName
-                                                                ,null
-                                                                ,recordFileName
-                                                                ,file
-                                                                ,"audio/" + app.cache.audioformat );
+                                            ,app.cache.attachment["_id"] + "_" + recordFileName
+                                            ,null
+                                            ,recordFileName
+                                            ,file
+                                            ,"audio/" + app.cache.audioformat );
 
                                         if(app.cache.user[app.cache.current_session].photos[photo_i]["audios"].indexOf(recordFileName) === -1){
                                             app.cache.user[app.cache.current_session].photos[photo_i]["audios"].push(recordFileName);
                                         }
                                     }
-                                    ,function(err){ 
-                                        console.log("android file error");
-                                        console.log(err); 
+                                    ,function(err){
+                                        console.log(err);
                                     }
                                 );
                             }
-                            ,function(){ 
-                                console.log("cordova.file.externalRootDirectory crap file not found or created"); 
+                            ,function(){
+                                // console.log("android_storage crap file not found or created", android_storage);
                             }
                         );
                     });
                 }
                 ,function(err){
                     //RECORDING EROR
-                    console.log("android recording error");
                     console.log(err.code +  " : " + err.message);
                 }
                 ,function(){
@@ -807,8 +785,9 @@ var ourvoice = {
             
             var playlink        = $("<a>").addClass("saved").attr("rel",recordFileName).attr("duration",duration).attr("href","#").text(offset);
             
-            playlink.click(function(){
+            playlink.click(function(e){
                 var recordFileName  = $(this).attr("rel");
+                var _duration       = $(this).attr("duration");
 
                 if($(this).hasClass("playing")){
                     $(this).removeClass("playing");
@@ -817,14 +796,13 @@ var ourvoice = {
                 }else{
                     $(this).addClass("playing");
                     ourvoice.startPlaying(recordFileName);
-
                     app.cache.playbackTimer = setTimeout(function(){
                          $("a.saved.playing").removeClass("playing");
-                    }, duration);
+                    }, _duration);
                 }
                 return false;
             });
-            $("#saved_audio").prepend(playlink);
+
             $("#saved_audio").prepend(playlink);
         }
         return;
@@ -953,99 +931,13 @@ var ourvoice = {
     }
 
     ,addMediaItem:function(_photo,fileurl){
-        var photo_i     = app.cache.user[app.cache.current_session].photos.indexOf(_photo); 
-        var tmstmp      = "";
-        if(utils.checkConnection()){
-            var geotag      = _photo["geotag"];
-            var time        = !geotag ? "n/a" : utils.readableTime(geotag.timestamp);
-            tmstmp          = "@ " + time;
-        }
-
-        var doc_id      = _photo["_id"];
-        var attach_name = _photo["name"];
-        var attach_id   = doc_id + "_" + attach_name;
-
-        //NOW ADD THIS TO THE VIEW #mediacaptured
-        var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
-        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).data("doc_id",doc_id).data("attach_id",attach_id).data("attach_name",attach_name).attr("rel",photo_i).html($("<a>").addClass("single_upload").html('&#8686;'));
-        var newthum     = $("<img>").attr("src",fileurl);
-        
-        newlink.prepend(newthum);
-        newitem.append(newlink);
-        
-        var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i);
-        //why wont this work on the .on in index.js anymore?
-        trash.click(function(){
-            //reundant to code in index.js for "trashit" but wont work for some reason and spending too mjch time as it is
-            //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
-            var thispic_i   = $(this).data("photo_i");
-            var panel       = $(this).closest(".panel");
-
-            if(panel.attr("id") == "pic_review"){
-                var next    = "step_two";
-                app.closeCurrentPanel(panel);
-                app.transitionToPanel($("#"+next),1);
-            }
-            app.log("delete photo");
-
-            ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
-            return false;
-        });
-
-        var left_offset = 70;
-        if(_photo["audios"]){
-            for(var a in _photo["audios"]){
-                var audio_file_i    = _photo["audios"][a];
-                if(_photo.hasOwnProperty("_id")){
-                    var attach_id = _photo["_id"] + "_" + audio_file_i;
-                }
-                var audiorec        = $("<a>").attr("href","#").addClass("audiorec").addClass("hasAudio").data("doc_id",doc_id).data("attach_id",attach_id).data("attach_name", audio_file_i).data("file_i", audio_file_i).html($("<span>").addClass("single_upload").html('&#8686;'));
-                audiorec.css("left",left_offset+"px");
-                left_offset = left_offset+70;
-                newitem.append(audiorec);
-                console.log("new audio file should be in slide out?" , attach_id);
-            }
-        }
-
-        if(_photo.hasOwnProperty("text_comment")){
-            var text_comment  = $("<span>").addClass("mi_text");
-            text_comment.css("left", left_offset+"px");
-            newitem.append(text_comment);
-        }
-        // if(app.cache.proj_thumbs ){
-        //     var thumbs      = $("<div>").addClass("votes");
-        //     var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i).attr("rel",photo_i);
-        //     var thumbsdown  = $("<a>").attr("href","#").addClass("vote").addClass("down").data("photo_i",photo_i).attr("rel",photo_i);
-        //     thumbs.append(thumbsup);
-        //     thumbs.append(thumbsdown);
-        //     newitem.append(thumbs);
-        // }
-
-        newitem.append(trash);
-
-        $(".nomedia").hide();
-        newitem.addClass("delete_on_reset");
-        $("#mediacaptured").append(newitem);
-
-        var pic_count   = $(".mi_slideout b").text();
-        pic_count       = parseInt(pic_count) + 1;
-        $(".mi_slideout b, .done_photos b").text(pic_count);
-
-        $(".walk_actions").addClass("photostaken");
-        $(".photoaction").addClass("photostaken");
-        return;
-    }
+     }
 
     ,deletePhoto: function(_photo){
         navigator.notification.confirm(
             'This will delete the photo and any attached audio recordings. Click \'Confirm\' to proceed.', // message
-             function(i){
-                if(i == 1){
-                    //the button label indexs start from 1 = 'Cancel'
-                    return;
-                }
-
-                //"delete" doesnt delete, rather replaces with undefined, leaving length to the array
+ ss
+                //"ssdelete" doesnt delete, rather replaces with undefined, leaving length to the array
                 //use indexOf and array.splice() instead
                 var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
                 if(photo_i > -1){
@@ -1069,7 +961,7 @@ var ourvoice = {
                     next();
                 });
              },            // callback to invoke with index of button pressed
-            "Delete this photo?",           // title
+            "Delete this photo?",             // title
             ['Cancel','Confirm']     // buttonLabels
         );
         return;
@@ -1140,7 +1032,7 @@ var ourvoice = {
                             data        : { uploaded_walk_id: this_id, project_email: app.cache.active_project["email"], doc: JSON.stringify(doc) },
                             dataType    : "JSON",
                             success   : function(response){
-                                console.log("upload_ping for walk ["+this_id+"] meta succesffuly.. pinged");
+                                // console.log("upload_ping for walk ["+this_id+"] meta succesffuly.. pinged");
                                 console.log(response);
                             },
                             error     : function(err){
@@ -1194,7 +1086,7 @@ var ourvoice = {
                   dataType  : "JSON",
                   success   : function(response){
                     //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
-                    console.log("photo ids: " + ph_ids + " succesfully passed to " + config["database"]["hook_thumbs"]);
+                    // console.log("photo ids: " + ph_ids + " succesfully passed to " + config["database"]["hook_thumbs"]);
                     console.log(response);
                   }
                 });

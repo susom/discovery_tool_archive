@@ -19,6 +19,7 @@ var config = {
         ,"upload_ping"          : "https://ourvoice-projects.med.stanford.edu/upload_ping.php"
 
         ,"app_login"            : "https://ourvoice-projects.med.stanford.edu/app_login.php"
+        ,"version_check"        : "https://ourvoice-projects.med.stanford.edu/version_check.php"
         ,"hook_thumbs"          : "https://ourvoice-projects.med.stanford.edu/process_thumbs.php"
     }
 };

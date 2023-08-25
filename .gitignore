@@ -1,6 +1,8 @@
+.DS_Store
 node_modules
 platforms
 plugins
 package-lock.json
 www/js/config.loc.js
 www/disc_projects.json
+*.idea*

@@ -73,6 +73,7 @@ var app = {
     }
 
     ,onDevicePause: function() {
+        console.log("onDevicePause");
         //IF THEY PAUSE WHAT SHOULD HAPPEN?
         //KEEP USER INFO IN THE APP/LOCAL
         app.log("DEVICE PAUSING");
@@ -88,11 +89,12 @@ var app = {
     }
 
     ,onDeviceResume: function() {
+        console.log("onDeviceResume");
         //IF THEY RESUME, SHOULD PICK UP WHERE THEY LEFT OFF... 
         //SO NO DO NOT RELOAD PROJECT
-        app.log("DEVICE RESUMING");
+        // app.log("DEVICE RESUMING");
         var GPS_TEST = navigator.geolocation.getCurrentPosition(function(position) {
-                console.log("Testing if Location Services On :");
+                // console.log("Testing if Location Services On :");
                 if(position){
                     app.cache.gps_on = true;
                     $("#main").removeClass("blocking_notif");
@@ -128,6 +130,7 @@ var app = {
     }
 
     ,onDeviceReady: function() {
+        console.log("onDeviceReady");
 
         // var i = 0;
         // setInterval(function(){
@@ -138,11 +141,11 @@ var app = {
         // return;
 
         // lock the device orientation
-        console.log("ONDEVICE READY KICKED OFF AGAIN?");
         screen.orientation.lock('portrait');
 
         var GPS_TEST 	= navigator.geolocation.getCurrentPosition(function(position) {
             // OnLOAD DO NOTHING gps on is DEFAULT TRUE
+            console.log("GPS WARMED UP");
         }, function(err){
             if(err.code == 1){
                 // console.log("ERROR PERMISSION DENIED LOCATION SERVICES");
@@ -159,6 +162,9 @@ var app = {
         window.plugins.insomnia.keepAwake();
 
         //sets up app.cache.current_session for use throughout the session
+        console.log("WHAT NOW newUserSession");
+
+        console.log("what nnow", ourvoice);
         ourvoice.newUserSession();
 
         app.cache.session = localStorage.getItem("session_pause_start") ? JSON.parse(localStorage.getItem("session_pause_start")) : 0;
@@ -171,9 +177,15 @@ var app = {
         // //START PINGING ONLINE STATE, AND FILL IN OTHER GLOBAL VARIABLES
         app.cache.online                = navigator.onLine;
         // utils.pingNetwork();
-        console.log("TELL ME DEVICE INFO");
-        console.log(device);
-        app.cache.uuid                  = device.uuid;
+        console.log("TELL ME DEVICE INFO", device);
+
+        //NO NEED TO USE IDENTIFIER, JUST NEED CONSISTENTLY UNIQUE STRING
+        //TAKE UUID, REPLACE DASH, TRUNCATE, base64 ENCODE
+        var temp_uuid                   = device.uuid;
+        temp_uuid                       = temp_uuid.replaceAll("-", "").substring(0,20);
+        temp_uuid                       = btoa(temp_uuid);
+        app.cache.uuid                  = temp_uuid;
+
         app.cache.platform              = device.platform;
         app.cache.version               = device.version;
         app.cache.audioformat           = app.cache.platform == "iOS" ? "wav" : "amr";
@@ -197,6 +209,7 @@ var app = {
         //AUTO LOGIN IF COMING BACK IN SAME 24 HOUR PERIOD
         var prevlogins  = localStorage.getItem("previousLogins") ?  JSON.parse(localStorage.getItem("previousLogins")) : {};
         if(prevlogins){
+            console.log("orevlogins", prevlogins);
             var keys = Object.keys(prevlogins);
             if(keys.length){
                 var pcode = keys.pop();
@@ -204,7 +217,8 @@ var app = {
                 var today       = new Date();
                 var dd          = String(today.getDate()).padStart(2, '0');
 
-                var sameday     = prevlogins[pcode] && prevlogins[pcode].hasOwnProperty("date") && prevlogins[pcode]["date"] == dd ? true : false;
+                var sameday     = (prevlogins[pcode] && prevlogins[pcode].hasOwnProperty("date") && prevlogins[pcode]["date"] == dd)
+                                || (prevlogins[pcode].hasOwnProperty("meta") && prevlogins[pcode]["meta"]["active_project"].hasOwnProperty("forever_login") && prevlogins[pcode]["meta"]["active_project"]["forever_login"] == "1") ? true : false;
 
                 if(sameday){
                     var response = prevlogins[pcode]["meta"];
@@ -236,25 +250,42 @@ var app = {
 
         //iff app online then goahead and try to pull an updated (if exists) copy of project data
         if(app.cache.online){
+            console.log("app.cache.online", app.cache.online);
+
             app.cache.localprojdb  = datastore.startupDB(config["database"]["proj_local"]);
 
             if(!app.cache.versionCheck){
                 app.cache.versionCheck = true;
-                // app.cache.localprojdb.get("all_projects").then(function (doc) {
-                //     var doc_version = doc["version"];
-                //     var cur_version = $("#loading_message").data("version");
-                //     doc_version     = parseInt(doc_version.replace(/\./g,""));
-                //     cur_version     = parseInt(cur_version.replace(/\./g,""));
-                //
-                //     // only show if the app version is less than official one
-                //     if(doc_version > cur_version){
-                //         var store           = app.cache.platform == "iOS" ? "iOS App Store" : "Google Play Store";
-                //         var notice_title    = "Please check the " +store+ " for updates";
-                //         var notice_body     = "It is critical to use the latest version of the Discovery Tool.";
-                //
-                //         app.blockingNotif(notice_title, notice_body);
-                //     }
-                // });
+                var apiurl = config["database"]["app_login"];
+
+                $.ajax({
+                    type        : "POST",
+                    url         : apiurl,
+                    data        : {"version_check" : 1},
+                    dataType    : "json",
+                    success   : function(response){
+                        if(response.hasOwnProperty("ios") && response.hasOwnProperty("android")) {
+                            var platform        = app.cache.platform;
+                            var doc_version     = response[platform.toLowerCase()];
+
+                            var cur_version     = $("#loading_message").data("version");
+                            doc_version         = parseInt(doc_version.replace(/\./g,""));
+                            cur_version         = parseInt(cur_version.replace(/\./g,""));
+
+                            // only show if the app version is less than official one
+                            if(doc_version > cur_version){
+                                var store           = app.cache.platform == "iOS" ? "iOS App Store" : "Google Play Store";
+                                var notice_title    = "Please check the " +store+ " for updates";
+                                var notice_body     = "It is critical to use the latest version of the Discovery Tool.";
+
+                                app.blockingNotif(notice_title, notice_body);
+                            }
+                        }
+                    },
+                    error     : function(err){
+                        console.log("something wrong happened with version check", err);
+                    }
+                });
             }
             // app.addDynamicCss();
             ourvoice.getActiveProject();
@@ -289,10 +320,6 @@ var app = {
             if(!app.cache.gps_on){
                 app.showNotif("Location Services Required", "Please turn on location services so that the app works properly.",function(){});
                 return false;
-            }
-
-            if(app.cache.versionOK){
-            }else{
             }
 
             if(next == "step_zero"){
@@ -343,7 +370,7 @@ var app = {
 
             if(next == "consent_0"){
                 //THIS IS IMPORTANT
-                console.log("active project, will need to revisit this to add diy tagging");
+                // console.log("active project, will need to revisit this to add diy tagging");
                 console.log(app.cache.active_project);
 
                 app.cache.user[app.cache.current_session].project_id    = app.cache.active_project["code"];
@@ -362,7 +389,7 @@ var app = {
                 app.cache.attachment._id        = app.cache.next_id;
                 app.cache.attachment.project_id = app.cache.active_project.i;
 
-                app.log("Starting consent process for User " + app.cache.user[app.cache.current_session]._id);
+                // app.log("Starting consent process for User " + app.cache.user[app.cache.current_session]._id);
 		        $("#mediacaptured .mediaitem").remove();
 		        $(".mi_slideout b, .done_photos b, .done_audios_text b").text(0);
             }
@@ -481,7 +508,6 @@ var app = {
             //SHOW PROGRESS BAR
             $("#progressoverlay").addClass("uploading");
 
-            //pull data and prepare it to upload to some other fucking thing.
             app.cache.localusersdb.get(doc_id).then(function (doc) {
                 var doc_rev = doc["_rev"];
                 if(doc["photos"].length){
@@ -491,25 +517,21 @@ var app = {
                         data      : { doc_id: doc_id , doc: JSON.stringify(doc)},
                         dataType  : "JSON",
                         success   : function(attachments){
-                            console.log("uploaded the doc, here are the attachements to upload 1 by 1", doc);
-                            console.log(attachments);
-
+                            // console.log("uploaded the doc, here are the attachements to upload 1 by 1", doc);
+                            // console.log(attachments);
                             app.recursiveUpload(doc_id, attachments);
                         },
                         error     : function(err){
-                            // console.log("opposite of success, error");
                             console.log(err);
                         }
                     }).fail(function(err){
                         // console.log("ajax upload fail");
-                        console.log(err);
                     });
                 }else{
                     console.log("no photos, so no actions");
                 }
             }).catch(function (err) {
-                console.log("error getting doc");
-                console.log(err);
+                console.log("error getting doc",err);
             });
 
             return false;
@@ -540,7 +562,7 @@ var app = {
                 app.closeCurrentPanel(panel);
                 app.transitionToPanel($("#"+next),1);
             }
-            app.log("delete photo");
+            // app.log("delete photo");
 
             ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
             return false;
@@ -600,7 +622,7 @@ var app = {
             $("#progressoverlay").addClass("uploading");
 
             //recursive function but only passing in one item
-            console.log("upload single file " , attach_name, " to " , attach_id);
+            // console.log("upload single file " , attach_name, " to " , attach_id);
             app.recursiveUpload(doc_id, attachments);
             return false;
         });
@@ -620,8 +642,7 @@ var app = {
                     var audio 	= app.cache.audioPlayer;
                     audio.src 	= tmpurl;
                     audio.play();
-                    console.log("play!");
-                    console.log(tmpurl);
+                    // console.log("play!",tmpurl);
                     setTimeout(function(){
                         el.removeClass("playing");
                     },1500);
@@ -653,7 +674,7 @@ var app = {
             return false;
         });
 
-        $(".panel").off("click",".daction,.record_another").on("click",".daction,.record_another",function(){
+        $(".panel").off("click",".daction,.record_another").on("click",".daction,.record_another",function(e){
             var panel   = $(this).closest(".panel");
             var next    = $(this).data("next");
 
@@ -688,6 +709,7 @@ var app = {
                 });
                 savehistory = true;
             }
+            e.preventDefault();
             return false;
         });
 
@@ -727,6 +749,9 @@ var app = {
             }else{
                 $("a.keyboard").removeClass("edit");
             }
+
+            //RECORD THE comment
+            datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
             return false;
         });
 
@@ -801,7 +826,7 @@ var app = {
                 }
                
                 app.cache.localusersdb.put(doc).then(function (new_o) {
-                    app.log("TRY A RESYNC ON RECORD " + doc_id);
+                    // app.log("TRY A RESYNC ON RECORD " + doc_id);
                 }).catch(function (err) {
                     app.log("ERROR WRITING TO A DB", "Error");
                     datastore.showError(err);
@@ -823,7 +848,7 @@ var app = {
                         }
                        
                         app.cache.localattachmentdb.put(pdoc).then(function (new_o) {
-                            console.log("TRY A RESYNC ON RECORD " + ph_id);
+                            // console.log("TRY A RESYNC ON RECORD " + ph_id);
                         }).catch(function (err) {
                             console.log("ERROR WRITING TO A DB", "Error");
                             datastore.showError(err);
@@ -847,7 +872,7 @@ var app = {
                             }
                            
                             app.cache.localattachmentdb.put(adoc).then(function (new_o) {
-                                console.log("TRY A RESYNC ON RECORD " + au_id);
+                                // console.log("TRY A RESYNC ON RECORD " + au_id);
                             }).catch(function (err) {
                                 console.log("ERROR WRITING TO A DB", "Error");
                                 datastore.showError(err);
@@ -884,7 +909,7 @@ var app = {
                                 // delete this attachment
                                 pdoc["_deleted"] = true;
                                 app.cache.localattachmentdb.put(pdoc).then(function (new_o) {
-                                    console.log("DELETEING ATTACHMENT : " + ph_id);
+                                    // console.log("DELETEING ATTACHMENT : " + ph_id);
                                 }).catch(function (err) {
                                     datastore.showError(err);
                                 });
@@ -914,7 +939,7 @@ var app = {
                     // NOW DELETE THE DOC FROM local disc_users
                     doc["_deleted"] = true;
                     app.cache.localusersdb.put(doc).then(function (new_o) {
-                        app.log("Deleting the doc: " + doc_id);
+                        // app.log("Deleting the doc: " + doc_id);
                     }).catch(function (err) {
                         app.log("ERROR WRITING TO A DB", "Error");
                         datastore.showError(err);
@@ -969,7 +994,7 @@ var app = {
             app.transitionToPanel($("#step_zero"),true);
 
             ourvoice.newUserSession();
-            app.log("ending session");
+            // app.log("ending session");
             return false;
         });
         
@@ -1041,7 +1066,7 @@ var app = {
         // EVERY ROUND THROUGH THIS LETS UPDATE THE resumeArray
         //SAVE current state of attachments_array && walk_id TO LOCAL STORAGE in resumeUploads
         app.cache.resumeUploads[walk_id]  = attachments_array;
-        console.log("updateing needResuming array");
+        // console.log("updateing needResuming array");
         console.log(app.cache.resumeUploads[walk_id]);
         localStorage.setItem("resumeUploads",JSON.stringify(app.cache.resumeUploads)); 
 
@@ -1049,7 +1074,7 @@ var app = {
         var attach_id   = attachment["_id"];
         var attach_name = attachment["name"]; 
         var apiurl      = config["database"]["upload_endpoint"]; 
-        console.log("single attaachement to upload", attachment);
+        // console.log("single attaachement to upload", attachment);
         app.cache.localattachmentdb.getAttachment(attach_id, attach_name).then(function(blob){
             // AM I DOING ALL THIS JUST TO HAVE A FILE INPUT ELEMENT TO USE FOR THE PLUGIN?
             $("#fileform").remove();
@@ -1134,18 +1159,17 @@ var app = {
                         // console.log("retry function");
                         $.getJSON(apiurl+ "?walk_id=" + walk_id, {file: data.files[0].name})
                             .done(function (result) {
-                                console.log("retry done: succesful file upload");
+                                // console.log("retry done: succesful file upload");
                                 var file = result.file;
                                 data.uploadedBytes = file && file.size;
                                 // clear the previous data:
                                 data.data = null;
                                 data.submit();
 
-                                console.log("IF any files left to upload, continue recursively");
+                                // console.log("IF any files left to upload, continue recursively");
                                 attachmentUploadDone(attachments_array,walk_id,resuming);
                             })
                             .fail(function () {
-                                console.log("retry failure?");
                                 fu._trigger('fail', e, data);
                             });
                     };
@@ -1174,7 +1198,7 @@ var app = {
 
     ,addDynamicCss: function(){
         if(!$("link[rev='index.css']").length) {
-            console.log("adding dynamic css now");
+            // console.log("adding dynamic css now");
             return;
             app.cache.localprojdb.getAttachment('all_projects', 'index.css').then(function (blobOrBuffer) {
                 var blobURL = URL.createObjectURL(blobOrBuffer);
@@ -1307,7 +1331,7 @@ var app = {
                 return;
             }
         }else{
-            console.log("navigator.online! online!!");
+            // console.log("navigator.online! online!!");
             $.ajax({
                 type        : "POST",
                 url         : apiurl,
@@ -1315,13 +1339,12 @@ var app = {
                 dataType    : "json",
                 success   : function(response){
                     if(response.hasOwnProperty("active_project") && response["active_project"].hasOwnProperty("code")) {
-                        console.log("pcode found!", pcode);
+                        // console.log("pcode found!", pcode);
                         var today   = new Date();
                         var dd      = String(today.getDate()).padStart(2, '0');
 
                         var prevlogins = {};
                         prevlogins[pcode] = {"pass" : ppass, "meta" : response, "date" : dd};
-                        console.log("success login over network",prevlogins[pcode]);
                         localStorage.setItem("previousLogins",JSON.stringify(prevlogins));
 
                         _cb_success(response);
@@ -1373,7 +1396,7 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
         // IF THERE ARE ATTACHMENTS LEFT KEEP GOING
         app.recursiveUpload(walk_id, attachments_array, resuming);
     }else{
-        console.log("done with all attachments");
+        // console.log("done with all attachments");
         
         //TODO, REMOVE THE RESUMABLE UPLOADS STORED IN LOCALDB
         // console.log("whats left in the attachments array for walkid:" + walk_id);
@@ -1397,7 +1420,6 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
             app.cache.localusersdb.put(doc);
 
             //CHANGE SYNC INDICATOR TO THUMBS UP
-            console.log("change x to check");
             $("a.ajaxup[data-doc_id='"+walk_id+"']").addClass("uploaded");
             // $("i[data-docid='"+walk_id+"']").closest("tr").addClass("uploaded");
             
@@ -1409,18 +1431,18 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
               dataType  : "JSON",
               success   : function(response){
                 //don't need to do anything pass or fail, but will pass back the ids for thumbnails that were created
-                console.log("what is this hook_thumbs");
+                // console.log("what is this hook_thumbs");
                 // console.log(response);
               }
             });
         }).catch(function (werr) {
-            app.log("syncLocalData error UPDATING USER DATA " + walk_id, Error);
+            // app.log("syncLocalData error UPDATING USER DATA " + walk_id, Error);
             datastore.showError(werr);
         });
 
         // THE WALK JSON and ALL THE ATTACHMENTS HAVE RECURSIVELY SAVED TO THE SERVER!!!
         // NOW HIT UPLOAD PING TO ALERT THE ADMIN EMAIL
-        console.log("UPLOAD PING SSEMS TO BE THE PING THAT TELLS THE SERVER TO PUSH ALL THE UPLOADED STUFF TO COUCH");
+        // console.log("UPLOAD PING SSEMS TO BE THE PING THAT TELLS THE SERVER TO PUSH ALL THE UPLOADED STUFF TO COUCH");
         var apiurl      = config["database"]["upload_ping"];
         $.ajax({
             type        : "POST",
@@ -1428,8 +1450,8 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
             data        : { uploaded_walk_id: walk_id, project_email: app.cache.active_project["email"] },
             // dataType    : "JSON",
             success   : function(response){
-                console.log("upload_ping for walk meta succesffuly.. pinged");
-                console.log(response);
+                // console.log("upload_ping for walk meta succesffuly.. pinged");
+                // console.log(response);
                 
                 // $("a.ajaxup[data-doc_id='"+walk_id+"']").addClass("uploaded");
                 // console.log($("a.ajaxup[data-doc_id='"+walk_id+"']").length);
@@ -1449,13 +1471,12 @@ function attachmentUploadDone(attachments_array,walk_id,resuming){
                         }
                     }
 
-                    console.log("does it get in here?");
                     //CHANGE SYNC INDICATOR TO THUMBS UP IF ALL SYNCED
                     if(all_synced){
-                        console.log("its all synced man");
+                        // console.log("its all synced man");
                         $(".datastatus").addClass("synced");
                     }else{
-                        console.log("no its not all synced.. wut");
+                        // console.log("no its not all synced.. wut");
                     }
                 }).catch(function(err){
                     app.log("error allDocs()" + err);
