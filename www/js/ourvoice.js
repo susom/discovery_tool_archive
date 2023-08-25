@@ -931,7 +931,87 @@ var ourvoice = {
     }
 
     ,addMediaItem:function(_photo,fileurl){
+        var photo_i     = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
+        var tmstmp      = "";
+        if(utils.checkConnection()){
+            var geotag      = _photo["geotag"];
+            var time        = !geotag ? "n/a" : utils.readableTime(geotag.timestamp);
+            tmstmp          = "@ " + time;
+        }
 
+        var doc_id      = _photo["_id"];
+        var attach_name = _photo["name"];
+        var attach_id   = doc_id + "_" + attach_name;
+
+        //NOW ADD THIS TO THE VIEW #mediacaptured
+        var newitem     = $("<li>").addClass("mediaitem").addClass("photo_"+photo_i);
+        var newlink     = $("<a>").addClass("previewthumb").attr("href","#").data("photo_i",photo_i).data("doc_id",doc_id).data("attach_id",attach_id).data("attach_name",attach_name).attr("rel",photo_i).html($("<a>").addClass("single_upload").html('&#8686;'));
+        var newthum     = $("<img>").attr("src",fileurl);
+
+        newlink.prepend(newthum);
+        newitem.append(newlink);
+
+        var trash       = $("<a>").addClass("trashit").attr("href","#").data("photo_i",photo_i);
+        //why wont this work on the .on in index.js anymore?
+        trash.click(function(){
+            //reundant to code in index.js for "trashit" but wont work for some reason and spending too mjch time as it is
+            //DELETE A PHOTO (AND ASSOCIATED GEOTAGS/AUDIO)
+            var thispic_i   = $(this).data("photo_i");
+            var panel       = $(this).closest(".panel");
+
+            if(panel.attr("id") == "pic_review"){
+                var next    = "step_two";
+                app.closeCurrentPanel(panel);
+                app.transitionToPanel($("#"+next),1);
+            }
+            app.log("delete photo");
+
+            ourvoice.deletePhoto(app.cache.user[app.cache.current_session].photos[thispic_i]);
+            return false;
+        });
+
+        var left_offset = 70;
+        if(_photo["audios"]){
+            for(var a in _photo["audios"]){
+                var audio_file_i    = _photo["audios"][a];
+                if(_photo.hasOwnProperty("_id")){
+                    var attach_id = _photo["_id"] + "_" + audio_file_i;
+                }
+                var audiorec        = $("<a>").attr("href","#").addClass("audiorec").addClass("hasAudio").data("doc_id",doc_id).data("attach_id",attach_id).data("attach_name", audio_file_i).data("file_i", audio_file_i).html($("<span>").addClass("single_upload").html('&#8686;'));
+                audiorec.css("left",left_offset+"px");
+                left_offset = left_offset+70;
+                newitem.append(audiorec);
+                console.log("new audio file should be in slide out?" , attach_id);
+            }
+        }
+
+        if(_photo.hasOwnProperty("text_comment")){
+            var text_comment  = $("<span>").addClass("mi_text");
+            text_comment.css("left", left_offset+"px");
+            newitem.append(text_comment);
+        }
+        // if(app.cache.proj_thumbs ){
+        //     var thumbs      = $("<div>").addClass("votes");
+        //     var thumbsup    = $("<a>").attr("href","#").addClass("vote").addClass("up").data("photo_i",photo_i).attr("rel",photo_i);
+        //     var thumbsdown  = $("<a>").attr("href","#").addClass("vote").addClass("down").data("photo_i",photo_i).attr("rel",photo_i);
+        //     thumbs.append(thumbsup);
+        //     thumbs.append(thumbsdown);
+        //     newitem.append(thumbs);
+        // }
+
+        newitem.append(trash);
+
+        $(".nomedia").hide();
+        newitem.addClass("delete_on_reset");
+        $("#mediacaptured").append(newitem);
+
+        var pic_count   = $(".mi_slideout b").text();
+        pic_count       = parseInt(pic_count) + 1;
+        $(".mi_slideout b, .done_photos b").text(pic_count);
+
+        $(".walk_actions").addClass("photostaken");
+        $(".photoaction").addClass("photostaken");
+        return;
      }
 
     ,deletePhoto: function(_photo){
