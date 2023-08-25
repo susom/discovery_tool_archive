@@ -931,39 +931,43 @@ var ourvoice = {
     }
 
     ,addMediaItem:function(_photo,fileurl){
+
      }
 
     ,deletePhoto: function(_photo){
         navigator.notification.confirm(
-            'This will delete the photo and any attached audio recordings. Click \'Confirm\' to proceed.', // message
- ss
-                //"ssdelete" doesnt delete, rather replaces with undefined, leaving length to the array
-                //use indexOf and array.splice() instead
-                var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
-                if(photo_i > -1){
-                    app.cache.user[app.cache.current_session].photos.splice(photo_i,1);
+            'This will delete the photo and any attached audio recordings. Click \'Confirm\' to proceed.',
+            function(buttonIndex) {
+                if (buttonIndex == 2) {  // Confirm button
+                    var photo_i = app.cache.user[app.cache.current_session].photos.indexOf(_photo);
+                    if (photo_i > -1) {
+                        app.cache.user[app.cache.current_session].photos.splice(photo_i, 1);
+                    }
+
+                    var related_audio = "audio_" + photo_i + "_1." + app.cache.audioformat;
+                    // Assuming you want to uncomment this in the future.
+                    /*
+                    datastore.removeAttachment(app.cache.localattachmentsdb, app.cache.attachment["_id"], app.cache.attachment["_rev"], "photo_" + photo_i + ".jpg", function(db, _id, _rev) {
+                        datastore.removeAttachment(db, _id, _rev, related_audio, function() {});
+                    });
+                    */
+
+                    $("#mediacaptured a[rel='" + photo_i + "']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next) {
+                        $(this).remove();
+                        var pic_count = $(".mi_slideout b").text();
+                        pic_count = parseInt(pic_count) - 1;
+                        $(".mi_slideout b").text(pic_count);
+
+                        // RECORD DELETED PHOTO
+                        datastore.writeDB(app.cache.localusersdb, app.cache.user[app.cache.current_session]);
+                        next();
+                    });
                 }
-
-                //TODO DELETE ATTACHMENTS
-                var related_audio = "audio_"+photo_i+"_1." + app.cache.audioformat;
-                // datastore.removeAttachment(app.cache.localattachmentsdb, app.cache.attachment["_id"], app.cache.attachment["_rev"] ,"photo_"+photo_i+".jpg", function(db,_id,_rev){
-                //     datastore.removeAttachment(db, _id, _rev , related_audio, function(){});
-                // });
-                
-                $("#mediacaptured a[rel='"+photo_i+"']").parents(".mediaitem").fadeOut("medium").delay(250).queue(function(next){
-                    $(this).remove();
-                    var pic_count   = $(".mi_slideout b").text();
-                    pic_count       = parseInt(pic_count) - 1;
-                    $(".mi_slideout b").text(pic_count);
-
-                    //RECORD DELETED PHOTO
-                    datastore.writeDB(app.cache.localusersdb , app.cache.user[app.cache.current_session]);
-                    next();
-                });
-             },            // callback to invoke with index of button pressed
-            "Delete this photo?",             // title
-            ['Cancel','Confirm']     // buttonLabels
+            },  // callback to invoke with index of button pressed
+            "Delete this photo?",  // title
+            ['Cancel', 'Confirm']  // buttonLabels
         );
+
         return;
     }
 
