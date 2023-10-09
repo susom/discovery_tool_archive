@@ -559,6 +559,9 @@ var ourvoice = {
 
         // Fit the bounds of the generated points
         map.fitBounds(latLngBounds);
+        map.setCenter(app.cache.currentWalkMap[0]);
+
+
         $("#distance").text(app.cache.user[app.cache.current_session].currentDistance);
     }
 
